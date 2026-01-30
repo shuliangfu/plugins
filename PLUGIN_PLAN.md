@@ -54,8 +54,6 @@
 | **payment** | 支付集成 | Stripe、PayPal、支付宝、微信支付 | ⏳ 待实现 |
 | **social** | 社交分享 | 社交媒体分享按钮、OAuth 登录 | ⏳ 待实现 |
 | **notification** | 推送通知 | Web Push、邮件通知 | ⏳ 待实现 |
-| **search** | 全文搜索 | Algolia、Elasticsearch 集成 | ⏳ 待实现 |
-| **comment** | 评论系统 | 评论、点赞、回复功能 | ⏳ 待实现 |
 
 ---
 
@@ -117,8 +115,8 @@ export function createMyPlugin(options?: MyPluginOptions): Plugin {
 | 第一优先级 | 5 | 0 | 0% |
 | 第二优先级 | 5 | 0 | 0% |
 | 第三优先级 | 2 | 0 | 0% |
-| 第四优先级 | 5 | 0 | 0% |
-| **总计** | **24** | **7** | **29%** |
+| 第四优先级 | 3 | 0 | 0% |
+| **总计** | **22** | **7** | **32%** |
 
 ---
 
