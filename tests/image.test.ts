@@ -75,7 +75,8 @@ describe("图片处理插件", () => {
 
   describe("onInit 钩子", () => {
     it("应该注册 imageConfig 服务", async () => {
-      const plugin = imagePlugin({ quality: 95 });
+      // 使用 tests/data 下的目录，避免在项目根目录创建测试输出目录
+      const plugin = imagePlugin({ cacheDir: "./tests/data/.cache/images", quality: 95 });
 
       await plugin.onInit?.(container);
 
@@ -85,7 +86,7 @@ describe("图片处理插件", () => {
     });
 
     it("应该注册 imageService 服务", async () => {
-      const plugin = imagePlugin();
+      const plugin = imagePlugin({ cacheDir: "./tests/data/.cache/images" });
 
       await plugin.onInit?.(container);
 
@@ -94,7 +95,7 @@ describe("图片处理插件", () => {
     });
 
     it("imageService 应该提供 getUrl 方法", async () => {
-      const plugin = imagePlugin();
+      const plugin = imagePlugin({ cacheDir: "./tests/data/.cache/images" });
       await plugin.onInit?.(container);
 
       const service = container.get<{
@@ -110,6 +111,7 @@ describe("图片处理插件", () => {
 
     it("imageService 应该提供 getSrcSet 方法", async () => {
       const plugin = imagePlugin({
+        cacheDir: "./tests/data/.cache/images",
         sizes: [
           { width: 320, suffix: "sm" },
           { width: 640, suffix: "md" },
@@ -129,7 +131,7 @@ describe("图片处理插件", () => {
     });
 
     it("imageService 应该提供 getLazyHtml 方法", async () => {
-      const plugin = imagePlugin({ lazyLoad: true });
+      const plugin = imagePlugin({ cacheDir: "./tests/data/.cache/images", lazyLoad: true });
       await plugin.onInit?.(container);
 
       const service = container.get<{
@@ -153,6 +155,7 @@ describe("图片处理插件", () => {
   describe("imageService", () => {
     it("应该生成正确的 srcset", async () => {
       const plugin = imagePlugin({
+        cacheDir: "./tests/data/.cache/images",
         routePrefix: "/_image",
         sizes: [
           { width: 320, suffix: "sm" },
@@ -175,6 +178,7 @@ describe("图片处理插件", () => {
 
     it("应该生成懒加载 HTML", async () => {
       const plugin = imagePlugin({
+        cacheDir: "./tests/data/.cache/images",
         lazyLoad: true,
         placeholderColor: "#f0f0f0",
       });
@@ -203,7 +207,7 @@ describe("图片处理插件", () => {
 
   describe("onRequest 钩子", () => {
     it("应该跳过非图片路径", async () => {
-      const plugin = imagePlugin({ routePrefix: "/_image" });
+      const plugin = imagePlugin({ cacheDir: "./tests/data/.cache/images", routePrefix: "/_image" });
       await plugin.onInit?.(container);
 
       const ctx = {
@@ -222,7 +226,7 @@ describe("图片处理插件", () => {
     });
 
     it("应该只处理 GET 请求", async () => {
-      const plugin = imagePlugin({ routePrefix: "/_image" });
+      const plugin = imagePlugin({ cacheDir: "./tests/data/.cache/images", routePrefix: "/_image" });
       await plugin.onInit?.(container);
 
       const ctx = {
@@ -245,7 +249,7 @@ describe("图片处理插件", () => {
 
   describe("onResponse 钩子", () => {
     it("应该跳过非 HTML 响应", async () => {
-      const plugin = imagePlugin({ lazyLoad: true });
+      const plugin = imagePlugin({ cacheDir: "./tests/data/.cache/images", lazyLoad: true });
       await plugin.onInit?.(container);
 
       const ctx = {
@@ -266,7 +270,7 @@ describe("图片处理插件", () => {
     });
 
     it("应该为 HTML 响应注入懒加载脚本", async () => {
-      const plugin = imagePlugin({ lazyLoad: true });
+      const plugin = imagePlugin({ cacheDir: "./tests/data/.cache/images", lazyLoad: true });
       await plugin.onInit?.(container);
 
       const html = `<html><body><img src="/images/photo.jpg" alt="Photo"></body></html>`;

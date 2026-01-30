@@ -85,17 +85,18 @@ describe("文件上传插件", () => {
 
   describe("onInit 钩子", () => {
     it("应该注册 uploadConfig 服务", async () => {
-      const plugin = uploadPlugin({ uploadDir: "./test-uploads" });
+      // 使用 tests/data 下的目录，避免在项目根目录创建测试输出目录
+      const plugin = uploadPlugin({ uploadDir: "./tests/data/uploads" });
 
       await plugin.onInit?.(container);
 
       const config = container.get("uploadConfig");
       expect(config).toBeDefined();
-      expect((config as { uploadDir: string }).uploadDir).toBe("./test-uploads");
+      expect((config as { uploadDir: string }).uploadDir).toBe("./tests/data/uploads");
     });
 
     it("应该注册 uploadService 服务", async () => {
-      const plugin = uploadPlugin();
+      const plugin = uploadPlugin({ uploadDir: "./tests/data/uploads" });
 
       await plugin.onInit?.(container);
 
@@ -105,6 +106,7 @@ describe("文件上传插件", () => {
 
     it("uploadService 应该提供 validateFile 方法", async () => {
       const plugin = uploadPlugin({
+        uploadDir: "./tests/data/uploads",
         maxFileSize: 1024,
         allowedMimeTypes: ["image/png"],
       });
@@ -146,7 +148,7 @@ describe("文件上传插件", () => {
     });
 
     it("uploadService 应该提供 generateFilename 方法", async () => {
-      const plugin = uploadPlugin();
+      const plugin = uploadPlugin({ uploadDir: "./tests/data/uploads" });
       await plugin.onInit?.(container);
 
       const service = container.get<{
@@ -163,7 +165,7 @@ describe("文件上传插件", () => {
 
   describe("onRequest 钩子", () => {
     it("应该跳过非上传路径", async () => {
-      const plugin = uploadPlugin({ uploadPath: "/upload" });
+      const plugin = uploadPlugin({ uploadDir: "./tests/data/uploads", uploadPath: "/upload" });
       await plugin.onInit?.(container);
 
       const ctx = {
@@ -182,7 +184,7 @@ describe("文件上传插件", () => {
     });
 
     it("应该只处理 POST 请求", async () => {
-      const plugin = uploadPlugin({ uploadPath: "/upload" });
+      const plugin = uploadPlugin({ uploadDir: "./tests/data/uploads", uploadPath: "/upload" });
       await plugin.onInit?.(container);
 
       const ctx = {
@@ -201,7 +203,7 @@ describe("文件上传插件", () => {
     });
 
     it("应该拒绝非 multipart 请求", async () => {
-      const plugin = uploadPlugin({ uploadPath: "/upload" });
+      const plugin = uploadPlugin({ uploadDir: "./tests/data/uploads", uploadPath: "/upload" });
       await plugin.onInit?.(container);
 
       const ctx = {
@@ -237,6 +239,7 @@ describe("文件上传插件", () => {
 
     it("应该验证文件大小", async () => {
       const plugin = uploadPlugin({
+        uploadDir: "./tests/data/uploads",
         maxFileSize: 1024,
         allowedMimeTypes: [],
         forbiddenMimeTypes: [],
@@ -265,6 +268,7 @@ describe("文件上传插件", () => {
 
     it("应该验证 MIME 类型白名单", async () => {
       const plugin = uploadPlugin({
+        uploadDir: "./tests/data/uploads",
         allowedMimeTypes: ["image/png", "image/jpeg"],
       });
       await plugin.onInit?.(container);
@@ -290,6 +294,7 @@ describe("文件上传插件", () => {
 
     it("应该验证 MIME 类型黑名单", async () => {
       const plugin = uploadPlugin({
+        uploadDir: "./tests/data/uploads",
         forbiddenMimeTypes: ["application/x-msdownload"],
       });
       await plugin.onInit?.(container);
@@ -307,6 +312,7 @@ describe("文件上传插件", () => {
 
     it("应该验证文件扩展名", async () => {
       const plugin = uploadPlugin({
+        uploadDir: "./tests/data/uploads",
         allowedExtensions: [".png", ".jpg"],
       });
       await plugin.onInit?.(container);
@@ -332,6 +338,7 @@ describe("文件上传插件", () => {
 
     it("应该验证禁止的扩展名", async () => {
       const plugin = uploadPlugin({
+        uploadDir: "./tests/data/uploads",
         forbiddenExtensions: [".exe", ".bat", ".sh"],
       });
       await plugin.onInit?.(container);
@@ -350,7 +357,7 @@ describe("文件上传插件", () => {
 
   describe("文件名生成", () => {
     it("应该生成唯一文件名", async () => {
-      const plugin = uploadPlugin();
+      const plugin = uploadPlugin({ uploadDir: "./tests/data/uploads" });
       await plugin.onInit?.(container);
 
       const service = container.get<{
@@ -365,7 +372,7 @@ describe("文件上传插件", () => {
     });
 
     it("应该保留原始扩展名", async () => {
-      const plugin = uploadPlugin({ preserveExtension: true });
+      const plugin = uploadPlugin({ uploadDir: "./tests/data/uploads", preserveExtension: true });
       await plugin.onInit?.(container);
 
       const service = container.get<{

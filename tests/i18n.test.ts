@@ -9,9 +9,9 @@ import { beforeEach, describe, expect, it } from "@dreamer/test";
 import {
   i18nPlugin,
   type I18nPluginOptions,
-  getGlobalT,
   getGlobalI18n,
   isI18nInstalled,
+  uninstallI18n,
 } from "../src/i18n/mod.ts";
 
 describe("i18n 国际化插件", () => {
@@ -28,7 +28,7 @@ describe("i18n 国际化插件", () => {
       const i18nConfig = plugin.config?.i18n as Record<string, unknown>;
 
       expect(plugin.name).toBe("@dreamer/plugins-i18n");
-      expect(plugin.version).toBe("0.1.0");
+      expect(plugin.version).toBe("1.0.0");
       expect(plugin.config?.i18n).toBeDefined();
       expect(i18nConfig?.defaultLocale).toBe("zh-CN");
       expect(i18nConfig?.locales).toContain("zh-CN");
@@ -385,15 +385,18 @@ describe("i18n 国际化插件", () => {
 
   describe("全局 $t 方法", () => {
     it("应该注册全局 $t 函数", () => {
+      uninstallI18n(); // 先清理
       const plugin = i18nPlugin();
       plugin.onInit?.(container);
 
       expect(isI18nInstalled()).toBe(true);
-      expect(getGlobalT()).toBeDefined();
-      expect(typeof getGlobalT()).toBe("function");
+      const i18n = getGlobalI18n();
+      expect(i18n).toBeDefined();
+      expect(typeof i18n?.t).toBe("function");
     });
 
     it("应该注册全局 $i18n 实例", () => {
+      uninstallI18n(); // 先清理
       const plugin = i18nPlugin();
       plugin.onInit?.(container);
 
@@ -405,20 +408,21 @@ describe("i18n 国际化插件", () => {
     });
 
     it("$t 应该返回未翻译的 key", () => {
+      uninstallI18n(); // 先清理
       const plugin = i18nPlugin();
       plugin.onInit?.(container);
 
-      const $t = getGlobalT();
-      const result = $t?.("greeting");
+      const i18n = getGlobalI18n();
+      const result = i18n?.t("greeting");
       expect(result).toBe("greeting");
     });
 
     it("$t 应该支持加载翻译并翻译", () => {
+      uninstallI18n(); // 先清理
       const plugin = i18nPlugin({ defaultLocale: "zh-CN" });
       plugin.onInit?.(container);
 
       const i18n = getGlobalI18n();
-      const $t = getGlobalT();
 
       // 加载翻译数据
       i18n?.loadTranslations("zh-CN", {
@@ -426,16 +430,16 @@ describe("i18n 国际化插件", () => {
         hello: "你好，{name}",
       });
 
-      expect($t?.("greeting")).toBe("你好");
-      expect($t?.("hello", { name: "张三" })).toBe("你好，张三");
+      expect(i18n?.t("greeting")).toBe("你好");
+      expect(i18n?.t("hello", { name: "张三" })).toBe("你好，张三");
     });
 
     it("$t 应该支持嵌套键", () => {
+      uninstallI18n(); // 先清理
       const plugin = i18nPlugin({ defaultLocale: "zh-CN" });
       plugin.onInit?.(container);
 
       const i18n = getGlobalI18n();
-      const $t = getGlobalT();
 
       // 加载嵌套翻译数据
       i18n?.loadTranslations("zh-CN", {
@@ -448,11 +452,12 @@ describe("i18n 国际化插件", () => {
         },
       });
 
-      expect($t?.("common.greeting")).toBe("你好");
-      expect($t?.("common.buttons.submit")).toBe("提交");
+      expect(i18n?.t("common.greeting")).toBe("你好");
+      expect(i18n?.t("common.buttons.submit")).toBe("提交");
     });
 
     it("切换语言后应该使用正确的翻译", () => {
+      uninstallI18n(); // 先清理
       const plugin = i18nPlugin({
         defaultLocale: "zh-CN",
         locales: ["zh-CN", "en-US"],
@@ -460,21 +465,20 @@ describe("i18n 国际化插件", () => {
       plugin.onInit?.(container);
 
       const i18n = getGlobalI18n();
-      const $t = getGlobalT();
 
       // 加载多语言翻译
       i18n?.loadTranslations("zh-CN", { greeting: "你好" });
       i18n?.loadTranslations("en-US", { greeting: "Hello" });
 
-      expect($t?.("greeting")).toBe("你好");
+      expect(i18n?.t("greeting")).toBe("你好");
 
       // 切换到英文
       i18n?.setLocale("en-US");
-      expect($t?.("greeting")).toBe("Hello");
+      expect(i18n?.t("greeting")).toBe("Hello");
 
       // 切换回中文
       i18n?.setLocale("zh-CN");
-      expect($t?.("greeting")).toBe("你好");
+      expect(i18n?.t("greeting")).toBe("你好");
     });
   });
 });
