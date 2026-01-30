@@ -10,7 +10,7 @@
  * - 懒加载支持
  * - 响应式图片
  *
- * 注意：此插件依赖 @dreamer/image 库进行实际的图片处理
+ * 注意：此插件使用 @dreamer/image 库进行实际的图片处理
  *
  * 设计原则：
  * - 插件只响应事件钩子（onInit、onRequest、onResponse 等）
@@ -19,6 +19,12 @@
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
+import { ensureDir, stat, readFile, writeFile } from "@dreamer/runtime-adapter";
+import {
+  createImageProcessor,
+  type ImageProcessor,
+  type ResizeOptions,
+} from "@dreamer/image";
 
 /**
  * 图片尺寸配置
@@ -273,16 +279,34 @@ export function imagePlugin(options: ImagePluginOptions = {}): Plugin {
      * 注册图片处理服务到容器
      */
     async onInit(container: ServiceContainer) {
-      // 确保缓存目录存在
+      // 确保缓存目录存在（使用 runtime-adapter 的 ensureDir）
+      // ensureDir 会自动处理：目录不存在则创建，存在则不做操作
       if (cache) {
-        try {
-          await Deno.mkdir(cacheDir, { recursive: true });
-        } catch (error) {
-          if (!(error instanceof Deno.errors.AlreadyExists)) {
-            throw error;
+        await ensureDir(cacheDir);
+      }
+
+      // 创建图片处理器（使用 @dreamer/image 库）
+      let imageProcessor: ImageProcessor | null = null;
+      try {
+        imageProcessor = await createImageProcessor();
+      } catch (error) {
+        // 如果 ImageMagick 未安装，输出警告但不阻止插件初始化
+        if (debug) {
+          const logger = container.has("logger")
+            ? container.get<{ info: (msg: string) => void }>("logger")
+            : null;
+          if (logger) {
+            logger.info(
+              `图片处理器初始化警告: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
           }
         }
       }
+
+      // 注册图片处理器到容器
+      container.registerSingleton("imageProcessor", () => imageProcessor);
 
       // 注册图片配置服务
       container.registerSingleton("imageConfig", () => ({
@@ -414,8 +438,8 @@ export function imagePlugin(options: ImagePluginOptions = {}): Plugin {
       const sourcePath = sourceDir + params.src;
 
       try {
-        // 检查源文件是否存在
-        await Deno.stat(sourcePath);
+        // 检查源文件是否存在（使用 runtime-adapter 的 stat）
+        await stat(sourcePath);
 
         // 计算缓存键
         const cacheKey = getCacheKey({
@@ -428,10 +452,10 @@ export function imagePlugin(options: ImagePluginOptions = {}): Plugin {
         let imageData: Uint8Array;
         let fromCache = false;
 
-        // 检查缓存
+        // 检查缓存（使用 runtime-adapter 的 readFile）
         if (cache) {
           try {
-            imageData = await Deno.readFile(cachePath);
+            imageData = await readFile(cachePath);
             fromCache = true;
           } catch {
             // 缓存不存在，需要处理图片
@@ -440,18 +464,55 @@ export function imagePlugin(options: ImagePluginOptions = {}): Plugin {
 
         // 如果没有缓存，处理图片
         if (!imageData!) {
-          // 读取原始图片
-          const sourceData = await Deno.readFile(sourcePath);
+          // 读取原始图片（使用 runtime-adapter 的 readFile）
+          const sourceData = await readFile(sourcePath);
 
-          // 注意：这里是简化实现，实际应该使用 @dreamer/image 库
-          // 或其他图片处理库来进行格式转换和压缩
-          // 这里直接返回原始图片
-          imageData = sourceData;
+          // 获取图片处理器
+          const processor = container.get<ImageProcessor | null>("imageProcessor");
 
-          // 如果启用缓存，保存到缓存
+          if (processor) {
+            // 使用 @dreamer/image 库进行图片处理
+            const targetFormat = (params.format || format) as
+              | "jpeg"
+              | "png"
+              | "webp"
+              | "gif"
+              | "bmp"
+              | "tiff"
+              | "avif";
+
+            // 判断是否需要调整尺寸
+            if (params.width || params.height) {
+              // 构建缩放选项
+              const resizeOptions: ResizeOptions = {
+                width: params.width,
+                height: params.height,
+                quality: params.quality || quality,
+                fit: params.fit,
+              };
+
+              // 先调整尺寸，再转换格式
+              const resized = await processor.resize(sourceData, resizeOptions);
+              imageData = await processor.convert(resized, {
+                format: targetFormat,
+                quality: params.quality || quality,
+              });
+            } else {
+              // 只进行格式转换和压缩
+              imageData = await processor.compress(sourceData, {
+                format: targetFormat,
+                quality: params.quality || quality,
+              });
+            }
+          } else {
+            // 如果处理器不可用，返回原始图片
+            imageData = sourceData;
+          }
+
+          // 如果启用缓存，保存到缓存（使用 runtime-adapter 的 writeFile）
           if (cache) {
             try {
-              await Deno.writeFile(cachePath, imageData);
+              await writeFile(cachePath, imageData);
             } catch (error) {
               if (debug) {
                 const logger = container.has("logger")

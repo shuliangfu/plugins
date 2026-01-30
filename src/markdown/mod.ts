@@ -17,6 +17,7 @@
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
+import { readTextFile, stat } from "@dreamer/runtime-adapter";
 
 /**
  * Front Matter 数据
@@ -419,7 +420,8 @@ export function markdownPlugin(options: MarkdownPluginOptions = {}): Plugin {
          * @returns 渲染结果
          */
         renderFile: async (filePath: string): Promise<MarkdownResult> => {
-          const content = await Deno.readTextFile(filePath);
+          // 使用 runtime-adapter 的 readTextFile
+          const content = await readTextFile(filePath);
           const service = container.get<{
             render: (markdown: string) => MarkdownResult;
           }>("markdownService");
@@ -469,8 +471,8 @@ export function markdownPlugin(options: MarkdownPluginOptions = {}): Plugin {
       const filePath = contentDir + relativePath;
 
       try {
-        // 检查文件是否存在
-        await Deno.stat(filePath);
+        // 检查文件是否存在（使用 runtime-adapter 的 stat）
+        await stat(filePath);
 
         // 获取 Markdown 服务
         const markdownService = container.get<{
@@ -507,16 +509,17 @@ export function markdownPlugin(options: MarkdownPluginOptions = {}): Plugin {
         }
       } catch (error) {
         // 文件不存在，不处理
-        if (debug && !(error instanceof Deno.errors.NotFound)) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isNotFound = errorMessage.includes("ENOENT") ||
+          errorMessage.includes("NotFound") ||
+          errorMessage.includes("not found");
+
+        if (debug && !isNotFound) {
           const logger = container.has("logger")
             ? container.get<{ info: (msg: string) => void }>("logger")
             : null;
           if (logger) {
-            logger.info(
-              `Markdown 渲染失败: ${filePath} | ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            );
+            logger.info(`Markdown 渲染失败: ${filePath} | ${errorMessage}`);
           }
         }
       }

@@ -18,6 +18,13 @@
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
+import {
+  stat,
+  readFile,
+  readdir,
+  type FileInfo,
+  type DirEntry,
+} from "@dreamer/runtime-adapter";
 
 /**
  * 静态文件插件配置选项
@@ -255,6 +262,32 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
         debug,
       }));
 
+      // 注册静态文件服务
+      container.registerSingleton("staticService", () => ({
+        /**
+         * 获取 MIME 类型
+         * @param path - 文件路径
+         * @returns MIME 类型字符串
+         */
+        getMimeType: (path: string) => getMimeType(path, allMimeTypes),
+
+        /**
+         * 计算 ETag
+         * @param content - 文件内容
+         * @param mtime - 修改时间戳
+         * @returns ETag 字符串
+         */
+        computeEtag: (content: Uint8Array, mtime: number) =>
+          computeEtag(content, mtime),
+
+        /**
+         * 规范化路径
+         * @param path - 请求路径
+         * @returns 规范化后的路径
+         */
+        normalizePath: (path: string) => normalizePath(path),
+      }));
+
       // 输出日志
       if (debug) {
         const logger = container.has("logger")
@@ -286,8 +319,23 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
       // 规范化路径
       const relativePath = normalizePath(path.slice(prefix.length - 1));
 
+      // 检查目录遍历攻击（路径中包含 .. 应该已被规范化移除，
+      // 但如果原始路径试图逃逸根目录，返回 403）
+      const originalPath = path.slice(prefix.length - 1);
+      if (originalPath.includes("..")) {
+        ctx.response = new Response("Forbidden", {
+          status: 403,
+          headers: { "Content-Type": "text/plain" },
+        });
+        return;
+      }
+
       // 检查隐藏文件
-      if (!allowHidden && relativePath.includes("/.")) {
+      if (!allowHidden && (relativePath.includes("/.") || originalPath.includes("/."))) {
+        ctx.response = new Response("Forbidden", {
+          status: 403,
+          headers: { "Content-Type": "text/plain" },
+        });
         return;
       }
 
@@ -295,13 +343,13 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
       let filePath = root + relativePath;
 
       try {
-        // 获取文件信息
-        let stat: { isFile: boolean; isDirectory: boolean; mtime: Date | null };
+        // 获取文件信息（使用 runtime-adapter）
+        let fileStat: { isFile: boolean; isDirectory: boolean; mtime: Date | null };
 
         try {
-          // 使用 Deno.stat
-          const fileInfo = await Deno.stat(filePath);
-          stat = {
+          // 使用 runtime-adapter 的 stat
+          const fileInfo: FileInfo = await stat(filePath);
+          fileStat = {
             isFile: fileInfo.isFile,
             isDirectory: fileInfo.isDirectory,
             mtime: fileInfo.mtime,
@@ -312,17 +360,17 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
         }
 
         // 如果是目录，尝试索引文件
-        if (stat.isDirectory) {
+        if (fileStat.isDirectory) {
           for (const indexFile of index) {
             const indexPath = filePath.endsWith("/")
               ? filePath + indexFile
               : filePath + "/" + indexFile;
 
             try {
-              const indexInfo = await Deno.stat(indexPath);
+              const indexInfo: FileInfo = await stat(indexPath);
               if (indexInfo.isFile) {
                 filePath = indexPath;
-                stat = {
+                fileStat = {
                   isFile: true,
                   isDirectory: false,
                   mtime: indexInfo.mtime,
@@ -335,13 +383,11 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
           }
 
           // 如果仍然是目录且允许目录列表
-          if (stat.isDirectory) {
+          if (fileStat.isDirectory) {
             if (directoryListing) {
-              // 生成目录列表（简单实现）
-              const entries: string[] = [];
-              for await (const entry of Deno.readDir(filePath)) {
-                entries.push(entry.name);
-              }
+              // 生成目录列表（使用 runtime-adapter 的 readdir）
+              const dirEntries: DirEntry[] = await readdir(filePath);
+              const entries: string[] = dirEntries.map((e) => e.name);
 
               const html = `<!DOCTYPE html>
 <html>
@@ -365,9 +411,9 @@ ${entries.map((e) => `<li><a href="${e}">${e}</a></li>`).join("\n")}
           }
         }
 
-        // 读取文件内容
-        const content = await Deno.readFile(filePath);
-        const mtime = stat.mtime?.getTime() || Date.now();
+        // 读取文件内容（使用 runtime-adapter 的 readFile）
+        const content = await readFile(filePath);
+        const mtime = fileStat.mtime?.getTime() || Date.now();
 
         // 检查 ETag（条件请求）
         if (etag) {
@@ -402,15 +448,18 @@ ${entries.map((e) => `<li><a href="${e}">${e}</a></li>`).join("\n")}
         }
 
         // Last-Modified
-        if (stat.mtime) {
-          headers.set("Last-Modified", stat.mtime.toUTCString());
+        if (fileStat.mtime) {
+          headers.set("Last-Modified", fileStat.mtime.toUTCString());
         }
 
-        // 创建响应
-        ctx.response = new Response(ctx.method === "HEAD" ? null : content, {
-          status: 200,
-          headers,
-        });
+        // 创建响应（将 Uint8Array 转换为 ArrayBuffer）
+        ctx.response = new Response(
+          ctx.method === "HEAD" ? null : content.buffer as ArrayBuffer,
+          {
+            status: 200,
+            headers,
+          },
+        );
 
         // 调试日志
         if (debug) {

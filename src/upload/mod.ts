@@ -17,6 +17,7 @@
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
+import { ensureDir, writeFile } from "@dreamer/runtime-adapter";
 
 /**
  * 上传的文件信息
@@ -102,17 +103,40 @@ function getExtension(filename: string): string {
 }
 
 /**
+ * 文件验证参数
+ */
+interface FileValidationInput {
+  /** 文件名 */
+  name: string;
+  /** MIME 类型 */
+  type: string;
+  /** 文件大小（字节） */
+  size?: number;
+}
+
+/**
  * 验证文件是否允许上传
- * @param filename - 文件名
- * @param mimeType - MIME 类型
+ * @param file - 文件信息对象
  * @param options - 配置选项
  * @returns 验证结果
  */
 function validateFile(
-  filename: string,
-  mimeType: string,
+  file: FileValidationInput,
   options: UploadPluginOptions,
 ): { valid: boolean; error?: string } {
+  const { name: filename, type: mimeType, size: fileSize } = file;
+
+  // 检查文件大小
+  if (fileSize !== undefined && options.maxFileSize !== undefined) {
+    if (fileSize > options.maxFileSize) {
+      const maxSizeMB = (options.maxFileSize / (1024 * 1024)).toFixed(2);
+      return {
+        valid: false,
+        error: `文件大小超过限制，最大允许 ${maxSizeMB} MB`,
+      };
+    }
+  }
+
   const ext = getExtension(filename);
 
   // 检查禁止的扩展名
@@ -257,14 +281,9 @@ export function uploadPlugin(options: UploadPluginOptions = {}): Plugin {
      * 注册上传服务到容器，创建上传目录
      */
     async onInit(container: ServiceContainer) {
-      // 确保上传目录存在
-      try {
-        await Deno.mkdir(uploadDir, { recursive: true });
-      } catch (error) {
-        if (!(error instanceof Deno.errors.AlreadyExists)) {
-          throw error;
-        }
-      }
+      // 确保上传目录存在（使用 runtime-adapter 的 ensureDir）
+      // ensureDir 会自动处理：目录不存在则创建，存在则不做操作
+      await ensureDir(uploadDir);
 
       // 注册上传配置服务
       container.registerSingleton("uploadConfig", () => ({
@@ -289,9 +308,10 @@ export function uploadPlugin(options: UploadPluginOptions = {}): Plugin {
         getUploadDir: () => uploadDir,
         /**
          * 验证文件
+         * @param file - 文件信息对象 { name, type, size }
+         * @returns 验证结果 { valid, error? }
          */
-        validateFile: (filename: string, mimeType: string) =>
-          validateFile(filename, mimeType, options),
+        validateFile: (file: FileValidationInput) => validateFile(file, options),
         /**
          * 生成文件名
          */
@@ -393,7 +413,10 @@ export function uploadPlugin(options: UploadPluginOptions = {}): Plugin {
             }
 
             // 验证文件
-            const validation = validateFile(file.name, file.type, options);
+            const validation = validateFile(
+              { name: file.name, type: file.type, size: file.size },
+              options,
+            );
             if (!validation.valid) {
               ctx.response = new Response(
                 JSON.stringify({ error: validation.error }),
@@ -410,9 +433,9 @@ export function uploadPlugin(options: UploadPluginOptions = {}): Plugin {
             const filename = generateFilename(file.name, file.type) + ext;
             const filePath = `${uploadDir}/${filename}`;
 
-            // 保存文件
+            // 保存文件（使用 runtime-adapter 的 writeFile）
             const arrayBuffer = await file.arrayBuffer();
-            await Deno.writeFile(filePath, new Uint8Array(arrayBuffer));
+            await writeFile(filePath, new Uint8Array(arrayBuffer));
 
             uploadedFiles.push({
               originalName: file.name,
