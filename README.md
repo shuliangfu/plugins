@@ -537,34 +537,6 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 | 通过率 | 100% |
 | 测试时间 | 2026-01-30 |
 
-### 测试覆盖
-
-| 测试文件 | 测试数量 | 状态 |
-|----------|----------|------|
-| analytics.test.ts | 24 | ✅ |
-| auth.test.ts | 20 | ✅ |
-| captcha.test.ts | 20 | ✅ |
-| compression.test.ts | 21 | ✅ |
-| cors.test.ts | 20 | ✅ |
-| i18n.test.ts | 27 | ✅ |
-| i18n-client.test.ts | 50 | ✅ |
-| image.test.ts | 16 | ✅ |
-| markdown.test.ts | 16 | ✅ |
-| mod.test.ts | 36 | ✅ |
-| notification.test.ts | 20 | ✅ |
-| payment.test.ts | 17 | ✅ |
-| payment-adapters.test.ts | 73 | ✅ |
-| pwa.test.ts | 18 | ✅ |
-| ratelimit.test.ts | 22 | ✅ |
-| security.test.ts | 16 | ✅ |
-| seo.test.ts | 23 | ✅ |
-| social.test.ts | 23 | ✅ |
-| static.test.ts | 17 | ✅ |
-| tailwindcss.test.ts | 14 | ✅ |
-| theme-client.test.ts | 21 | ✅ |
-| unocss.test.ts | 17 | ✅ |
-| upload.test.ts | 20 | ✅ |
-
 详细测试报告请查看 [TEST_REPORT.md](./TEST_REPORT.md)
 
 ---
