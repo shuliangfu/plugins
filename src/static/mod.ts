@@ -1,0 +1,446 @@
+/**
+ * @module @dreamer/plugins/static
+ *
+ * 静态文件服务插件
+ *
+ * 提供静态文件服务功能，支持：
+ * - 静态文件目录配置
+ * - MIME 类型自动检测
+ * - 缓存控制
+ * - ETag 支持
+ * - 压缩支持
+ * - 目录索引
+ *
+ * 设计原则：
+ * - 插件只响应事件钩子（onInit、onRequest、onResponse 等）
+ * - 生命周期由 PluginManager 统一管理
+ */
+
+import type { Plugin, RequestContext } from "@dreamer/plugin";
+import type { ServiceContainer } from "@dreamer/service";
+
+/**
+ * 静态文件插件配置选项
+ */
+export interface StaticPluginOptions {
+  /** 静态文件根目录（默认 "./public"） */
+  root?: string;
+  /** URL 前缀（默认 "/"） */
+  prefix?: string;
+  /** 默认索引文件（默认 ["index.html"]） */
+  index?: string[];
+  /** 是否启用目录列表（默认 false） */
+  directoryListing?: boolean;
+  /** 缓存控制头（默认 "public, max-age=86400"） */
+  cacheControl?: string | false;
+  /** 是否启用 ETag（默认 true） */
+  etag?: boolean;
+  /** 不缓存的文件扩展名 */
+  noCacheExtensions?: string[];
+  /** 是否启用压缩（默认 false，建议使用 compression 插件） */
+  compress?: boolean;
+  /** 自定义 MIME 类型映射 */
+  mimeTypes?: Record<string, string>;
+  /** 是否允许隐藏文件（默认 false） */
+  allowHidden?: boolean;
+  /** 是否启用调试日志（默认 false） */
+  debug?: boolean;
+}
+
+/**
+ * 默认 MIME 类型映射
+ */
+const DEFAULT_MIME_TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".htm": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".xml": "application/xml; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
+  ".md": "text/markdown; charset=utf-8",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".webp": "image/webp",
+  ".avif": "image/avif",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".otf": "font/otf",
+  ".eot": "application/vnd.ms-fontobject",
+  ".mp3": "audio/mpeg",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".ogg": "audio/ogg",
+  ".wav": "audio/wav",
+  ".pdf": "application/pdf",
+  ".zip": "application/zip",
+  ".gz": "application/gzip",
+  ".tar": "application/x-tar",
+  ".wasm": "application/wasm",
+  ".map": "application/json",
+};
+
+/**
+ * 获取文件扩展名
+ * @param path - 文件路径
+ * @returns 扩展名（包含点号）
+ */
+function getExtension(path: string): string {
+  const lastDot = path.lastIndexOf(".");
+  const lastSlash = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
+  if (lastDot > lastSlash) {
+    return path.slice(lastDot).toLowerCase();
+  }
+  return "";
+}
+
+/**
+ * 获取 MIME 类型
+ * @param path - 文件路径
+ * @param customMimeTypes - 自定义 MIME 类型映射
+ * @returns MIME 类型
+ */
+function getMimeType(
+  path: string,
+  customMimeTypes: Record<string, string>,
+): string {
+  const ext = getExtension(path);
+  return customMimeTypes[ext] || DEFAULT_MIME_TYPES[ext] ||
+    "application/octet-stream";
+}
+
+/**
+ * 计算简单的 ETag
+ * @param content - 文件内容
+ * @param mtime - 修改时间
+ * @returns ETag 值
+ */
+function computeEtag(content: Uint8Array, mtime: number): string {
+  // 简单的 ETag：使用内容长度和修改时间
+  return `"${content.length.toString(16)}-${mtime.toString(16)}"`;
+}
+
+/**
+ * 规范化路径，防止目录遍历攻击
+ * @param path - 请求路径
+ * @returns 规范化后的路径
+ */
+function normalizePath(path: string): string {
+  // 解码 URL
+  const decoded = decodeURIComponent(path);
+
+  // 移除查询字符串
+  const queryIndex = decoded.indexOf("?");
+  const cleanPath = queryIndex >= 0 ? decoded.slice(0, queryIndex) : decoded;
+
+  // 规范化路径分隔符
+  const normalized = cleanPath.replace(/\\/g, "/");
+
+  // 移除 .. 和 . 部分
+  const parts = normalized.split("/").filter((p) => p !== "" && p !== ".");
+  const result: string[] = [];
+
+  for (const part of parts) {
+    if (part === "..") {
+      result.pop();
+    } else {
+      result.push(part);
+    }
+  }
+
+  return "/" + result.join("/");
+}
+
+/**
+ * 创建静态文件服务插件
+ *
+ * @param options - 插件配置选项
+ * @returns 插件对象
+ *
+ * @example
+ * ```typescript
+ * import { staticPlugin } from "@dreamer/plugins/static";
+ *
+ * // 基础用法
+ * const plugin = staticPlugin({
+ *   root: "./public",
+ * });
+ *
+ * // 自定义配置
+ * const plugin = staticPlugin({
+ *   root: "./dist",
+ *   prefix: "/assets/",
+ *   cacheControl: "public, max-age=31536000, immutable",
+ *   index: ["index.html", "index.htm"],
+ * });
+ *
+ * await pluginManager.use(plugin);
+ * ```
+ */
+export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
+  // 解构配置选项，设置默认值
+  const {
+    root = "./public",
+    prefix = "/",
+    index = ["index.html"],
+    directoryListing = false,
+    cacheControl = "public, max-age=86400",
+    etag = true,
+    noCacheExtensions = [".html", ".htm"],
+    compress = false,
+    mimeTypes = {},
+    allowHidden = false,
+    debug = false,
+  } = options;
+
+  // 合并 MIME 类型
+  const allMimeTypes = { ...DEFAULT_MIME_TYPES, ...mimeTypes };
+
+  return {
+    name: "@dreamer/plugins-static",
+    version: "1.0.0",
+
+    // 插件配置
+    config: {
+      static: {
+        root,
+        prefix,
+        index,
+        directoryListing,
+        cacheControl,
+        etag,
+        noCacheExtensions,
+        compress,
+        allowHidden,
+        debug,
+      },
+    },
+
+    /**
+     * 配置验证
+     */
+    validateConfig: (config) => {
+      if (config.static && typeof config.static === "object") {
+        const st = config.static as Record<string, unknown>;
+        // 验证 index
+        if (st.index !== undefined && !Array.isArray(st.index)) {
+          return false;
+        }
+      }
+      return true;
+    },
+
+    /**
+     * 初始化钩子
+     * 注册静态文件服务到容器
+     */
+    onInit(container: ServiceContainer) {
+      // 注册静态文件配置服务
+      container.registerSingleton("staticConfig", () => ({
+        root,
+        prefix,
+        index,
+        directoryListing,
+        cacheControl,
+        etag,
+        noCacheExtensions,
+        compress,
+        allowHidden,
+        debug,
+      }));
+
+      // 输出日志
+      if (debug) {
+        const logger = container.has("logger")
+          ? container.get<{ info: (msg: string) => void }>("logger")
+          : null;
+        if (logger) {
+          logger.info(`静态文件插件已初始化: root=${root}, prefix=${prefix}`);
+        }
+      }
+    },
+
+    /**
+     * 请求处理钩子
+     * 处理静态文件请求
+     */
+    async onRequest(ctx: RequestContext, container: ServiceContainer) {
+      // 只处理 GET 和 HEAD 请求
+      if (ctx.method !== "GET" && ctx.method !== "HEAD") {
+        return;
+      }
+
+      const path = ctx.path || "/";
+
+      // 检查路径前缀
+      if (!path.startsWith(prefix)) {
+        return;
+      }
+
+      // 规范化路径
+      const relativePath = normalizePath(path.slice(prefix.length - 1));
+
+      // 检查隐藏文件
+      if (!allowHidden && relativePath.includes("/.")) {
+        return;
+      }
+
+      // 构建文件路径
+      let filePath = root + relativePath;
+
+      try {
+        // 获取文件信息
+        let stat: { isFile: boolean; isDirectory: boolean; mtime: Date | null };
+
+        try {
+          // 使用 Deno.stat
+          const fileInfo = await Deno.stat(filePath);
+          stat = {
+            isFile: fileInfo.isFile,
+            isDirectory: fileInfo.isDirectory,
+            mtime: fileInfo.mtime,
+          };
+        } catch {
+          // 文件不存在
+          return;
+        }
+
+        // 如果是目录，尝试索引文件
+        if (stat.isDirectory) {
+          for (const indexFile of index) {
+            const indexPath = filePath.endsWith("/")
+              ? filePath + indexFile
+              : filePath + "/" + indexFile;
+
+            try {
+              const indexInfo = await Deno.stat(indexPath);
+              if (indexInfo.isFile) {
+                filePath = indexPath;
+                stat = {
+                  isFile: true,
+                  isDirectory: false,
+                  mtime: indexInfo.mtime,
+                };
+                break;
+              }
+            } catch {
+              // 索引文件不存在，继续尝试下一个
+            }
+          }
+
+          // 如果仍然是目录且允许目录列表
+          if (stat.isDirectory) {
+            if (directoryListing) {
+              // 生成目录列表（简单实现）
+              const entries: string[] = [];
+              for await (const entry of Deno.readDir(filePath)) {
+                entries.push(entry.name);
+              }
+
+              const html = `<!DOCTYPE html>
+<html>
+<head><title>Index of ${relativePath}</title></head>
+<body>
+<h1>Index of ${relativePath}</h1>
+<ul>
+${entries.map((e) => `<li><a href="${e}">${e}</a></li>`).join("\n")}
+</ul>
+</body>
+</html>`;
+
+              ctx.response = new Response(html, {
+                status: 200,
+                headers: { "Content-Type": "text/html; charset=utf-8" },
+              });
+              return;
+            } else {
+              return;
+            }
+          }
+        }
+
+        // 读取文件内容
+        const content = await Deno.readFile(filePath);
+        const mtime = stat.mtime?.getTime() || Date.now();
+
+        // 检查 ETag（条件请求）
+        if (etag) {
+          const fileEtag = computeEtag(content, mtime);
+          const ifNoneMatch = ctx.headers?.get("if-none-match");
+
+          if (ifNoneMatch === fileEtag) {
+            ctx.response = new Response(null, {
+              status: 304,
+              headers: { ETag: fileEtag },
+            });
+            return;
+          }
+        }
+
+        // 构建响应头
+        const headers = new Headers();
+        headers.set("Content-Type", getMimeType(filePath, allMimeTypes));
+        headers.set("Content-Length", content.length.toString());
+
+        // ETag
+        if (etag) {
+          headers.set("ETag", computeEtag(content, mtime));
+        }
+
+        // 缓存控制
+        const ext = getExtension(filePath);
+        if (cacheControl !== false && !noCacheExtensions.includes(ext)) {
+          headers.set("Cache-Control", cacheControl);
+        } else if (noCacheExtensions.includes(ext)) {
+          headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        }
+
+        // Last-Modified
+        if (stat.mtime) {
+          headers.set("Last-Modified", stat.mtime.toUTCString());
+        }
+
+        // 创建响应
+        ctx.response = new Response(ctx.method === "HEAD" ? null : content, {
+          status: 200,
+          headers,
+        });
+
+        // 调试日志
+        if (debug) {
+          const logger = container.has("logger")
+            ? container.get<{ info: (msg: string) => void }>("logger")
+            : null;
+          if (logger) {
+            logger.info(
+              `静态文件: ${path} -> ${filePath} (${content.length} bytes)`,
+            );
+          }
+        }
+      } catch (error) {
+        // 文件读取失败，不处理（让其他中间件处理）
+        if (debug) {
+          const logger = container.has("logger")
+            ? container.get<{ info: (msg: string) => void }>("logger")
+            : null;
+          if (logger) {
+            logger.info(
+              `静态文件读取失败: ${filePath} | ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+          }
+        }
+      }
+    },
+  };
+}
+
+// 导出默认创建函数
+export default staticPlugin;

@@ -12,7 +12,20 @@
     "./pwa": "./src/pwa/mod.ts",
     "./analytics": "./src/analytics/mod.ts",
     "./theme": "./src/theme/mod.ts",
-    "./theme/client": "./src/theme/client/mod.ts"
+    "./theme/client": "./src/theme/client/mod.ts",
+    "./compression": "./src/compression/mod.ts",
+    "./cors": "./src/cors/mod.ts",
+    "./ratelimit": "./src/ratelimit/mod.ts",
+    "./security": "./src/security/mod.ts",
+    "./auth": "./src/auth/mod.ts",
+    "./static": "./src/static/mod.ts",
+    "./upload": "./src/upload/mod.ts",
+    "./captcha": "./src/captcha/mod.ts",
+    "./markdown": "./src/markdown/mod.ts",
+    "./image": "./src/image/mod.ts",
+    "./payment": "./src/payment/mod.ts",
+    "./social": "./src/social/mod.ts",
+    "./notification": "./src/notification/mod.ts"
   },
   "imports": {
     "@dreamer/plugin": "jsr:@dreamer/plugin@^1.0.0-beta.3",
