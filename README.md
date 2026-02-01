@@ -5,6 +5,8 @@
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
 [![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.1-38bdf8)](https://tailwindcss.com)
+[![UnoCSS](https://img.shields.io/badge/UnoCSS-v66+-333)](https://unocss.dev)
 
 ---
 
@@ -45,8 +47,9 @@ bunx jsr add @dreamer/plugins
 ## ✨ 特性
 
 ### CSS 处理插件
-- **TailwindCSS v4**：自动配置、热重载、生产优化
-- **UnoCSS**：预设系统、图标支持、高性能构建
+- **TailwindCSS v4**：自动编译、热重载、生产优化（使用 PostCSS + @tailwindcss/postcss）
+- **UnoCSS**：预设系统、图标支持、高性能构建（使用 @unocss/core + preset-wind）
+- **配置简化**：`content` 参数可选，TailwindCSS v4 推荐在 CSS 文件中使用 `@source` 指令
 
 ### 国际化插件（i18n）
 - 多语言检测和切换
@@ -114,8 +117,9 @@ const container = new ServiceContainer();
 const pluginManager = new PluginManager(container);
 
 // 添加插件
+// TailwindCSS v4：content 可选，推荐在 CSS 文件中使用 @source 指令
 await pluginManager.use(tailwindPlugin({
-  content: ["./src/**/*.{ts,tsx}"],
+  cssEntry: "./src/assets/tailwind.css",
 }));
 
 await pluginManager.use(i18nPlugin({
@@ -153,9 +157,9 @@ import {
 
 const app = new App({
   plugins: [
-    // TailwindCSS v4
+    // TailwindCSS v4（content 可选，推荐在 CSS 文件中使用 @source 指令）
     tailwindPlugin({
-      content: ["./src/**/*.{ts,tsx}"],
+      cssEntry: "./src/assets/tailwind.css",
     }),
 
     // PWA 支持
@@ -204,6 +208,65 @@ await app.start();
 ---
 
 ## 🎨 使用示例
+
+### TailwindCSS v4 插件
+
+```typescript
+import { tailwindPlugin } from "@dreamer/plugins/tailwindcss";
+
+// 基础用法（推荐：在 CSS 文件中使用 @source 指令）
+const plugin = tailwindPlugin({
+  cssEntry: "./src/assets/tailwind.css",
+});
+
+// 完整配置
+const plugin = tailwindPlugin({
+  cssEntry: "./src/assets/tailwind.css",
+  content: ["./src/**/*.{ts,tsx}"], // 可选，推荐使用 @source 指令
+  config: "./tailwind.config.ts",   // 可选
+  assetsPath: "/assets",            // 静态资源 URL 路径（默认 "/assets"）
+  jit: true,                        // 默认开启
+  darkMode: "class",                // 暗色模式策略
+});
+```
+
+**CSS 入口文件示例 (tailwind.css):**
+
+```css
+/* TailwindCSS v4 使用 @source 指令指定扫描路径 */
+@source "../**/*.{ts,tsx}";
+
+@import "tailwindcss";
+
+/* 自定义样式 */
+.custom-class {
+  @apply bg-blue-500 text-white;
+}
+```
+
+### UnoCSS 插件
+
+```typescript
+import { unocssPlugin } from "@dreamer/plugins/unocss";
+
+// 基础用法
+const plugin = unocssPlugin({
+  cssEntry: "./src/assets/unocss.css",
+  content: ["./src/**/*.{ts,tsx}"],
+});
+
+// 完整配置
+const plugin = unocssPlugin({
+  cssEntry: "./src/assets/unocss.css",
+  content: ["./src/**/*.{ts,tsx}"],
+  assetsPath: "/assets",              // 静态资源 URL 路径（默认 "/assets"）
+  presets: ["@unocss/preset-wind"],   // TailwindCSS 兼容
+  icons: true,                        // 启用图标系统
+  shortcuts: {
+    "btn": "px-4 py-2 rounded bg-blue-500 text-white",
+  },
+});
+```
 
 ### 认证插件
 
@@ -376,6 +439,29 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 
 ---
 
+### 构建系统集成
+
+CSS 插件在构建时会生成带 hash 的文件名，构建系统可通过以下方式获取编译结果：
+
+```typescript
+// 方式 1：从服务容器获取（推荐）
+const result = container.get("tailwindBuildResult");
+// 或 container.get("unocssBuildResult")
+
+console.log(result.css);       // CSS 内容
+console.log(result.hash);      // "a51ff10f"
+console.log(result.filename);  // "tailwind.a51ff10f.css"
+
+// 将 CSS 写入到输出目录
+await writeTextFile(`./dist/assets/${result.filename}`, result.css);
+
+// 方式 2：从编译器获取
+const compiler = container.get("tailwindCompiler");
+const lastResult = compiler.getLastResult();
+```
+
+---
+
 ## 📚 API 文档
 
 ### 插件列表
@@ -423,6 +509,8 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 
 [![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
 
+### 单元测试
+
 | 指标 | 值 |
 |------|-----|
 | 总测试数 | 322 |
@@ -430,6 +518,13 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 | 失败 | 0 |
 | 通过率 | 100% |
 | 测试时间 | 2026-02-01 |
+
+### CSS 编译器实际测试
+
+| 编译器 | 状态 | 技术栈 | 输出大小 |
+|--------|------|--------|----------|
+| TailwindCSS v4 | ✅ 通过 | PostCSS + @tailwindcss/postcss | 9417 字符 |
+| UnoCSS | ✅ 通过 | @unocss/core + preset-wind | 3294 字符 |
 
 详细测试报告请查看 [TEST_REPORT.md](./TEST_REPORT.md)
 
@@ -443,7 +538,10 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 
 3. **服务注册**：插件在 `onInit` 钩子中注册服务到容器，可通过 `container.get()` 获取。
 
-4. **开发模式**：CSS 插件在开发模式下会实时编译样式，生产模式下使用预编译的 CSS 文件。
+4. **CSS 编译**：
+   - **TailwindCSS v4**：使用 PostCSS + @tailwindcss/postcss 编译，`content` 参数可选
+   - **UnoCSS**：使用 @unocss/core + preset-wind 编译，支持类名扫描
+   - 开发模式下实时编译，生产模式使用预编译 CSS
 
 5. **配置验证**：所有插件都提供 `validateConfig` 方法验证配置有效性。
 

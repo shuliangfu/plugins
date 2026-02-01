@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/plugins",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-beta.6",
   "description": "dweb 框架的官方插件集合",
   "exports": {
     ".": "./src/mod.ts",
@@ -37,7 +37,13 @@
     "@dreamer/theme": "jsr:@dreamer/theme@^1.0.0-beta.2",
     "@dreamer/i18n": "jsr:@dreamer/i18n@^1.0.0-beta.2",
     "@dreamer/auth": "jsr:@dreamer/auth@^1.0.0-beta.1",
-    "@dreamer/test": "jsr:@dreamer/test@^1.0.0-beta.40"
+    "@dreamer/test": "jsr:@dreamer/test@^1.0.0-beta.40",
+    "tailwindcss": "npm:tailwindcss@^4.0.0",
+    "postcss": "npm:postcss@^8.5.0",
+    "@tailwindcss/postcss": "npm:@tailwindcss/postcss@^4.0.0",
+    "@unocss/core": "npm:@unocss/core@^66.0.0",
+    "@unocss/preset-wind": "npm:@unocss/preset-wind@^66.0.0",
+    "@unocss/preset-icons": "npm:@unocss/preset-icons@^66.0.0"
   },
   "tasks": {
     "test": "deno test --allow-all tests/"
@@ -45,5 +51,13 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
+  },
+  "allowScripts": {
+    "allow": [],
+    "deny": [
+      "npm:esbuild@0.24.2",
+      "npm:esbuild@0.27.2",
+      "npm:puppeteer@24.36.1"
+    ]
   }
 }

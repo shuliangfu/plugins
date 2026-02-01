@@ -25,10 +25,12 @@ import { UnoCompiler } from "./compiler.ts";
 export interface UnoCSSPluginOptions {
   /** UnoCSS 配置文件路径（可选，如果不提供则使用内联配置） */
   config?: string;
-  /** 内容扫描路径（默认：["./src/.../*.{ts,tsx,js,jsx}"]） */
+  /** 内容扫描路径（可选） */
   content?: string[];
   /** CSS 入口文件路径（默认："./src/assets/unocss.css"） */
   cssEntry?: string;
+  /** 静态资源 URL 路径前缀（默认："/assets"） */
+  assetsPath?: string;
   /** 预设列表（默认：["@unocss/preset-wind"] 用于 TailwindCSS 兼容） */
   presets?: string[];
   /** 是否启用图标系统（默认：true） */
@@ -73,8 +75,9 @@ export function unocssPlugin(
   // 解构配置选项，设置默认值
   const {
     config,
-    content = ["./src/**/*.{ts,tsx,js,jsx}"],
+    content,
     cssEntry = "./src/assets/unocss.css",
+    assetsPath = "/assets",
     presets = ["@unocss/preset-wind"],
     icons = true,
     iconPresets = ["@unocss/preset-icons"],
@@ -96,6 +99,7 @@ export function unocssPlugin(
         config,
         content,
         cssEntry,
+        assetsPath,
         presets,
         icons,
         iconPresets,
@@ -198,7 +202,9 @@ export function unocssPlugin(
       if (logger) {
         logger.info("UnoCSS 插件已初始化");
         logger.info(`CSS 入口: ${cssEntry}`);
-        logger.info(`内容扫描: ${content.join(", ")}`);
+        if (content && content.length > 0) {
+          logger.info(`内容扫描: ${content.join(", ")}`);
+        }
         logger.info(`预设: ${presets.join(", ")}`);
       }
     },
@@ -263,8 +269,15 @@ export function unocssPlugin(
             injectedHtml = html.replace(/<\/head>/i, `  ${styleTag}\n</head>`);
           }
         } else {
-          // 生产模式：注入 <link> 标签
-          const cssPath = "/assets/unocss.css";
+          // 生产模式：注入 <link> 标签（使用 hash 文件名）
+          // 从编译器获取 hash 文件名
+          const compilerResult = compiler?.getLastResult();
+          const filename = compilerResult?.filename || "unocss.css";
+          // 确保 assetsPath 以 / 开头但不以 / 结尾
+          const normalizedPath = assetsPath.startsWith("/")
+            ? assetsPath
+            : `/${assetsPath}`;
+          const cssPath = `${normalizedPath.replace(/\/$/, "")}/${filename}`;
           const linkTag = `<link rel="stylesheet" href="${cssPath}">`;
           injectedHtml = html.replace(/<\/head>/i, `  ${linkTag}\n</head>`);
         }
@@ -286,6 +299,38 @@ export function unocssPlugin(
             }`,
           );
         }
+      }
+    },
+
+    /**
+     * 构建钩子
+     * 编译 CSS 并将结果存储到服务容器供构建系统使用
+     */
+    async onBuild(
+      _options: Record<string, unknown>,
+      container: ServiceContainer,
+    ): Promise<void> {
+      if (!compiler) {
+        return;
+      }
+
+      try {
+        // 编译 CSS
+        const result = await compiler.compile();
+
+        // 将编译结果存储到服务容器，供构建系统使用
+        // 构建系统可通过 container.get("unocssBuildResult") 获取
+        container.registerSingleton("unocssBuildResult", () => result);
+
+        const logger = container.has("logger")
+          ? container.get<{ info: (msg: string) => void }>("logger")
+          : null;
+        if (logger && result.filename) {
+          logger.info(`UnoCSS 编译完成: ${result.filename}`);
+          logger.info(`CSS 大小: ${result.css.length} 字符`);
+        }
+      } catch (error) {
+        console.error("[UnoCSS] 构建编译失败:", error);
       }
     },
   };

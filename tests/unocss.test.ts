@@ -4,8 +4,8 @@
  * 测试 UnoCSS 插件的所有功能
  */
 
-import { ServiceContainer } from "@dreamer/service";
 import { deleteEnv, getEnv, setEnv } from "@dreamer/runtime-adapter";
+import { ServiceContainer } from "@dreamer/service";
 import { beforeEach, describe, expect, it } from "@dreamer/test";
 import { UnoCompiler } from "../src/unocss/compiler.ts";
 import { unocssPlugin, type UnoCSSPluginOptions } from "../src/unocss/mod.ts";
@@ -233,15 +233,16 @@ describe("UnoCompiler", () => {
     expect(compiler).toBeDefined();
   });
 
-  it("应该在文件不存在时返回空 CSS", async () => {
+  it("应该在文件不存在时仍生成 preflights", async () => {
     const compiler = new UnoCompiler({
       cssEntry: "./nonexistent.css",
-      content: ["./src/**/*.ts"],
+      content: [], // 不扫描任何文件
     });
 
     const result = await compiler.compile();
 
-    expect(result.css).toBe("");
+    // UnoCSS 会生成 preflights 基础样式
+    expect(result.css).toContain("layer: preflights");
   });
 
   it("应该清除缓存", () => {
@@ -255,16 +256,17 @@ describe("UnoCompiler", () => {
   });
 
   it("应该在开发模式下返回 needsRebuild 标志", async () => {
-    // 这个测试需要实际的 CSS 文件，所以在文件不存在时跳过
     const compiler = new UnoCompiler({
       cssEntry: "./nonexistent.css",
-      content: ["./src/**/*.ts"],
+      content: [], // 不扫描任何文件
       dev: true,
     });
 
     const result = await compiler.compile();
 
-    // 文件不存在时返回空 CSS
-    expect(result.css).toBe("");
+    // 开发模式下应该返回 needsRebuild 标志
+    expect(result.needsRebuild).toBe(true);
+    // UnoCSS 会生成 preflights 基础样式
+    expect(result.css).toContain("layer: preflights");
   });
 });

@@ -1,12 +1,12 @@
 /**
  * @module @dreamer/plugins/tailwindcss/compiler
  *
- * TailwindCSS 编译器
+ * TailwindCSS v4 编译器
  *
- * 负责编译 TailwindCSS 样式
+ * 负责编译 TailwindCSS 样式，使用 PostCSS + @tailwindcss/postcss
  */
 
-import { exists, readTextFile } from "@dreamer/runtime-adapter";
+import { cwd, exists, readTextFile } from "@dreamer/runtime-adapter";
 
 /**
  * TailwindCSS 编译选项
@@ -14,8 +14,8 @@ import { exists, readTextFile } from "@dreamer/runtime-adapter";
 export interface TailwindCompileOptions {
   /** CSS 入口文件路径 */
   cssEntry: string;
-  /** 内容扫描路径 */
-  content: string[];
+  /** 内容扫描路径（可选，TailwindCSS v4 可在 CSS 中使用 @source 指令） */
+  content?: string[];
   /** 配置文件路径（可选） */
   config?: string;
   /** 是否为开发模式 */
@@ -36,6 +36,10 @@ export interface CSSCompileResult {
   css: string;
   /** 是否需要重新编译（用于开发模式热重载） */
   needsRebuild?: boolean;
+  /** 生成的文件名（不含路径，如 tailwind.abc123.css） */
+  filename?: string;
+  /** 内容 hash（用于缓存失效） */
+  hash?: string;
 }
 
 /**
@@ -46,8 +50,12 @@ export interface CSSCompileResult {
 export class TailwindCompiler {
   /** 编译配置选项 */
   private options: TailwindCompileOptions;
-  /** CSS 缓存（用于开发模式热重载） */
-  private cache: Map<string, { css: string; mtime: number }> = new Map();
+  /** 编译结果缓存 */
+  private cachedResult: CSSCompileResult | null = null;
+  /** PostCSS 实例 */
+  private postcss: typeof import("postcss").default | null = null;
+  /** TailwindCSS PostCSS 插件 */
+  private tailwindPlugin: unknown | null = null;
 
   /**
    * 创建 TailwindCSS 编译器实例
@@ -56,6 +64,25 @@ export class TailwindCompiler {
    */
   constructor(options: TailwindCompileOptions) {
     this.options = options;
+  }
+
+  /**
+   * 初始化 PostCSS 和 TailwindCSS 插件
+   */
+  private async initPostCSS(): Promise<void> {
+    if (this.postcss && this.tailwindPlugin) return;
+
+    try {
+      // 动态导入 postcss 和 @tailwindcss/postcss
+      const postcssModule = await import("postcss");
+      const tailwindModule = await import("@tailwindcss/postcss");
+
+      this.postcss = postcssModule.default;
+      this.tailwindPlugin = tailwindModule.default;
+    } catch (error) {
+      console.error("[TailwindCSS] 初始化 PostCSS 失败:", error);
+      throw error;
+    }
   }
 
   /**
@@ -72,7 +99,22 @@ export class TailwindCompiler {
       return { css: "" };
     }
 
+    // 如果有缓存且非开发模式，直接返回缓存
+    if (this.cachedResult && !this.options.dev) {
+      return this.cachedResult;
+    }
+
     return await this.compileTailwindCSS();
+  }
+
+  /**
+   * 获取最后一次编译的结果
+   * 用于构建系统获取 hash 文件名
+   *
+   * @returns 最后一次编译结果，如果没有编译过则返回 null
+   */
+  getLastResult(): CSSCompileResult | null {
+    return this.cachedResult;
   }
 
   /**
@@ -81,64 +123,106 @@ export class TailwindCompiler {
    * @returns 编译结果
    */
   private async compileTailwindCSS(): Promise<CSSCompileResult> {
-    const { cssEntry, content, config } = this.options;
+    const { cssEntry } = this.options;
     const dev = this.options.dev ?? false;
 
     try {
+      // 初始化 PostCSS
+      await this.initPostCSS();
+
       // 读取入口文件
-      let cssContent = await readTextFile(cssEntry);
+      const cssContent = await readTextFile(cssEntry);
 
-      // 检查是否需要 TailwindCSS 处理
-      if (
-        !cssContent.includes("@import") && !cssContent.includes("@tailwind")
-      ) {
-        // 如果没有 TailwindCSS 指令，添加默认导入
-        cssContent = `@import "tailwindcss";\n${cssContent}`;
+      // 使用 PostCSS + TailwindCSS 编译
+      const css = await this.processWithPostCSS(cssContent, cssEntry);
+
+      // 生成内容 hash（用于缓存失效）
+      const hash = await this.generateHash(css);
+
+      // 生成带 hash 的文件名
+      const filename = `tailwind.${hash}.css`;
+
+      const result: CSSCompileResult = {
+        css,
+        needsRebuild: dev, // 开发模式需要热重载
+        hash,
+        filename,
+      };
+
+      // 缓存结果（非开发模式）
+      if (!dev) {
+        this.cachedResult = result;
       }
 
-      // 在开发模式下，使用简单的处理（实际应该使用 PostCSS + TailwindCSS）
-      // 在生产模式下，应该使用完整的 PostCSS 处理链
-      if (dev) {
-        // 开发模式：返回基础样式 + 占位符（实际应该实时编译）
-        return {
-          css: cssContent,
-          needsRebuild: true, // 开发模式需要热重载
-        };
-      } else {
-        // 生产模式：使用 PostCSS 处理
-        return {
-          css: await this.processTailwindCSS(cssContent, content, config),
-        };
-      }
+      return result;
     } catch (error) {
       console.error("[TailwindCSS] 编译失败:", error);
+      // 返回空字符串，避免阻塞渲染
       return { css: "" };
     }
   }
 
   /**
-   * 处理 TailwindCSS（生产模式）
+   * 生成内容 hash
+   *
+   * @param content - 内容字符串
+   * @returns 8 位 hash 字符串
+   */
+  private async generateHash(content: string): Promise<string> {
+    // 使用 Web Crypto API 生成 SHA-256 hash
+    const encoder = new TextEncoder();
+    const data = encoder.encode(content);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join(
+      "",
+    );
+    // 返回前 8 位
+    return hashHex.substring(0, 8);
+  }
+
+  /**
+   * 使用 PostCSS 处理 CSS
    *
    * @param css - CSS 内容
-   * @param _content - 内容扫描路径
-   * @param _config - 配置文件路径
+   * @param from - 源文件路径
    * @returns 处理后的 CSS 内容
    */
-  private processTailwindCSS(
-    css: string,
-    _content: string[],
-    _config?: string,
-  ): Promise<string> {
-    // 这里应该调用实际的 TailwindCSS 编译器
-    // 使用 PostCSS + tailwindcss 插件
-    // 暂时返回原内容（实际实现需要安装 tailwindcss 包）
-    return Promise.resolve(css);
+  private async processWithPostCSS(css: string, from: string): Promise<string> {
+    if (!this.postcss || !this.tailwindPlugin) {
+      throw new Error("PostCSS 未初始化");
+    }
+
+    try {
+      // 获取工作目录用于解析相对路径
+      const workDir = cwd();
+
+      // 创建 PostCSS 处理器
+      const processor = this.postcss([
+        // @ts-ignore - 类型定义问题
+        this.tailwindPlugin({
+          // TailwindCSS v4 配置（可选）
+          base: workDir,
+        }),
+      ]);
+
+      // 处理 CSS
+      const result = await processor.process(css, {
+        from,
+        to: from.replace(/\.css$/, ".out.css"),
+      });
+
+      return result.css;
+    } catch (error) {
+      console.error("[TailwindCSS] PostCSS 处理失败:", error);
+      throw error;
+    }
   }
 
   /**
    * 清除编译缓存
    */
   clearCache(): void {
-    this.cache.clear();
+    this.cachedResult = null;
   }
 }
