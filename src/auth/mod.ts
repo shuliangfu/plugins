@@ -3,7 +3,7 @@
  *
  * 用户认证插件
  *
- * 提供用户认证功能，支持：
+ * 基于 @dreamer/auth 库，提供插件级别的用户认证功能：
  * - JWT 认证
  * - Session 认证
  * - Bearer Token 认证
@@ -14,44 +14,99 @@
  * 设计原则：
  * - 插件只响应事件钩子（onInit、onRequest、onResponse 等）
  * - 生命周期由 PluginManager 统一管理
+ * - 核心认证功能由 @dreamer/auth 库提供
  */
 
+import {
+  type AuthOptions,
+  // 类型
+  type AuthUser,
+  extractUserFromJwt,
+  getRequiredRoles,
+  hasAnyPermission,
+  hasAnyRole,
+  hasPermission,
+  // 角色权限检查
+  hasRole,
+  isJwtExpired,
+  type JwtConfig,
+  type JwtPayload,
+  parseBasicAuth,
+  // Token 解析
+  parseBearerToken,
+  parseJwt,
+  // 路径匹配
+  requiresAuth,
+  validateJwtClaims,
+} from "@dreamer/auth";
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
 
-/**
- * 用户信息接口
- */
-export interface AuthUser {
-  /** 用户 ID */
-  id: string | number;
-  /** 用户名 */
-  username?: string;
-  /** 邮箱 */
-  email?: string;
-  /** 角色列表 */
-  roles?: string[];
-  /** 权限列表 */
-  permissions?: string[];
-  /** 其他属性 */
-  [key: string]: unknown;
-}
+// 从 @dreamer/auth 重新导出类型和工具函数
+export type {
+  AuthOptions,
+  AuthUser,
+  JwtConfig,
+  JwtPayload,
+} from "@dreamer/auth";
 
-/**
- * JWT 配置
- */
-export interface JwtConfig {
-  /** 密钥 */
-  secret: string;
-  /** 算法（默认 "HS256"） */
-  algorithm?: "HS256" | "HS384" | "HS512";
-  /** 过期时间（秒，默认 3600） */
-  expiresIn?: number;
-  /** 签发者 */
-  issuer?: string;
-  /** 受众 */
-  audience?: string;
-}
+export {
+  // Session 认证
+  AuthSessionManager,
+  createAuthSession,
+  createBasicAuthHeader,
+  createBearerAuthHeader,
+  createGitHubClient,
+  createGoogleClient,
+  createOAuth2Client,
+  createTokenManager,
+  decodeToken,
+  DingTalkProvider,
+  extractUserFromJwt,
+  generatePKCE,
+  generateState,
+  getRequiredRoles,
+  getTokenExpiration,
+  getTokenRemainingTime,
+  GiteeProvider,
+  // 内置 Provider
+  GitHubProvider,
+  GitLabProvider,
+  GoogleProvider,
+  hasAllPermissions,
+  hasAllRoles,
+  hasAnyPermission,
+  hasAnyRole,
+  hasPermission,
+  // 角色权限检查
+  hasRole,
+  isJwtExpired,
+  isTokenExpired,
+  // 路径匹配
+  matchPath,
+  MemoryTokenStore,
+  // OAuth2
+  OAuth2Client,
+  parseBasicAuth,
+  // Token 解析
+  parseBearerToken,
+  parseGiteeUser,
+  // 用户信息解析器
+  parseGitHubUser,
+  parseGitLabUser,
+  parseGoogleUser,
+  parseJwt,
+  parseWeChatUser,
+  requiresAuth,
+  // JWT 签名验证（基于 @dreamer/crypto）
+  signToken,
+  // 刷新 Token
+  TokenManager,
+  validateJwtClaims,
+  verifyToken,
+  WeChatProvider,
+  WeComProvider,
+} from "@dreamer/auth";
 
 /**
  * 认证插件配置选项
@@ -89,104 +144,6 @@ export interface AuthPluginOptions {
   roles?: Record<string, string[]>; // 路径 -> 允许的角色
   /** 是否启用调试日志（默认 false） */
   debug?: boolean;
-}
-
-/**
- * 检查路径是否匹配
- * @param path - 请求路径
- * @param patterns - 匹配模式列表
- * @returns 是否匹配
- */
-function matchPath(
-  path: string | undefined,
-  patterns: string[] | RegExp[],
-): boolean {
-  if (!path || patterns.length === 0) return false;
-
-  for (const pattern of patterns) {
-    if (typeof pattern === "string") {
-      if (path === pattern || path.startsWith(pattern)) {
-        return true;
-      }
-    } else if (pattern instanceof RegExp) {
-      if (pattern.test(path)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-/**
- * 解析 Bearer Token
- * @param authHeader - Authorization 头
- * @returns Token 或 null
- */
-function parseBearerToken(authHeader: string | null): string | null {
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-  return authHeader.slice(7);
-}
-
-/**
- * 解析 Basic Auth
- * @param authHeader - Authorization 头
- * @returns 用户名和密码或 null
- */
-function parseBasicAuth(
-  authHeader: string | null,
-): { username: string; password: string } | null {
-  if (!authHeader || !authHeader.startsWith("Basic ")) {
-    return null;
-  }
-
-  try {
-    const base64 = authHeader.slice(6);
-    const decoded = atob(base64);
-    const colonIndex = decoded.indexOf(":");
-    if (colonIndex === -1) return null;
-
-    return {
-      username: decoded.slice(0, colonIndex),
-      password: decoded.slice(colonIndex + 1),
-    };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * 简单的 JWT 解析（不验证签名，仅用于提取 payload）
- * 注意：生产环境应使用专业的 JWT 库进行签名验证
- * @param token - JWT Token
- * @returns 解析后的 payload 或 null
- */
-function parseJwt(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-
-    const payload = parts[1];
-    // Base64URL 解码
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = atob(base64);
-    return JSON.parse(decoded);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * 检查 JWT 是否过期
- * @param payload - JWT payload
- * @returns 是否过期
- */
-function isJwtExpired(payload: Record<string, unknown>): boolean {
-  const exp = payload.exp as number | undefined;
-  if (!exp) return false;
-  return Date.now() / 1000 > exp;
 }
 
 /**
@@ -229,7 +186,7 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
     type = "jwt",
     jwt,
     session = { key: "user" },
-    verifyToken,
+    verifyToken: customVerifyToken,
     verifyCredentials,
     protectedPaths = [],
     publicPaths = [],
@@ -240,6 +197,15 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
     roles = {},
     debug = false,
   } = options;
+
+  // 认证选项（用于 @dreamer/auth 的辅助函数）
+  const authOptions: AuthOptions = {
+    type,
+    jwt,
+    protectedPaths,
+    publicPaths,
+    roles,
+  };
 
   return {
     name: "@dreamer/plugins-auth",
@@ -293,7 +259,7 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
         debug,
       }));
 
-      // 注册认证服务
+      // 注册认证服务（使用 @dreamer/auth 的函数）
       container.registerSingleton("authService", () => ({
         /**
          * 获取当前用户
@@ -303,25 +269,66 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
         getUser: (ctx: RequestContext): AuthUser | null => {
           return (ctx as Record<string, unknown>)._authUser as AuthUser | null;
         },
+
         /**
-         * 检查用户是否有角色
+         * 检查用户是否有角色（使用 @dreamer/auth 的 hasRole）
          * @param user - 用户信息
          * @param role - 角色名
          * @returns 是否有角色
          */
         hasRole: (user: AuthUser | null, role: string): boolean => {
-          if (!user || !user.roles) return false;
-          return user.roles.includes(role);
+          return hasRole(user, role);
         },
+
         /**
-         * 检查用户是否有权限
+         * 检查用户是否有任意角色
+         * @param user - 用户信息
+         * @param roles - 角色列表
+         * @returns 是否有任意角色
+         */
+        hasAnyRole: (user: AuthUser | null, roleList: string[]): boolean => {
+          return hasAnyRole(user, roleList);
+        },
+
+        /**
+         * 检查用户是否有权限（使用 @dreamer/auth 的 hasPermission）
          * @param user - 用户信息
          * @param permission - 权限名
          * @returns 是否有权限
          */
         hasPermission: (user: AuthUser | null, permission: string): boolean => {
-          if (!user || !user.permissions) return false;
-          return user.permissions.includes(permission);
+          return hasPermission(user, permission);
+        },
+
+        /**
+         * 检查用户是否有任意权限
+         * @param user - 用户信息
+         * @param permissions - 权限列表
+         * @returns 是否有任意权限
+         */
+        hasAnyPermission: (
+          user: AuthUser | null,
+          permissionList: string[],
+        ): boolean => {
+          return hasAnyPermission(user, permissionList);
+        },
+
+        /**
+         * 解析 JWT Token
+         * @param token - JWT Token
+         * @returns Payload 或 null
+         */
+        parseJwt: (token: string): JwtPayload | null => {
+          return parseJwt(token);
+        },
+
+        /**
+         * 从 JWT 提取用户信息
+         * @param payload - JWT Payload
+         * @returns 用户信息或 null
+         */
+        extractUser: (payload: JwtPayload | null): AuthUser | null => {
+          return extractUserFromJwt(payload);
         },
       }));
 
@@ -343,16 +350,8 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
     async onRequest(ctx: RequestContext, container: ServiceContainer) {
       const path = ctx.path || "";
 
-      // 检查是否是公开路径
-      if (matchPath(path, publicPaths)) {
-        return;
-      }
-
-      // 检查是否需要认证
-      const needsAuth = protectedPaths.length === 0 ||
-        matchPath(path, protectedPaths);
-
-      if (!needsAuth) {
+      // 使用 @dreamer/auth 的 requiresAuth 检查是否需要认证
+      if (!requiresAuth(path, authOptions)) {
         return;
       }
 
@@ -360,42 +359,38 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
       const authHeader = ctx.headers?.get("authorization") || null;
       let user: AuthUser | null = null;
 
-      // 根据认证类型进行验证
+      // 根据认证类型进行验证（使用 @dreamer/auth 的函数）
       switch (type) {
         case "jwt": {
+          // 使用 @dreamer/auth 的 parseBearerToken 和 parseJwt
           const token = parseBearerToken(authHeader);
           if (token) {
             const payload = parseJwt(token);
-            if (payload && !isJwtExpired(payload)) {
-              // 简单验证：检查签发者和受众
-              if (jwt?.issuer && payload.iss !== jwt.issuer) {
-                break;
+            // 使用 @dreamer/auth 的 validateJwtClaims 验证
+            if (jwt) {
+              const validation = validateJwtClaims(payload, jwt);
+              if (validation.valid) {
+                // 使用 @dreamer/auth 的 extractUserFromJwt
+                user = extractUserFromJwt(payload);
               }
-              if (jwt?.audience && payload.aud !== jwt.audience) {
-                break;
-              }
-              user = {
-                id: payload.sub as string || payload.id as string || "",
-                username: payload.username as string,
-                email: payload.email as string,
-                roles: payload.roles as string[],
-                permissions: payload.permissions as string[],
-                ...payload,
-              };
+            } else if (payload && !isJwtExpired(payload)) {
+              user = extractUserFromJwt(payload);
             }
           }
           break;
         }
 
         case "bearer": {
+          // 使用 @dreamer/auth 的 parseBearerToken
           const token = parseBearerToken(authHeader);
-          if (token && verifyToken) {
-            user = await verifyToken(token);
+          if (token && customVerifyToken) {
+            user = await customVerifyToken(token);
           }
           break;
         }
 
         case "basic": {
+          // 使用 @dreamer/auth 的 parseBasicAuth
           const credentials = parseBasicAuth(authHeader);
           if (credentials && verifyCredentials) {
             user = await verifyCredentials(
@@ -456,15 +451,11 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
         return;
       }
 
-      // 检查角色权限
-      const requiredRoles = roles[path];
-      if (requiredRoles && requiredRoles.length > 0) {
-        const userRoles = user.roles || [];
-        const hasRequiredRole = requiredRoles.some((role) =>
-          userRoles.includes(role)
-        );
-
-        if (!hasRequiredRole) {
+      // 使用 @dreamer/auth 的 getRequiredRoles 检查角色权限
+      const requiredRoles = getRequiredRoles(path, roles);
+      if (requiredRoles.length > 0) {
+        // 使用 @dreamer/auth 的 hasAnyRole
+        if (!hasAnyRole(user, requiredRoles)) {
           const body = typeof forbiddenMessage === "string"
             ? JSON.stringify({ error: forbiddenMessage })
             : JSON.stringify(forbiddenMessage);
@@ -482,7 +473,7 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
               logger.info(
                 `权限不足: ${path} | 需要角色=${
                   requiredRoles.join(",")
-                } | 用户角色=${userRoles.join(",")}`,
+                } | 用户角色=${(user.roles || []).join(",")}`,
               );
             }
           }

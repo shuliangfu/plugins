@@ -29,6 +29,5 @@ export {
   themePlugin,
   type ThemePluginOptions,
   type ThemeMode,
-  type ThemeColors,
-  type ThemeDefinition,
+  type DarkModeStrategy,
 } from "./theme/mod.ts";

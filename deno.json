@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/plugins",
-  "version": "1.0.0-beta.4",
+  "version": "1.0.0-beta.5",
   "description": "dweb 框架的官方插件集合",
   "exports": {
     ".": "./src/mod.ts",
@@ -11,20 +11,13 @@
     "./pwa": "./src/pwa/mod.ts",
     "./analytics": "./src/analytics/mod.ts",
     "./theme": "./src/theme/mod.ts",
-    "./theme/client": "./src/theme/client/mod.ts",
     "./compression": "./src/compression/mod.ts",
     "./cors": "./src/cors/mod.ts",
     "./ratelimit": "./src/ratelimit/mod.ts",
     "./security": "./src/security/mod.ts",
     "./auth": "./src/auth/mod.ts",
     "./static": "./src/static/mod.ts",
-    "./upload": "./src/upload/mod.ts",
-    "./captcha": "./src/captcha/mod.ts",
-    "./markdown": "./src/markdown/mod.ts",
-    "./image": "./src/image/mod.ts",
-    "./payment": "./src/payment/mod.ts",
-    "./social": "./src/social/mod.ts",
-    "./notification": "./src/notification/mod.ts"
+    "./social": "./src/social/mod.ts"
   },
   "publish": {
     "exclude": [
@@ -41,9 +34,10 @@
     "@dreamer/config": "jsr:@dreamer/config@^1.0.0-beta.3",
     "@dreamer/logger": "jsr:@dreamer/logger@^1.0.0-beta.2",
     "@dreamer/server": "jsr:@dreamer/server@^1.0.0-beta.1",
-    "@dreamer/image": "jsr:@dreamer/image@^1.0.0-beta.3",
+    "@dreamer/theme": "jsr:@dreamer/theme@^1.0.0-beta.2",
     "@dreamer/i18n": "jsr:@dreamer/i18n@^1.0.0-beta.2",
-    "@dreamer/test": "jsr:@dreamer/test@^1.0.0-beta.39"
+    "@dreamer/auth": "jsr:@dreamer/auth@^1.0.0-beta.1",
+    "@dreamer/test": "jsr:@dreamer/test@^1.0.0-beta.40"
   },
   "tasks": {
     "test": "deno test --allow-all tests/"

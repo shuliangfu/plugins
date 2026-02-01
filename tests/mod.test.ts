@@ -257,7 +257,7 @@ describe("@dreamer/plugins 模块导出", () => {
     it("ThemePluginOptions 类型应该可用", () => {
       const options: ThemePluginOptions = {
         defaultMode: "dark",
-        detectSystemPreference: true,
+        strategy: "class",
       };
 
       const plugin = themePlugin(options);
@@ -310,7 +310,7 @@ describe("子模块导出", () => {
     const mod = await import("../src/theme/mod.ts");
 
     expect(mod.themePlugin).toBeDefined();
-    expect(mod.DEFAULT_LIGHT_THEME).toBeDefined();
-    expect(mod.DEFAULT_DARK_THEME).toBeDefined();
+    expect(mod.createTheme).toBeDefined();
+    expect(mod.THEME_CHANGE_EVENT).toBeDefined();
   });
 });

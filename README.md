@@ -1,10 +1,10 @@
 # @dreamer/plugins
 
-> 一个兼容 Deno 和 Bun 的官方插件集合，提供 CSS 原子化、国际化、SEO、PWA、支付、认证、上传等开箱即用的 Web 应用功能插件
+> 一个兼容 Deno 和 Bun 的官方插件集合，提供 CSS 原子化、国际化、SEO、PWA、认证等开箱即用的 Web 应用功能插件
 
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
-[![Tests](https://img.shields.io/badge/tests-551%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
 
 ---
 
@@ -37,7 +37,7 @@ bunx jsr add @dreamer/plugins
 | **Deno** | 2.5+ | ✅ 完全支持 |
 | **Bun** | 1.0+ | ✅ 完全支持 |
 | **服务端** | - | ✅ 支持（兼容 Deno 和 Bun 运行时） |
-| **客户端** | - | ✅ 支持（提供 i18n/client 和 theme/client 模块） |
+| **客户端** | - | ✅ 支持（主题使用 `@dreamer/theme`，国际化使用 `@dreamer/i18n`） |
 | **依赖** | `@dreamer/plugin` | 📦 插件管理系统（必须） |
 
 ---
@@ -68,12 +68,6 @@ bunx jsr add @dreamer/plugins
 - 离线支持
 - 推送通知
 
-### 支付插件（Payment）
-- **8 种支付方式**：Stripe、PayPal、支付宝、微信支付、Apple Pay、Google Pay、银联、Web3
-- 统一的支付接口
-- 支持回调通知处理
-- 可配置日志记录
-
 ### 认证插件（Auth）
 - JWT 认证
 - Bearer Token 认证
@@ -86,18 +80,11 @@ bunx jsr add @dreamer/plugins
 - **CORS**：跨域资源共享配置
 - **RateLimit**：请求速率限制
 
-### 文件处理插件
-- **Upload**：文件上传验证（大小、类型、扩展名）
-- **Static**：静态文件服务（MIME 类型、ETag、安全防护）
-- **Image**：图片处理（懒加载、srcset、响应式）
-
 ### 其他插件
 - **Analytics**：分析统计（Google Analytics、Plausible）
 - **Theme**：主题切换（亮色/暗色/系统模式）
-- **Captcha**：验证码生成和验证
 - **Compression**：响应压缩（gzip、deflate）
-- **Notification**：通知推送（Web Push、Email、SMS、Webhook）
-- **Markdown**：Markdown 渲染（语法高亮、Front Matter、目录）
+- **Static**：静态文件服务（MIME 类型、ETag、安全防护）
 - **Social**：社交分享和 OAuth 登录
 
 ---
@@ -108,9 +95,8 @@ bunx jsr add @dreamer/plugins
 - **多语言应用**：构建支持多种语言的国际化应用
 - **SEO 优化**：提升搜索引擎排名和社交媒体分享效果
 - **PWA 应用**：构建可安装的渐进式 Web 应用
-- **支付集成**：快速集成多种支付方式
 - **安全防护**：添加安全头、CORS、速率限制
-- **文件管理**：处理文件上传和静态资源服务
+- **用户认证**：JWT、Bearer Token、Basic Auth 认证
 
 ---
 
@@ -143,10 +129,8 @@ await pluginManager.use(seoPlugin({
 
 await pluginManager.use(themePlugin({
   defaultMode: "system",
-  themes: {
-    light: { "color-primary": "#3b82f6" },
-    dark: { "color-primary": "#60a5fa" },
-  },
+  strategy: "class",
+  darkClass: "dark",
 }));
 
 // 触发初始化
@@ -162,9 +146,9 @@ import {
   pwaPlugin,
   analyticsPlugin,
   themePlugin,
-  paymentPlugin,
   authPlugin,
   securityPlugin,
+  corsPlugin,
 } from "@dreamer/plugins";
 
 const app = new App({
@@ -192,28 +176,24 @@ const app = new App({
       defaultMode: "system",
     }),
 
-    // 支付集成
-    paymentPlugin({
-      defaultAdapter: "stripe",
-      adapters: {
-        stripe: {
-          publicKey: "pk_test_xxx",
-          secretKey: "sk_test_xxx",
-        },
-      },
-    }),
-
     // 认证
     authPlugin({
       type: "jwt",
-      secret: "your-secret-key",
-      protectedPaths: ["/api/*"],
+      jwt: { secret: "your-secret-key" },
+      protectedPaths: ["/api/"],
+      publicPaths: ["/api/auth/login"],
     }),
 
     // 安全头
     securityPlugin({
       hsts: { maxAge: 31536000 },
       csp: { defaultSrc: ["'self'"] },
+    }),
+
+    // CORS
+    corsPlugin({
+      origin: ["https://example.com"],
+      credentials: true,
     }),
   ],
 });
@@ -225,51 +205,6 @@ await app.start();
 
 ## 🎨 使用示例
 
-### 支付插件
-
-```typescript
-import { paymentPlugin } from "@dreamer/plugins/payment";
-
-const plugin = paymentPlugin({
-  defaultAdapter: "stripe",
-  routePrefix: "/api/payment",
-  adapters: {
-    stripe: {
-      publicKey: "pk_test_xxx",
-      secretKey: "sk_test_xxx",
-      webhookSecret: "whsec_xxx",
-    },
-    alipay: {
-      appId: "your-app-id",
-      privateKey: "your-private-key",
-      alipayPublicKey: "alipay-public-key",
-    },
-    wechat: {
-      appId: "your-app-id",
-      mchId: "your-mch-id",
-      apiKey: "your-api-key",
-    },
-    web3: {
-      merchantAddress: "0x1234...",
-      chainId: 1,
-      supportedTokens: ["ETH", "USDT", "USDC"],
-    },
-  },
-  logging: {
-    enabled: true,
-    level: "info",
-  },
-});
-
-// 使用支付服务
-const paymentService = container.get("paymentService");
-const result = await paymentService.createPayment("stripe", {
-  orderId: "order-123",
-  amount: 100,
-  currency: "USD",
-});
-```
-
 ### 认证插件
 
 ```typescript
@@ -277,13 +212,15 @@ import { authPlugin } from "@dreamer/plugins/auth";
 
 const plugin = authPlugin({
   type: "jwt",
-  secret: "your-jwt-secret",
-  expiresIn: "7d",
-  protectedPaths: ["/api/*", "/admin/*"],
+  jwt: {
+    secret: "your-jwt-secret",
+    expiresIn: 3600 * 24 * 7, // 7 天
+  },
+  protectedPaths: ["/api/", "/admin/"],
   publicPaths: ["/api/login", "/api/register"],
   roles: {
-    admin: ["read", "write", "delete"],
-    user: ["read"],
+    "/admin/": ["admin"],
+    "/api/users/": ["admin", "moderator"],
   },
 });
 
@@ -350,32 +287,6 @@ console.log($i18n.getLocale()); // "en-US"
 // 然后可以直接使用，无需 import
 const text = $t("hello");
 $i18n.setLocale("en-US");
-```
-
-### 文件上传插件
-
-```typescript
-import { uploadPlugin } from "@dreamer/plugins/upload";
-
-const plugin = uploadPlugin({
-  uploadPath: "/api/upload",
-  maxFileSize: 10 * 1024 * 1024, // 10MB
-  allowedMimeTypes: ["image/jpeg", "image/png", "image/gif"],
-  allowedExtensions: [".jpg", ".jpeg", ".png", ".gif"],
-  forbiddenExtensions: [".exe", ".bat", ".sh"],
-});
-
-// 使用上传服务
-const uploadService = container.get("uploadService");
-const result = uploadService.validateFile({
-  name: "photo.jpg",
-  type: "image/jpeg",
-  size: 1024 * 500, // 500KB
-}, options);
-
-if (result.valid) {
-  // 文件有效，可以保存
-}
 ```
 
 ### 静态文件插件
@@ -478,39 +389,22 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 | `pwaPlugin` | `@dreamer/plugins/pwa` | PWA 支持 |
 | `analyticsPlugin` | `@dreamer/plugins/analytics` | 分析统计 |
 | `themePlugin` | `@dreamer/plugins/theme` | 主题切换 |
-| `paymentPlugin` | `@dreamer/plugins/payment` | 支付集成 |
 | `authPlugin` | `@dreamer/plugins/auth` | 认证授权 |
 | `securityPlugin` | `@dreamer/plugins/security` | 安全头 |
 | `corsPlugin` | `@dreamer/plugins/cors` | CORS 跨域 |
 | `rateLimitPlugin` | `@dreamer/plugins/ratelimit` | 速率限制 |
-| `uploadPlugin` | `@dreamer/plugins/upload` | 文件上传 |
 | `staticPlugin` | `@dreamer/plugins/static` | 静态文件 |
-| `imagePlugin` | `@dreamer/plugins/image` | 图片处理 |
-| `captchaPlugin` | `@dreamer/plugins/captcha` | 验证码 |
 | `compressionPlugin` | `@dreamer/plugins/compression` | 响应压缩 |
-| `notificationPlugin` | `@dreamer/plugins/notification` | 通知推送 |
-| `markdownPlugin` | `@dreamer/plugins/markdown` | Markdown 渲染 |
 | `socialPlugin` | `@dreamer/plugins/social` | 社交分享/OAuth |
 
-### 支付适配器
+### 独立客户端库
 
-| 适配器 | 说明 |
-|--------|------|
-| `stripe` | Stripe 支付 |
-| `paypal` | PayPal 支付 |
-| `alipay` | 支付宝 |
-| `wechat` | 微信支付 |
-| `apple-pay` | Apple Pay |
-| `google-pay` | Google Pay |
-| `unionpay` | 银联支付 |
-| `web3` | Web3/加密货币支付 |
+客户端功能已移至独立库，可直接在浏览器中使用：
 
-### 客户端模块
-
-| 模块 | 导入路径 | 说明 |
+| 库 | 导入路径 | 说明 |
 |------|---------|------|
-| `I18nClient` | `@dreamer/plugins/i18n/client` | 浏览器端国际化 |
-| `ThemeClient` | `@dreamer/plugins/theme/client` | 浏览器端主题管理 |
+| `@dreamer/i18n` | `jsr:@dreamer/i18n` | 国际化（客户端/服务端通用） |
+| `@dreamer/theme` | `jsr:@dreamer/theme` | 主题切换（TailwindCSS/UnoCSS） |
 
 ### 事件钩子
 
@@ -527,15 +421,15 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 
 ## 📊 测试报告
 
-[![Tests](https://img.shields.io/badge/tests-551%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
 
 | 指标 | 值 |
 |------|-----|
-| 总测试数 | 551 |
-| 通过 | 551 |
+| 总测试数 | 322 |
+| 通过 | 322 |
 | 失败 | 0 |
 | 通过率 | 100% |
-| 测试时间 | 2026-01-30 |
+| 测试时间 | 2026-02-01 |
 
 详细测试报告请查看 [TEST_REPORT.md](./TEST_REPORT.md)
 
@@ -553,13 +447,11 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 
 5. **配置验证**：所有插件都提供 `validateConfig` 方法验证配置有效性。
 
-6. **客户端模块**：i18n 和 theme 插件提供独立的客户端模块，可直接在浏览器中使用。
+6. **独立客户端库**：客户端功能已移至独立库（`@dreamer/i18n`、`@dreamer/theme`），可直接在浏览器中使用。
 
-7. **全局 $t 方法**：i18n 插件在服务端和客户端都支持全局 `$t` 方法，使用 `getGlobalT()` 或 `getGlobalI18n()` 获取。
+7. **全局 $t 方法**：使用 `@dreamer/i18n` 库的 `$t` 和 `$i18n` 函数进行国际化。
 
-8. **支付安全**：支付插件的密钥应通过环境变量配置，不要硬编码在代码中。
-
-9. **JSR 兼容**：所有模块都使用类型安全的方式处理全局变量，确保 JSR 发布兼容性。
+8. **JSR 兼容**：所有模块都使用类型安全的方式处理全局变量，确保 JSR 发布兼容性。
 
 ---
 

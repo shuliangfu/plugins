@@ -7,7 +7,7 @@
 | 测试库版本 | @dreamer/test@1.0.0-beta.39 |
 | 运行时适配器 | @dreamer/runtime-adapter@1.0.0 |
 | 测试框架 | Deno Test |
-| 测试时间 | 2026-01-30 |
+| 测试时间 | 2026-02-01 |
 | 测试环境 | Deno 2.5+, macOS/Linux |
 
 ---
@@ -18,11 +18,11 @@
 
 | 指标 | 值 |
 |------|-----|
-| 总测试数 | 551 |
-| 通过 | 551 |
+| 总测试数 | 322 |
+| 通过 | 322 |
 | 失败 | 0 |
 | 通过率 | 100% |
-| 执行时间 | ~14s |
+| 执行时间 | ~8s |
 
 ### 测试文件统计
 
@@ -30,17 +30,10 @@
 |----------|----------|------|
 | analytics.test.ts | 24 | ✅ 全部通过 |
 | auth.test.ts | 20 | ✅ 全部通过 |
-| captcha.test.ts | 20 | ✅ 全部通过 |
 | compression.test.ts | 21 | ✅ 全部通过 |
 | cors.test.ts | 20 | ✅ 全部通过 |
-| i18n-client.test.ts | 50 | ✅ 全部通过 |
 | i18n.test.ts | 27 | ✅ 全部通过 |
-| image.test.ts | 16 | ✅ 全部通过 |
-| markdown.test.ts | 16 | ✅ 全部通过 |
 | mod.test.ts | 36 | ✅ 全部通过 |
-| notification.test.ts | 20 | ✅ 全部通过 |
-| payment-adapters.test.ts | 73 | ✅ 全部通过 |
-| payment.test.ts | 17 | ✅ 全部通过 |
 | pwa.test.ts | 18 | ✅ 全部通过 |
 | ratelimit.test.ts | 22 | ✅ 全部通过 |
 | security.test.ts | 16 | ✅ 全部通过 |
@@ -48,9 +41,8 @@
 | social.test.ts | 23 | ✅ 全部通过 |
 | static.test.ts | 17 | ✅ 全部通过 |
 | tailwindcss.test.ts | 14 | ✅ 全部通过 |
-| theme-client.test.ts | 21 | ✅ 全部通过 |
+| theme.test.ts | 24 | ✅ 全部通过 |
 | unocss.test.ts | 17 | ✅ 全部通过 |
-| upload.test.ts | 20 | ✅ 全部通过 |
 
 ---
 
@@ -119,39 +111,7 @@
 
 ---
 
-### 3. 验证码插件 (captcha.test.ts) - 20 个测试
-
-#### 插件创建与配置
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 length 配置
-- ✅ 应该接受有效的 expiresIn 配置
-- ✅ 应该接受空配置
-
-#### onInit 钩子
-- ✅ 应该注册 captchaConfig 服务
-- ✅ 应该注册 captchaService 服务
-- ✅ captchaService 应该提供 generate 方法
-- ✅ captchaService 应该提供 verify 方法
-
-#### captchaService 功能
-- ✅ 应该生成唯一的验证码 ID
-- ✅ 应该生成 SVG 格式的验证码图片
-- ✅ 应该支持验证功能
-- ✅ 验证后验证码应该失效
-- ✅ 应该拒绝过期的验证码
-- ✅ 应该拒绝错误的验证码
-- ✅ 应该拒绝不存在的验证码 ID
-
-#### onRequest 钩子
-- ✅ 应该处理验证码生成请求
-- ✅ 应该处理验证码验证请求
-- ✅ 应该跳过非验证码路径
-
----
-
-### 4. 压缩插件 (compression.test.ts) - 21 个测试
+### 3. 压缩插件 (compression.test.ts) - 21 个测试
 
 #### 插件创建与配置
 - ✅ 应该使用默认配置创建插件
@@ -184,7 +144,7 @@
 
 ---
 
-### 5. CORS 插件 (cors.test.ts) - 20 个测试
+### 4. CORS 插件 (cors.test.ts) - 20 个测试
 
 #### 插件创建与配置
 - ✅ 应该使用默认配置创建插件
@@ -216,7 +176,7 @@
 
 ---
 
-### 6. i18n 国际化插件 (i18n.test.ts) - 27 个测试
+### 5. i18n 国际化插件 (i18n.test.ts) - 27 个测试
 
 #### 插件创建与配置
 - ✅ 应该使用默认配置创建插件
@@ -257,263 +217,7 @@
 
 ---
 
-### 7. i18n 客户端模块 (i18n-client.test.ts) - 50 个测试
-
-#### I18nClient 实例创建
-- ✅ 应该使用默认配置创建实例
-- ✅ 应该使用自定义配置创建实例
-- ✅ createI18nClient 工厂函数应该返回 I18nClient 实例
-- ✅ getI18nClient 应该返回单例实例
-
-#### 语言获取与设置
-- ✅ locale 应该返回当前语言
-- ✅ supportedLocales 应该返回支持的语言列表
-- ✅ setLocale 应该切换语言
-- ✅ setLocale 对不支持的语言应该返回 false
-- ✅ setLocale 对相同语言应该返回 true
-
-#### 翻译函数 t()
-- ✅ 应该返回简单翻译
-- ✅ 应该支持参数插值
-- ✅ 应该支持嵌套键
-- ✅ 切换语言后应该返回对应语言的翻译
-- ✅ 缺失翻译应该返回键名
-- ✅ 数字参数应该被正确插值
-
-#### 翻译存在检查 has()
-- ✅ 存在的键应该返回 true
-- ✅ 不存在的键应该返回 false
-
-#### 动态添加翻译 addTranslations()
-- ✅ 应该添加新的翻译数据
-- ✅ 应该合并嵌套的翻译数据
-
-#### 格式化功能
-- ✅ 应该格式化数字
-- ✅ 应该支持自定义小数位数
-- ✅ 应该支持自定义分隔符
-- ✅ 中文应该使用人民币符号
-- ✅ 英文应该使用美元符号
-- ✅ 应该支持自定义货币符号
-- ✅ 应该格式化日期
-- ✅ 应该格式化时间
-- ✅ 应该格式化日期时间
-- ✅ 应该支持时间戳输入
-- ✅ 应该支持自定义格式
-
-#### 相对时间格式化 formatRelative()
-- ✅ 刚刚的时间应该返回'刚刚'
-- ✅ 分钟前的时间应该正确格式化
-- ✅ 小时前的时间应该正确格式化
-- ✅ 天前的时间应该正确格式化
-- ✅ 英文应该使用英文格式
-- ✅ 未来时间应该使用'后'
-
-#### 事件监听
-- ✅ onChange 应该注册回调
-- ✅ 切换语言时应该触发回调
-- ✅ onChange 返回的函数应该能取消监听
-- ✅ removeAllListeners 应该移除所有监听器
-
-#### 全局 $t 方法
-- ✅ installI18n 应该注册全局 $t 方法
-- ✅ installI18n 应该注册全局 $i18n 实例
-- ✅ 全局 $t 应该正确翻译
-- ✅ 全局 $t 应该支持参数
-- ✅ uninstallI18n 应该移除全局方法
-- ✅ getGlobalI18n 应该返回全局实例
-- ✅ getGlobalI18n 在未安装时应该返回 undefined
-- ✅ 导出的 $t 函数应该可用
-- ✅ installI18n 不传参数应该使用默认实例
-- ✅ 全局 $i18n 应该可以切换语言
-
----
-
-### 8. 图片处理插件 (image.test.ts) - 16 个测试
-
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 quality 配置
-- ✅ 应该接受空配置
-- ✅ 应该注册 imageConfig 服务
-- ✅ 应该注册 imageService 服务
-- ✅ imageService 应该提供 getUrl 方法
-- ✅ imageService 应该提供 getSrcSet 方法
-- ✅ imageService 应该提供 getLazyHtml 方法
-- ✅ 应该生成正确的 srcset
-- ✅ 应该生成懒加载 HTML
-- ✅ 应该跳过非图片路径
-- ✅ 应该只处理 GET 请求
-- ✅ 应该跳过非 HTML 响应
-- ✅ 应该为 HTML 响应注入懒加载脚本
-
----
-
-### 9. Markdown 渲染插件 (markdown.test.ts) - 16 个测试
-
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-- ✅ 应该验证有效配置
-- ✅ 应该接受空配置
-- ✅ 应该注册 markdownConfig 服务
-- ✅ 应该注册 markdownService 服务
-- ✅ markdownService 应该提供 render 方法
-- ✅ markdownService 应该提供 renderFile 方法
-- ✅ 应该渲染基本 Markdown
-- ✅ 应该渲染代码块
-- ✅ 应该渲染链接
-- ✅ 应该渲染列表
-- ✅ 应该解析 Front Matter
-- ✅ 应该生成目录
-- ✅ 应该跳过非 Markdown 路径
-- ✅ 应该只处理 GET 请求
-
----
-
-### 10. 通知插件 (notification.test.ts) - 20 个测试
-
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-- ✅ 应该验证有效配置
-- ✅ 应该接受 webpush 对象配置
-- ✅ 应该接受空配置
-- ✅ 应该注册 notificationConfig 服务
-- ✅ 应该注册 notificationService 服务
-- ✅ notificationService 应该提供 send 方法
-- ✅ notificationService 应该提供 subscribe 方法
-- ✅ notificationService 应该提供 unsubscribe 方法
-- ✅ 应该发送 Web Push 通知
-- ✅ 应该能通过 config 获取 VAPID 公钥
-- ✅ 应该发送邮件通知
-- ✅ 应该发送短信通知
-- ✅ 应该发送 Webhook 通知
-- ✅ 应该订阅通知
-- ✅ 应该取消订阅通知
-- ✅ 应该处理订阅请求
-- ✅ 应该处理取消订阅请求
-- ✅ 应该跳过非通知路径
-
----
-
-### 11. 支付适配器测试 (payment-adapters.test.ts) - 73 个测试
-
-#### Stripe 适配器 - 8 个测试
-- ✅ 应该成功创建适配器
-- ✅ 应该提供所有必需方法
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 publicKey
-- ✅ 应该拒绝无效的 secretKey
-- ✅ 应该返回客户端配置
-- ✅ 应该返回支付结果结构
-- ✅ 应该处理 Webhook 回调
-
-#### PayPal 适配器 - 6 个测试
-- ✅ 应该成功创建适配器
-- ✅ 应该提供所有必需方法
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝缺少 clientId 的配置
-- ✅ 应该拒绝缺少 clientSecret 的配置
-- ✅ 应该返回客户端配置
-
-#### 支付宝适配器 - 10 个测试
-- ✅ 应该成功创建适配器
-- ✅ 应该提供所有必需方法
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝缺少 appId 的配置
-- ✅ 应该拒绝缺少 privateKey 的配置
-- ✅ 应该拒绝缺少 alipayPublicKey 的配置
-- ✅ 应该返回客户端配置
-- ✅ 应该生成支付信息
-- ✅ 应该处理支付成功通知
-- ✅ 应该处理交易关闭通知
-
-#### 微信支付适配器 - 8 个测试
-- ✅ 应该成功创建适配器
-- ✅ 应该提供所有必需方法
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝缺少 mchId 的配置
-- ✅ 应该拒绝缺少 apiKey 的配置
-- ✅ 应该拒绝缺少 appId 的配置
-- ✅ 应该返回客户端配置
-- ✅ 应该处理支付通知
-
-#### Apple Pay 适配器 - 9 个测试
-- ✅ 应该成功创建适配器
-- ✅ 应该提供所有必需方法
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝缺少 merchantId 的配置
-- ✅ 应该拒绝缺少 merchantName 的配置
-- ✅ 应该返回 Apple Pay JS 配置
-- ✅ 应该返回支付请求配置
-- ✅ 应该返回需要支付处理器的提示（查询）
-- ✅ 应该返回需要支付处理器的提示（退款）
-
-#### Google Pay 适配器 - 8 个测试
-- ✅ 应该成功创建适配器
-- ✅ 应该提供所有必需方法
-- ✅ 应该验证有效配置
-- ✅ 应该在生产环境拒绝缺少 merchantId 的配置
-- ✅ 应该拒绝缺少 gateway 的配置
-- ✅ 应该返回 Google Pay 配置
-- ✅ 应该返回 PaymentDataRequest 配置
-
-#### 银联支付适配器 - 9 个测试
-- ✅ 应该成功创建适配器
-- ✅ 应该提供所有必需方法
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝缺少 merchantId 的配置
-- ✅ 应该拒绝缺少 terminalId 的配置
-- ✅ 应该返回客户端配置
-- ✅ 应该生成支付表单
-- ✅ 应该处理支付成功通知
-- ✅ 应该处理支付失败通知
-
-#### Web3 支付适配器 - 14 个测试
-- ✅ 应该成功创建适配器
-- ✅ 应该提供所有必需方法
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝缺少 merchantAddress 的配置
-- ✅ 应该拒绝无效的钱包地址格式
-- ✅ 应该接受有效的以太坊地址
-- ✅ 应该返回 Web3 配置
-- ✅ 应该包含正确的 Chain ID
-- ✅ 应该生成 ETH 支付信息
-- ✅ 应该生成 USDT 支付信息
-- ✅ 应该拒绝不支持的代币
-- ✅ 应该返回待处理交易不存在的错误
-- ✅ 应该查询刚创建的支付
-- ✅ 应该拒绝缺少交易哈希的回调
-- ✅ 应该返回不支持自动退款的提示
-
-#### 适配器工厂
-- ✅ 所有适配器应该实现相同的接口
-
----
-
-### 12. 支付插件 (payment.test.ts) - 17 个测试
-
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-- ✅ 应该验证有效配置
-- ✅ 应该接受带有路由前缀的配置
-- ✅ 应该接受空配置
-- ✅ 应该注册 paymentConfig 服务
-- ✅ 应该注册 paymentService 服务
-- ✅ paymentService 应该提供 createPayment 方法
-- ✅ paymentService 应该提供 queryPayment 方法
-- ✅ paymentService 应该提供 handleNotify 方法
-- ✅ 应该创建支付订单
-- ✅ 应该查询支付状态
-- ✅ 应该处理支付回调
-- ✅ 应该拒绝未配置的适配器
-- ✅ 应该处理通知回调请求
-- ✅ 应该拒绝未指定适配器的通知回调
-- ✅ 应该跳过非支付路径
-
----
-
-### 13. PWA 插件 (pwa.test.ts) - 18 个测试
+### 6. PWA 插件 (pwa.test.ts) - 18 个测试
 
 - ✅ 应该使用默认配置创建插件
 - ✅ 应该使用自定义配置创建插件
@@ -536,7 +240,7 @@
 
 ---
 
-### 14. 速率限制插件 (ratelimit.test.ts) - 22 个测试
+### 7. 速率限制插件 (ratelimit.test.ts) - 22 个测试
 
 - ✅ 应该使用默认配置创建插件
 - ✅ 应该使用自定义配置创建插件
@@ -563,7 +267,7 @@
 
 ---
 
-### 15. 安全头插件 (security.test.ts) - 16 个测试
+### 8. 安全头插件 (security.test.ts) - 16 个测试
 
 - ✅ 应该使用默认配置创建插件
 - ✅ 应该使用自定义配置创建插件
@@ -584,7 +288,7 @@
 
 ---
 
-### 16. SEO 优化插件 (seo.test.ts) - 23 个测试
+### 9. SEO 优化插件 (seo.test.ts) - 23 个测试
 
 - ✅ 应该使用默认配置创建插件
 - ✅ 应该使用自定义配置创建插件
@@ -612,7 +316,7 @@
 
 ---
 
-### 17. 社交分享插件 (social.test.ts) - 23 个测试
+### 10. 社交分享插件 (social.test.ts) - 23 个测试
 
 - ✅ 应该使用默认配置创建插件
 - ✅ 应该使用自定义配置创建插件
@@ -640,7 +344,7 @@
 
 ---
 
-### 18. 静态文件插件 (static.test.ts) - 17 个测试
+### 11. 静态文件插件 (static.test.ts) - 17 个测试
 
 - ✅ 应该使用默认配置创建插件
 - ✅ 应该使用自定义配置创建插件
@@ -662,7 +366,7 @@
 
 ---
 
-### 19. TailwindCSS 插件 (tailwindcss.test.ts) - 14 个测试
+### 12. TailwindCSS 插件 (tailwindcss.test.ts) - 14 个测试
 
 - ✅ 应该使用默认配置创建插件
 - ✅ 应该使用自定义配置创建插件
@@ -681,33 +385,45 @@
 
 ---
 
-### 20. Theme 客户端模块 (theme-client.test.ts) - 21 个测试
+### 13. Theme 主题插件 (theme.test.ts) - 24 个测试
 
-- ✅ 应该使用默认配置创建实例
-- ✅ 应该使用自定义配置创建实例
-- ✅ createThemeClient 工厂函数应该返回 ThemeClient 实例
-- ✅ getThemeClient 应该返回单例实例
-- ✅ current 应该返回当前主题
-- ✅ mode 应该返回当前模式
-- ✅ isDark 应该正确判断深色主题
-- ✅ isLight 应该正确判断浅色主题
-- ✅ isSystem 应该正确判断系统模式
-- ✅ getSystemPreference 应该返回系统偏好
-- ✅ set 方法应该设置主题
-- ✅ toggle 方法应该切换主题并返回新主题
-- ✅ setLight 方法应该设置浅色主题
-- ✅ setDark 方法应该设置深色主题
-- ✅ setSystem 方法应该设置系统模式
-- ✅ onChange 应该注册回调
-- ✅ onChange 返回的函数应该能取消监听
-- ✅ removeAllListeners 应该移除所有监听器
-- ✅ getCssVar 应该返回字符串
-- ✅ setCssVar 不应该抛出错误
-- ✅ getCssVar 应该支持自定义前缀
+#### 插件创建与配置
+- ✅ 应该使用默认配置创建插件
+- ✅ 应该使用自定义配置创建插件
+- ✅ 应该验证有效配置
+- ✅ 应该拒绝无效的 defaultMode
+- ✅ 应该拒绝无效的 strategy
+- ✅ 应该拒绝无效的 transitionDuration
+- ✅ 应该接受空配置
+
+#### onInit 钩子
+- ✅ 应该注册 themeConfig 服务
+- ✅ 应该注册 themeService 服务
+- ✅ themeService 应该提供 getCurrentTheme 方法
+- ✅ themeService 应该提供 getCurrentMode 方法
+- ✅ themeService 应该提供 setTheme 方法
+- ✅ themeService 应该提供 setMode 方法
+
+#### onRequest 钩子
+- ✅ 应该从 Cookie 读取主题
+- ✅ 应该处理 system 模式
+- ✅ 无 Cookie 时应该使用默认模式
+
+#### onResponse 钩子
+- ✅ 应该跳过非 HTML 响应
+- ✅ 应该注入防闪烁脚本
+- ✅ 应该为 class 策略添加 dark class
+- ✅ 应该为 attribute 策略添加属性
+- ✅ 禁用脚本注入时不应该注入脚本
+
+#### 配置选项
+- ✅ 应该支持自定义 cookieName
+- ✅ 应该支持自定义 cookieExpireDays
+- ✅ 应该支持自定义 transitionDuration
 
 ---
 
-### 21. UnoCSS 插件 (unocss.test.ts) - 17 个测试
+### 14. UnoCSS 插件 (unocss.test.ts) - 17 个测试
 
 - ✅ 应该使用默认配置创建插件
 - ✅ 应该使用自定义配置创建插件
@@ -729,32 +445,7 @@
 
 ---
 
-### 22. 文件上传插件 (upload.test.ts) - 20 个测试
-
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 maxFileSize
-- ✅ 应该处理 allowedMimeTypes 配置
-- ✅ 应该接受空配置
-- ✅ 应该注册 uploadConfig 服务
-- ✅ 应该注册 uploadService 服务
-- ✅ uploadService 应该提供 validateFile 方法
-- ✅ uploadService 应该提供 generateFilename 方法
-- ✅ 应该跳过非上传路径
-- ✅ 应该只处理 POST 请求
-- ✅ 应该拒绝非 multipart 请求
-- ✅ 应该验证文件大小
-- ✅ 应该验证 MIME 类型白名单
-- ✅ 应该验证 MIME 类型黑名单
-- ✅ 应该验证文件扩展名
-- ✅ 应该验证禁止的扩展名
-- ✅ 应该生成唯一文件名
-- ✅ 应该保留原始扩展名
-
----
-
-### 23. 模块导出测试 (mod.test.ts) - 36 个测试
+### 15. 模块导出测试 (mod.test.ts) - 36 个测试
 
 #### 插件函数导出
 - ✅ 应该导出 tailwindPlugin 函数
@@ -810,14 +501,9 @@
 |------|--------|-----------|------------|----------------|
 | Analytics | ✅ | ✅ | ✅ | ✅ |
 | Auth | ✅ | ✅ | - | ✅ |
-| Captcha | ✅ | ✅ | - | ✅ |
 | Compression | ✅ | - | ✅ | ✅ |
 | CORS | ✅ | ✅ | ✅ | ✅ |
 | i18n | ✅ | ✅ | ✅ | ✅ |
-| Image | ✅ | ✅ | ✅ | ✅ |
-| Markdown | ✅ | ✅ | - | ✅ |
-| Notification | ✅ | ✅ | - | ✅ |
-| Payment | ✅ | ✅ | - | ✅ |
 | PWA | ✅ | ✅ | ✅ | ✅ |
 | RateLimit | ✅ | ✅ | ✅ | ✅ |
 | Security | ✅ | - | ✅ | ✅ |
@@ -827,43 +513,16 @@
 | TailwindCSS | ✅ | ✅ | ✅ | ✅ |
 | Theme | ✅ | ✅ | ✅ | ✅ |
 | UnoCSS | ✅ | ✅ | ✅ | ✅ |
-| Upload | ✅ | ✅ | - | ✅ |
-
----
-
-## 支付适配器完整性
-
-| 适配器 | createPayment | queryPayment | handleNotify | refund | validateConfig | getClientConfig |
-|--------|---------------|--------------|--------------|--------|----------------|-----------------|
-| Stripe | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| PayPal | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Alipay | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| WechatPay | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Apple Pay | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Google Pay | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| UnionPay | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Web3 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-
----
-
-## 客户端模块功能完整性
-
-| 模块 | 实例创建 | 状态管理 | 事件回调 | 工厂函数 | 全局方法 |
-|------|----------|----------|----------|----------|----------|
-| I18nClient | ✅ | ✅ | ✅ | ✅ | ✅ ($t, $i18n) |
-| ThemeClient | ✅ | ✅ | ✅ | ✅ | - |
 
 ---
 
 ## 结论
 
-@dreamer/plugins 插件集合的测试覆盖率达到 100%，所有 **551 个测试全部通过**。测试涵盖了：
+@dreamer/plugins 插件集合的测试覆盖率达到 100%，所有 **322 个测试全部通过**。测试涵盖了：
 
-- **20 个服务端插件**：Analytics、Auth、Captcha、Compression、CORS、i18n、Image、Markdown、Notification、Payment、PWA、RateLimit、Security、SEO、Social、Static、TailwindCSS、Theme、UnoCSS、Upload
-- **8 个支付适配器**：Stripe、PayPal、Alipay、WechatPay、Apple Pay、Google Pay、UnionPay、Web3
-- **2 个客户端模块**：I18nClient、ThemeClient
+- **14 个插件**：Analytics、Auth、Compression、CORS、i18n、PWA、RateLimit、Security、SEO、Social、Static、TailwindCSS、Theme、UnoCSS
 - **完整的钩子覆盖**：onInit、onRequest、onResponse、validateConfig
 - **全面的边界测试**：空值、无效值、错误处理、安全防护等
-- **全局方法支持**：服务端和客户端 $t、$i18n 的安装、使用、卸载
+- **全局方法支持**：服务端 $t、$i18n 的安装、使用、卸载
 
 该测试套件确保了插件集合的稳定性和可靠性。
