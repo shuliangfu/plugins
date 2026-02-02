@@ -376,12 +376,12 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
           continue;
         }
 
-        // 规范化路径
-        const relativePath = normalizePath(path.slice(dirPrefix.length - 1));
+        // 规范化路径（去掉前缀后的相对路径）
+        const relativePath = normalizePath(path.slice(dirPrefix.length));
 
         // 检查目录遍历攻击（路径中包含 .. 应该已被规范化移除，
         // 但如果原始路径试图逃逸根目录，返回 403）
-        const originalPath = path.slice(dirPrefix.length - 1);
+        const originalPath = path.slice(dirPrefix.length);
         if (originalPath.includes("..")) {
           ctx.response = new Response("Forbidden", {
             status: 403,
