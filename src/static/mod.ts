@@ -17,29 +17,63 @@
  */
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
-import type { ServiceContainer } from "@dreamer/service";
 import {
-  stat,
-  readFile,
-  readdir,
-  type FileInfo,
   type DirEntry,
+  type FileInfo,
+  getEnv,
+  readdir,
+  readFile,
+  stat,
 } from "@dreamer/runtime-adapter";
+import type { ServiceContainer } from "@dreamer/service";
+
+/**
+ * 静态目录配置
+ */
+export interface StaticDirectory {
+  /** 静态文件根目录 */
+  root: string;
+  /** URL 前缀 */
+  prefix: string;
+}
 
 /**
  * 静态文件插件配置选项
  */
 export interface StaticPluginOptions {
-  /** 静态文件根目录（默认 "./public"） */
+  /** 静态文件根目录（默认 "assets"，与 statics 互斥） */
   root?: string;
-  /** URL 前缀（默认 "/"） */
+  /** URL 前缀（默认 "/assets"，与 statics 互斥） */
   prefix?: string;
+  /**
+   * 多目录配置（优先于 root/prefix）
+   * 支持配置多个静态目录，每个目录有独立的 root 和 prefix
+   *
+   * @example
+   * ```typescript
+   * staticPlugin({
+   *   statics: [
+   *     { root: "./assets", prefix: "/assets" },
+   *     { root: "./dist/client/assets", prefix: "/client/assets/" },
+   *   ],
+   * });
+   * ```
+   */
+  statics?: StaticDirectory[];
   /** 默认索引文件（默认 ["index.html"]） */
   index?: string[];
   /** 是否启用目录列表（默认 false） */
   directoryListing?: boolean;
-  /** 缓存控制头（默认 "public, max-age=86400"） */
+  /**
+   * 生产环境缓存控制头（默认 "public, max-age=86400"）
+   * 设置为 false 禁用缓存
+   */
   cacheControl?: string | false;
+  /**
+   * 开发环境缓存控制头（默认 "no-cache, no-store, must-revalidate"）
+   * 开发环境默认禁用缓存，确保始终获取最新文件
+   */
+  devCacheControl?: string;
   /** 是否启用 ETag（默认 true） */
   etag?: boolean;
   /** 不缓存的文件扩展名 */
@@ -193,11 +227,13 @@ function normalizePath(path: string): string {
 export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
   // 解构配置选项，设置默认值
   const {
-    root = "./public",
-    prefix = "/",
+    root = "assets",
+    prefix = "/assets",
+    statics,
     index = ["index.html"],
     directoryListing = false,
     cacheControl = "public, max-age=86400",
+    devCacheControl = "no-cache, no-store, must-revalidate",
     etag = true,
     noCacheExtensions = [".html", ".htm"],
     compress = false,
@@ -206,8 +242,25 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
     debug = false,
   } = options;
 
+  // 构建目录配置列表
+  // 如果配置了 statics，优先使用；否则使用 root/prefix
+  const staticDirs: StaticDirectory[] = statics && statics.length > 0
+    ? statics
+    : [{ root, prefix }];
+
   // 合并 MIME 类型
   const allMimeTypes = { ...DEFAULT_MIME_TYPES, ...mimeTypes };
+
+  /**
+   * 获取当前环境的缓存控制头
+   * 支持 DENO_ENV 和 BUN_ENV 环境变量，默认为 "dev"
+   * 开发环境（env === "dev"）默认禁用缓存，生产环境使用配置的缓存策略
+   */
+  const getCacheControl = (): string | false => {
+    const env = getEnv("DENO_ENV") || getEnv("BUN_ENV") || "dev";
+    const isDev = env === "dev";
+    return isDev ? devCacheControl : cacheControl;
+  };
 
   return {
     name: "@dreamer/plugins-static",
@@ -216,8 +269,7 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
     // 插件配置
     config: {
       static: {
-        root,
-        prefix,
+        statics: staticDirs,
         index,
         directoryListing,
         cacheControl,
@@ -250,8 +302,7 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
     onInit(container: ServiceContainer) {
       // 注册静态文件配置服务
       container.registerSingleton("staticConfig", () => ({
-        root,
-        prefix,
+        statics: staticDirs,
         index,
         directoryListing,
         cacheControl,
@@ -294,7 +345,11 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
           ? container.get<{ info: (msg: string) => void }>("logger")
           : null;
         if (logger) {
-          logger.info(`静态文件插件已初始化: root=${root}, prefix=${prefix}`);
+          // 输出所有配置的静态目录
+          const dirsInfo = staticDirs
+            .map((d) => `${d.root} -> ${d.prefix}`)
+            .join(", ");
+          logger.info(`静态文件插件已初始化: statics=[${dirsInfo}]`);
         }
       }
     },
@@ -311,85 +366,97 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
 
       const path = ctx.path || "/";
 
-      // 检查路径前缀
-      if (!path.startsWith(prefix)) {
-        return;
-      }
+      // 遍历所有静态目录配置，尝试匹配
+      for (const dir of staticDirs) {
+        const dirRoot = dir.root;
+        const dirPrefix = dir.prefix;
 
-      // 规范化路径
-      const relativePath = normalizePath(path.slice(prefix.length - 1));
+        // 检查路径前缀是否匹配
+        if (!path.startsWith(dirPrefix)) {
+          continue;
+        }
 
-      // 检查目录遍历攻击（路径中包含 .. 应该已被规范化移除，
-      // 但如果原始路径试图逃逸根目录，返回 403）
-      const originalPath = path.slice(prefix.length - 1);
-      if (originalPath.includes("..")) {
-        ctx.response = new Response("Forbidden", {
-          status: 403,
-          headers: { "Content-Type": "text/plain" },
-        });
-        return;
-      }
+        // 规范化路径
+        const relativePath = normalizePath(path.slice(dirPrefix.length - 1));
 
-      // 检查隐藏文件
-      if (!allowHidden && (relativePath.includes("/.") || originalPath.includes("/."))) {
-        ctx.response = new Response("Forbidden", {
-          status: 403,
-          headers: { "Content-Type": "text/plain" },
-        });
-        return;
-      }
-
-      // 构建文件路径
-      let filePath = root + relativePath;
-
-      try {
-        // 获取文件信息（使用 runtime-adapter）
-        let fileStat: { isFile: boolean; isDirectory: boolean; mtime: Date | null };
-
-        try {
-          // 使用 runtime-adapter 的 stat
-          const fileInfo: FileInfo = await stat(filePath);
-          fileStat = {
-            isFile: fileInfo.isFile,
-            isDirectory: fileInfo.isDirectory,
-            mtime: fileInfo.mtime,
-          };
-        } catch {
-          // 文件不存在
+        // 检查目录遍历攻击（路径中包含 .. 应该已被规范化移除，
+        // 但如果原始路径试图逃逸根目录，返回 403）
+        const originalPath = path.slice(dirPrefix.length - 1);
+        if (originalPath.includes("..")) {
+          ctx.response = new Response("Forbidden", {
+            status: 403,
+            headers: { "Content-Type": "text/plain" },
+          });
           return;
         }
 
-        // 如果是目录，尝试索引文件
-        if (fileStat.isDirectory) {
-          for (const indexFile of index) {
-            const indexPath = filePath.endsWith("/")
-              ? filePath + indexFile
-              : filePath + "/" + indexFile;
+        // 检查隐藏文件
+        if (
+          !allowHidden &&
+          (relativePath.includes("/.") || originalPath.includes("/."))
+        ) {
+          ctx.response = new Response("Forbidden", {
+            status: 403,
+            headers: { "Content-Type": "text/plain" },
+          });
+          return;
+        }
 
-            try {
-              const indexInfo: FileInfo = await stat(indexPath);
-              if (indexInfo.isFile) {
-                filePath = indexPath;
-                fileStat = {
-                  isFile: true,
-                  isDirectory: false,
-                  mtime: indexInfo.mtime,
-                };
-                break;
-              }
-            } catch {
-              // 索引文件不存在，继续尝试下一个
-            }
+        // 构建文件路径
+        let filePath = dirRoot + relativePath;
+
+        try {
+          // 获取文件信息（使用 runtime-adapter）
+          let fileStat: {
+            isFile: boolean;
+            isDirectory: boolean;
+            mtime: Date | null;
+          };
+
+          try {
+            // 使用 runtime-adapter 的 stat
+            const fileInfo: FileInfo = await stat(filePath);
+            fileStat = {
+              isFile: fileInfo.isFile,
+              isDirectory: fileInfo.isDirectory,
+              mtime: fileInfo.mtime,
+            };
+          } catch {
+            // 文件不存在，尝试下一个目录
+            continue;
           }
 
-          // 如果仍然是目录且允许目录列表
+          // 如果是目录，尝试索引文件
           if (fileStat.isDirectory) {
-            if (directoryListing) {
-              // 生成目录列表（使用 runtime-adapter 的 readdir）
-              const dirEntries: DirEntry[] = await readdir(filePath);
-              const entries: string[] = dirEntries.map((e) => e.name);
+            for (const indexFile of index) {
+              const indexPath = filePath.endsWith("/")
+                ? filePath + indexFile
+                : filePath + "/" + indexFile;
 
-              const html = `<!DOCTYPE html>
+              try {
+                const indexInfo: FileInfo = await stat(indexPath);
+                if (indexInfo.isFile) {
+                  filePath = indexPath;
+                  fileStat = {
+                    isFile: true,
+                    isDirectory: false,
+                    mtime: indexInfo.mtime,
+                  };
+                  break;
+                }
+              } catch {
+                // 索引文件不存在，继续尝试下一个
+              }
+            }
+
+            // 如果仍然是目录且允许目录列表
+            if (fileStat.isDirectory) {
+              if (directoryListing) {
+                // 生成目录列表（使用 runtime-adapter 的 readdir）
+                const dirEntries: DirEntry[] = await readdir(filePath);
+                const entries: string[] = dirEntries.map((e) => e.name);
+
+                const html = `<!DOCTYPE html>
 <html>
 <head><title>Index of ${relativePath}</title></head>
 <body>
@@ -400,93 +467,104 @@ ${entries.map((e) => `<li><a href="${e}">${e}</a></li>`).join("\n")}
 </body>
 </html>`;
 
-              ctx.response = new Response(html, {
-                status: 200,
-                headers: { "Content-Type": "text/html; charset=utf-8" },
+                ctx.response = new Response(html, {
+                  status: 200,
+                  headers: { "Content-Type": "text/html; charset=utf-8" },
+                });
+                return;
+              } else {
+                // 目录但不允许列表，尝试下一个目录配置
+                continue;
+              }
+            }
+          }
+
+          // 读取文件内容（使用 runtime-adapter 的 readFile）
+          const content = await readFile(filePath);
+          const mtime = fileStat.mtime?.getTime() || Date.now();
+
+          // 检查 ETag（条件请求）
+          if (etag) {
+            const fileEtag = computeEtag(content, mtime);
+            const ifNoneMatch = ctx.headers?.get("if-none-match");
+
+            if (ifNoneMatch === fileEtag) {
+              ctx.response = new Response(null, {
+                status: 304,
+                headers: { ETag: fileEtag },
               });
-              return;
-            } else {
               return;
             }
           }
-        }
 
-        // 读取文件内容（使用 runtime-adapter 的 readFile）
-        const content = await readFile(filePath);
-        const mtime = fileStat.mtime?.getTime() || Date.now();
+          // 构建响应头
+          const headers = new Headers();
+          headers.set("Content-Type", getMimeType(filePath, allMimeTypes));
+          headers.set("Content-Length", content.length.toString());
 
-        // 检查 ETag（条件请求）
-        if (etag) {
-          const fileEtag = computeEtag(content, mtime);
-          const ifNoneMatch = ctx.headers?.get("if-none-match");
-
-          if (ifNoneMatch === fileEtag) {
-            ctx.response = new Response(null, {
-              status: 304,
-              headers: { ETag: fileEtag },
-            });
-            return;
+          // ETag
+          if (etag) {
+            headers.set("ETag", computeEtag(content, mtime));
           }
-        }
 
-        // 构建响应头
-        const headers = new Headers();
-        headers.set("Content-Type", getMimeType(filePath, allMimeTypes));
-        headers.set("Content-Length", content.length.toString());
-
-        // ETag
-        if (etag) {
-          headers.set("ETag", computeEtag(content, mtime));
-        }
-
-        // 缓存控制
-        const ext = getExtension(filePath);
-        if (cacheControl !== false && !noCacheExtensions.includes(ext)) {
-          headers.set("Cache-Control", cacheControl);
-        } else if (noCacheExtensions.includes(ext)) {
-          headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-        }
-
-        // Last-Modified
-        if (fileStat.mtime) {
-          headers.set("Last-Modified", fileStat.mtime.toUTCString());
-        }
-
-        // 创建响应（将 Uint8Array 转换为 ArrayBuffer）
-        ctx.response = new Response(
-          ctx.method === "HEAD" ? null : content.buffer as ArrayBuffer,
-          {
-            status: 200,
-            headers,
-          },
-        );
-
-        // 调试日志
-        if (debug) {
-          const logger = container.has("logger")
-            ? container.get<{ info: (msg: string) => void }>("logger")
-            : null;
-          if (logger) {
-            logger.info(
-              `静态文件: ${path} -> ${filePath} (${content.length} bytes)`,
-            );
+          // 缓存控制（根据环境自动设置）
+          const ext = getExtension(filePath);
+          const currentCacheControl = getCacheControl();
+          if (
+            currentCacheControl !== false && !noCacheExtensions.includes(ext)
+          ) {
+            headers.set("Cache-Control", currentCacheControl);
+          } else if (noCacheExtensions.includes(ext)) {
+            headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
           }
-        }
-      } catch (error) {
-        // 文件读取失败，不处理（让其他中间件处理）
-        if (debug) {
-          const logger = container.has("logger")
-            ? container.get<{ info: (msg: string) => void }>("logger")
-            : null;
-          if (logger) {
-            logger.info(
-              `静态文件读取失败: ${filePath} | ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            );
+
+          // Last-Modified
+          if (fileStat.mtime) {
+            headers.set("Last-Modified", fileStat.mtime.toUTCString());
           }
+
+          // 创建响应（将 Uint8Array 转换为 ArrayBuffer）
+          ctx.response = new Response(
+            ctx.method === "HEAD" ? null : content.buffer as ArrayBuffer,
+            {
+              status: 200,
+              headers,
+            },
+          );
+
+          // 调试日志
+          if (debug) {
+            const logger = container.has("logger")
+              ? container.get<{ info: (msg: string) => void }>("logger")
+              : null;
+            if (logger) {
+              logger.info(
+                `静态文件: ${path} -> ${filePath} (${content.length} bytes)`,
+              );
+            }
+          }
+
+          // 找到文件，直接返回
+          return;
+        } catch (error) {
+          // 文件读取失败，尝试下一个目录
+          if (debug) {
+            const logger = container.has("logger")
+              ? container.get<{ info: (msg: string) => void }>("logger")
+              : null;
+            if (logger) {
+              logger.info(
+                `静态文件读取失败: ${filePath} | ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+            }
+          }
+          // 继续尝试下一个目录
+          continue;
         }
       }
+      // 所有目录都没找到文件，不处理（让其他中间件处理）
     },
   };
 }

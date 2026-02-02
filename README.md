@@ -87,7 +87,7 @@ bunx jsr add @dreamer/plugins
 - **Analytics**：分析统计（Google Analytics、Plausible）
 - **Theme**：主题切换（亮色/暗色/系统模式）
 - **Compression**：响应压缩（gzip、deflate）
-- **Static**：静态文件服务（MIME 类型、ETag、安全防护）
+- **Static**：静态文件服务（多目录配置、MIME 类型、ETag、环境缓存控制、安全防护）
 - **Social**：社交分享和 OAuth 登录
 
 ---
@@ -357,18 +357,36 @@ $i18n.setLocale("en-US");
 ```typescript
 import { staticPlugin } from "@dreamer/plugins/static";
 
+// 基础用法（默认 root: "assets", prefix: "/assets"）
+const plugin = staticPlugin();
+
+// 单目录配置
 const plugin = staticPlugin({
   root: "./public",
   prefix: "/static",
   index: ["index.html"],
-  dotFiles: "deny",
   etag: true,
-  maxAge: 86400,
+  cacheControl: "public, max-age=31536000, immutable", // 生产环境缓存
+  // 开发环境自动使用 "no-cache, no-store, must-revalidate"
   mimeTypes: {
     ".wasm": "application/wasm",
   },
 });
+
+// 多目录配置（支持同时服务多个静态目录）
+const plugin = staticPlugin({
+  statics: [
+    { root: "./assets", prefix: "/assets" },
+    { root: "./dist/client/assets", prefix: "/client/assets/" },
+  ],
+  etag: true,
+  cacheControl: "public, max-age=86400",
+});
 ```
+
+**缓存控制说明**：
+- **开发环境**（`DENO_ENV=dev` 或 `BUN_ENV=dev`，默认）：自动使用 `devCacheControl`（默认禁用缓存）
+- **生产环境**（`DENO_ENV=prod` 或 `BUN_ENV=prod`）：使用 `cacheControl`（默认缓存 24 小时）
 
 ### 安全插件
 
@@ -444,20 +462,27 @@ const githubAuthUrl = socialService.getOAuthUrl("github");
 CSS 插件在构建时会生成带 hash 的文件名，构建系统可通过以下方式获取编译结果：
 
 ```typescript
-// 方式 1：从服务容器获取（推荐）
-const result = container.get("tailwindBuildResult");
-// 或 container.get("unocssBuildResult")
+// 方式 1：监听 App 事件（推荐）
+// 所有 CSS 插件统一使用 "plugin:build:compiled" 事件
+app.on("plugin:build:compiled", async (data) => {
+  // data.type: "css"
+  // data.name: "tailwind" | "unocss"
+  // data.filename: "tailwind.a51ff10f.css"
+  // data.result: CSS 内容
+  // data.outputDir: "assets" (输出目录)
 
-console.log(result.css);       // CSS 内容
-console.log(result.hash);      // "a51ff10f"
-console.log(result.filename);  // "tailwind.a51ff10f.css"
-
-// 将 CSS 写入到输出目录
-await writeTextFile(`./dist/assets/${result.filename}`, result.css);
+  // 将 CSS 写入到输出目录
+  const outputPath = `./dist/client/${data.outputDir}/${data.filename}`;
+  await writeTextFile(outputPath, data.result);
+});
 
 // 方式 2：从编译器获取
 const compiler = container.get("tailwindCompiler");
 const lastResult = compiler.getLastResult();
+
+console.log(lastResult.css);       // CSS 内容
+console.log(lastResult.hash);      // "a51ff10f"
+console.log(lastResult.filename);  // "tailwind.a51ff10f.css"
 ```
 
 ---
@@ -517,7 +542,7 @@ const lastResult = compiler.getLastResult();
 | 通过 | 322 |
 | 失败 | 0 |
 | 通过率 | 100% |
-| 测试时间 | 2026-02-01 |
+| 测试时间 | 2026-02-02 |
 
 ### CSS 编译器实际测试
 

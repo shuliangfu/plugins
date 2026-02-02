@@ -304,7 +304,7 @@ export function unocssPlugin(
 
     /**
      * 构建钩子
-     * 编译 CSS 并将结果存储到服务容器供构建系统使用
+     * 编译 CSS 并通过事件通知框架
      */
     async onBuild(
       _options: Record<string, unknown>,
@@ -314,17 +314,32 @@ export function unocssPlugin(
         return;
       }
 
+      // 获取 logger（用于输出日志）
+      const logger = container.tryGet<{ info: (msg: string) => void }>(
+        "logger",
+      );
+
       try {
         // 编译 CSS
         const result = await compiler.compile();
 
-        // 将编译结果存储到服务容器，供构建系统使用
-        // 构建系统可通过 container.get("unocssBuildResult") 获取
-        container.registerSingleton("unocssBuildResult", () => result);
+        // 通过 App 事件通知框架构建编译完成
+        // 统一使用 "plugin:build:compiled" 事件，所有插件共用
+        // 构建系统监听此事件，根据 type 和 name 判断写入路径
+        const app = container.tryGet<
+          { emit: (event: string, ...args: unknown[]) => boolean }
+        >("app");
+        app?.emit("plugin:build:compiled", {
+          type: "css",
+          name: "unocss",
+          filename: result.filename,
+          result: result.css,
+          // CSS 文件应该输出到客户端目录下的 assetsPath 子目录
+          // 构建系统使用: `${build.client.output}/${outputDir}/${filename}`
+          // assetsPath 是 URL 前缀（如 "/assets"），去掉前导 "/" 作为目录
+          outputDir: assetsPath.replace(/^\//, ""),
+        });
 
-        const logger = container.has("logger")
-          ? container.get<{ info: (msg: string) => void }>("logger")
-          : null;
         if (logger && result.filename) {
           logger.info(`UnoCSS 编译完成: ${result.filename}`);
           logger.info(`CSS 大小: ${result.css.length} 字符`);

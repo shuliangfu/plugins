@@ -6,10 +6,7 @@
 
 import { ServiceContainer } from "@dreamer/service";
 import { beforeEach, describe, expect, it } from "@dreamer/test";
-import {
-  staticPlugin,
-  type StaticPluginOptions,
-} from "../src/static/mod.ts";
+import { staticPlugin, type StaticPluginOptions } from "../src/static/mod.ts";
 
 describe("静态文件插件", () => {
   let container: ServiceContainer;
@@ -23,11 +20,16 @@ describe("静态文件插件", () => {
     it("应该使用默认配置创建插件", () => {
       const plugin = staticPlugin();
       const config = plugin.config?.static as Record<string, unknown>;
+      const statics = config?.statics as Array<{
+        root: string;
+        prefix: string;
+      }>;
 
       expect(plugin.name).toBe("@dreamer/plugins-static");
       expect(plugin.version).toBe("1.0.0");
-      expect(config?.root).toBe("./public");
-      expect(config?.prefix).toBe("/");
+      // 默认配置现在是 assets 和 /assets
+      expect(statics?.[0]?.root).toBe("assets");
+      expect(statics?.[0]?.prefix).toBe("/assets");
       expect(config?.etag).toBe(true);
     });
 
@@ -43,9 +45,14 @@ describe("静态文件插件", () => {
 
       const plugin = staticPlugin(options);
       const config = plugin.config?.static as Record<string, unknown>;
+      const statics = config?.statics as Array<{
+        root: string;
+        prefix: string;
+      }>;
 
-      expect(config?.root).toBe("./assets");
-      expect(config?.prefix).toBe("/static");
+      // 单目录配置会转换为 statics 数组
+      expect(statics?.[0]?.root).toBe("./assets");
+      expect(statics?.[0]?.prefix).toBe("/static");
       expect(config?.directoryListing).toBe(true);
       expect(config?.etag).toBe(false);
     });
@@ -77,13 +84,17 @@ describe("静态文件插件", () => {
 
   describe("onInit 钩子", () => {
     it("应该注册 staticConfig 服务", () => {
-      const plugin = staticPlugin({ root: "./assets" });
+      const plugin = staticPlugin({ root: "./assets", prefix: "/static" });
 
       plugin.onInit?.(container);
 
-      const config = container.get("staticConfig");
+      const config = container.get("staticConfig") as {
+        statics: Array<{ root: string; prefix: string }>;
+      };
       expect(config).toBeDefined();
-      expect((config as { root: string }).root).toBe("./assets");
+      // 配置会转换为 statics 数组
+      expect(config?.statics?.[0]?.root).toBe("./assets");
+      expect(config?.statics?.[0]?.prefix).toBe("/static");
     });
 
     it("应该注册 staticService 服务", () => {
@@ -104,7 +115,9 @@ describe("静态文件插件", () => {
       }>("staticService");
 
       expect(service?.getMimeType).toBeDefined();
-      expect(service?.getMimeType("test.html")).toBe("text/html; charset=utf-8");
+      expect(service?.getMimeType("test.html")).toBe(
+        "text/html; charset=utf-8",
+      );
       expect(service?.getMimeType("test.css")).toBe("text/css; charset=utf-8");
       expect(service?.getMimeType("test.js")).toBe(
         "text/javascript; charset=utf-8",
@@ -153,7 +166,8 @@ describe("静态文件插件", () => {
     });
 
     it("应该拒绝目录遍历攻击", async () => {
-      const plugin = staticPlugin({ root: "./public" });
+      // 使用自定义 prefix "/" 以便路径匹配
+      const plugin = staticPlugin({ root: "./public", prefix: "/" });
       plugin.onInit?.(container);
 
       const ctx = {
@@ -172,7 +186,8 @@ describe("静态文件插件", () => {
     });
 
     it("应该拒绝隐藏文件访问（默认）", async () => {
-      const plugin = staticPlugin({ root: "./public" });
+      // 使用自定义 prefix "/" 以便路径匹配
+      const plugin = staticPlugin({ root: "./public", prefix: "/" });
       plugin.onInit?.(container);
 
       const ctx = {
@@ -219,7 +234,9 @@ describe("静态文件插件", () => {
         getMimeType: (path: string) => string;
       }>("staticService");
 
-      expect(service?.getMimeType("test.html")).toBe("text/html; charset=utf-8");
+      expect(service?.getMimeType("test.html")).toBe(
+        "text/html; charset=utf-8",
+      );
       expect(service?.getMimeType("test.json")).toBe(
         "application/json; charset=utf-8",
       );
