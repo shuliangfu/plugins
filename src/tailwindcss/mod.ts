@@ -15,7 +15,7 @@
  */
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
-import { getEnv } from "@dreamer/runtime-adapter";
+import { basename, cwd, getEnv, join, readdir } from "@dreamer/runtime-adapter";
 import type { ServiceContainer } from "@dreamer/service";
 import { TailwindCompiler } from "./compiler.ts";
 
@@ -90,6 +90,41 @@ export function tailwindPlugin(
 
   // CSS 编译器实例（延迟初始化）
   let compiler: TailwindCompiler | null = null;
+
+  // 生产模式下缓存的 CSS 文件名（通过扫描目录获取）
+  let cachedCssFilename: string | null = null;
+
+  // 从 cssEntry 提取基础文件名（用于扫描目录匹配）
+  // 例如：src/assets/tailwind.css -> tailwind
+  // 例如：src/assets/main.css -> main
+  const cssEntryBasename = basename(cssEntry, ".css");
+
+  /**
+   * 扫描目录找到匹配的 CSS 文件
+   * 生产模式下使用，因为编译器实例在构建后不保留结果
+   *
+   * @param assetsDir CSS 资源目录
+   * @returns CSS 文件名或 null
+   */
+  async function findCssFile(assetsDir: string): Promise<string | null> {
+    try {
+      const entries = await readdir(assetsDir);
+      for (const entry of entries) {
+        // 匹配 {cssEntryBasename}.*.css 或 {cssEntryBasename}.css
+        // 例如：tailwind.a1b2c3.css 或 main.a1b2c3.css
+        if (
+          entry.isFile &&
+          entry.name.startsWith(cssEntryBasename) &&
+          entry.name.endsWith(".css")
+        ) {
+          return entry.name;
+        }
+      }
+    } catch {
+      // 目录不存在或无法读取，忽略
+    }
+    return null;
+  }
 
   return {
     name: "@dreamer/plugins-tailwindcss",
@@ -258,9 +293,19 @@ export function tailwindPlugin(
           }
         } else {
           // 生产模式：注入 <link> 标签（使用 hash 文件名）
-          // 从编译器获取 hash 文件名
-          const compilerResult = compiler?.getLastResult();
-          const filename = compilerResult?.filename || "tailwind.css";
+          // 通过扫描目录获取 CSS 文件名（只扫描一次，后续使用缓存）
+          if (!cachedCssFilename) {
+            // 构建 CSS 资源目录路径
+            // assetsPath 如 "/client/assets"，对应目录 "dist/client/assets"
+            const assetsDir = join(
+              cwd(),
+              "dist",
+              assetsPath.replace(/^\//, ""),
+            );
+            cachedCssFilename = await findCssFile(assetsDir);
+          }
+          const filename = cachedCssFilename || `${cssEntryBasename}.css`;
+
           // 确保 assetsPath 以 / 开头但不以 / 结尾
           const normalizedPath = assetsPath.startsWith("/")
             ? assetsPath

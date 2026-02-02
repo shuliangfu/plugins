@@ -6,7 +6,7 @@
  * 负责编译 TailwindCSS 样式，使用 PostCSS + @tailwindcss/postcss
  */
 
-import { cwd, exists, readTextFile } from "@dreamer/runtime-adapter";
+import { basename, cwd, exists, readTextFile } from "@dreamer/runtime-adapter";
 
 /**
  * TailwindCSS 编译选项
@@ -139,8 +139,11 @@ export class TailwindCompiler {
       // 生成内容 hash（用于缓存失效）
       const hash = await this.generateHash(css);
 
-      // 生成带 hash 的文件名
-      const filename = `tailwind.${hash}.css`;
+      // 生成带 hash 的文件名（基于入口文件名）
+      // 例如：src/assets/tailwind.css -> tailwind.a1b2c3.css
+      // 例如：src/assets/main.css -> main.a1b2c3.css
+      const entryBasename = basename(cssEntry, ".css");
+      const filename = `${entryBasename}.${hash}.css`;
 
       const result: CSSCompileResult = {
         css,

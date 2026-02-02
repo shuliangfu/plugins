@@ -7,6 +7,7 @@
  */
 
 import {
+  basename,
   cwd,
   exists,
   join,
@@ -201,8 +202,11 @@ export class UnoCompiler {
       // 生成内容 hash（用于缓存失效）
       const hash = await this.generateHash(css);
 
-      // 生成带 hash 的文件名
-      const filename = `unocss.${hash}.css`;
+      // 生成带 hash 的文件名（基于入口文件名）
+      // 例如：src/assets/unocss.css -> unocss.a1b2c3.css
+      // 例如：src/assets/main.css -> main.a1b2c3.css
+      const entryBasename = basename(this.options.cssEntry, ".css");
+      const filename = `${entryBasename}.${hash}.css`;
 
       const result: CSSCompileResult = {
         css,
