@@ -218,18 +218,6 @@ export function tailwindPlugin(
           };
         }
       }
-
-      // 输出日志（logger 可能不存在）
-      const logger = container.has("logger")
-        ? container.get<{ info: (msg: string) => void }>("logger")
-        : null;
-      if (logger) {
-        logger.info("TailwindCSS 插件已初始化");
-        logger.info(`CSS 入口: ${cssEntry}`);
-        if (content && content.length > 0) {
-          logger.info(`内容扫描: ${content.join(", ")}`);
-        }
-      }
     },
 
     /**
