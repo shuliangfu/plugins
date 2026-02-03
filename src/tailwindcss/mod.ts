@@ -167,11 +167,12 @@ export function tailwindPlugin(
         (getEnv("DENO_ENV") || getEnv("BUN_ENV") || getEnv("NODE_ENV") ||
           "dev") === "dev";
 
-      // 注册 TailwindCSS 配置服务
+      // 注册 TailwindCSS 配置服务（含 assetsPath，供 dweb 生成 client 时计算 HMR CSS URL）
       container.registerSingleton("tailwindConfig", () => ({
         config,
         content,
         cssEntry,
+        assetsPath,
         jit,
         darkMode,
         theme,
@@ -222,21 +223,34 @@ export function tailwindPlugin(
 
     /**
      * 请求处理前钩子
-     * 开发模式下编译 CSS
+     * 开发模式下：若请求路径为 assetsPath/tailwind.css 则直接返回编译后的 CSS（供 HMR 拉取）；
+     * 否则在请求时编译 CSS 并存入上下文供 onResponse 注入。
      */
     async onRequest(ctx: RequestContext, container: ServiceContainer) {
       const isDev =
         (getEnv("DENO_ENV") || getEnv("BUN_ENV") || getEnv("NODE_ENV") ||
           "dev") === "dev";
 
-      // 只在开发模式下编译 CSS
-      if (isDev && compiler) {
+      if (!isDev || !compiler) return;
+
+      // 开发态下用于 HMR 的 CSS 请求路径：/assets/tailwind.css（与 main 中 assetsPath + 入口文件名一致）
+      const normalizedAssets = assetsPath.startsWith("/")
+        ? assetsPath.replace(/\/$/, "")
+        : `/${assetsPath.replace(/\/$/, "")}`;
+      const devCssPath = `${normalizedAssets}/${cssEntryBasename}.css`;
+
+      const pathname = ctx.url?.pathname ?? ctx.path ?? "";
+      const isGetCss = (ctx.method === "GET" || ctx.method === "get") &&
+        pathname === devCssPath;
+
+      if (isGetCss) {
         try {
-          // 在请求时编译 CSS，将结果存储到上下文中
           const compileResult = await compiler.compile();
-          (ctx as Record<string, unknown>).tailwindCSS = compileResult.css;
+          return new Response(compileResult.css, {
+            status: 200,
+            headers: { "Content-Type": "text/css" },
+          });
         } catch (error) {
-          // 编译失败，记录错误但不影响请求
           const logger = container.has("logger")
             ? container.get<{ info: (msg: string) => void }>("logger")
             : null;
@@ -247,6 +261,26 @@ export function tailwindPlugin(
               }`,
             );
           }
+          return new Response("/* Tailwind compile error */", {
+            status: 500,
+            headers: { "Content-Type": "text/css" },
+          });
+        }
+      }
+
+      try {
+        const compileResult = await compiler.compile();
+        (ctx as Record<string, unknown>).tailwindCSS = compileResult.css;
+      } catch (error) {
+        const logger = container.has("logger")
+          ? container.get<{ info: (msg: string) => void }>("logger")
+          : null;
+        if (logger) {
+          logger.info(
+            `TailwindCSS 编译失败: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
         }
       }
     },
@@ -271,7 +305,7 @@ export function tailwindPlugin(
         let injectedHtml = html;
 
         if (isDev) {
-          // 开发模式：注入 <style> 标签
+          // 开发模式：注入 <style> 标签（HMR 时 client 从容器配置得到的 URL 拉取最新 CSS）
           const css = (ctx as Record<string, unknown>).tailwindCSS as
             | string
             | undefined;
