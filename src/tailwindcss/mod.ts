@@ -317,13 +317,9 @@ export function tailwindPlugin(
           // 生产模式：注入 <link> 标签（使用 hash 文件名）
           // 通过扫描目录获取 CSS 文件名（只扫描一次，后续使用缓存）
           if (!cachedCssFilename) {
-            // 构建 CSS 资源目录路径
-            // assetsPath 如 "/client/assets"，对应目录 "dist/client/assets"
-            const assetsDir = join(
-              cwd(),
-              "dist",
-              assetsPath.replace(/^\//, ""),
-            );
+            // 构建 CSS 资源目录路径：优先使用 dweb 注册的 clientAssetsDir（多应用时为 dist/<appDir>/client/assets）
+            const assetsDir = container.tryGet<string>("clientAssetsDir") ??
+              join(cwd(), "dist", assetsPath.replace(/^\//, ""));
             cachedCssFilename = await findCssFile(assetsDir);
           }
           const filename = cachedCssFilename || `${cssEntryBasename}.css`;
