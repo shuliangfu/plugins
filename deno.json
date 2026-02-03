@@ -33,7 +33,7 @@
     "@dreamer/service": "jsr:@dreamer/service@^1.0.0-beta.4",
     "@dreamer/config": "jsr:@dreamer/config@^1.0.0-beta.3",
     "@dreamer/logger": "jsr:@dreamer/logger@^1.0.0-beta.2",
-    "@dreamer/server": "jsr:@dreamer/server@^1.0.0-beta.1",
+    "@dreamer/server": "jsr:@dreamer/server@^1.0.0-beta.12",
     "@dreamer/theme": "jsr:@dreamer/theme@^1.0.0-beta.2",
     "@dreamer/i18n": "jsr:@dreamer/i18n@^1.0.0-beta.2",
     "@dreamer/auth": "jsr:@dreamer/auth@^1.0.0-beta.1",
