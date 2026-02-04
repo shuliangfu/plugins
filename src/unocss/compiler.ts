@@ -171,11 +171,11 @@ export class UnoCompiler {
         throw new Error("UnoCSS 生成器未初始化");
       }
 
-      // 扫描内容文件，提取类名
-      const classes = await this.scanContent();
+      // 读取内容文件，拼接后交给 UnoCSS 内置 extractor 提取（extractorSplit 会 tokenize 源码）
+      const content = await this.readContent();
 
-      // 生成 CSS
-      const genResult = await this.generator.generate(classes, {
+      // 生成 CSS（UnoCSS 使用内置 extractor 从原始源码提取类名）
+      const genResult = await this.generator.generate(content, {
         preflights: true,
       });
 
@@ -242,47 +242,34 @@ export class UnoCompiler {
   }
 
   /**
-   * 扫描内容文件，提取类名
+   * 读取 content 配置的文件内容并拼接
+   * 将原始源码传给 UnoCSS generator.generate()，由其内置 extractorSplit 提取类名
    *
-   * @returns 类名集合
+   * @returns 拼接后的文件内容
    */
-  private async scanContent(): Promise<Set<string>> {
-    const classes = new Set<string>();
+  private async readContent(): Promise<string> {
+    const parts: string[] = [];
 
-    // 如果没有指定 content，返回空集合
     if (!this.options.content || this.options.content.length === 0) {
-      return classes;
+      return "";
     }
 
     const workDir = cwd();
 
     for (const pattern of this.options.content) {
-      // 简单的 glob 处理（支持 **/*.{ts,tsx}）
       const files = await this.globFiles(workDir, pattern);
 
       for (const file of files) {
         try {
           const content = await readTextFile(file);
-          // 提取类名（支持 class="..." 和 className="..."）
-          const classMatches = content.matchAll(
-            /(?:class|className)\s*=\s*["'`]([^"'`]+)["'`]/g,
-          );
-          for (const match of classMatches) {
-            // 分割类名并添加到集合
-            const classNames = match[1].split(/\s+/);
-            for (const className of classNames) {
-              if (className.trim()) {
-                classes.add(className.trim());
-              }
-            }
-          }
+          parts.push(content);
         } catch {
           // 忽略读取失败的文件
         }
       }
     }
 
-    return classes;
+    return parts.join("\n\n");
   }
 
   /**
