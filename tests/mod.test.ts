@@ -60,9 +60,11 @@ describe("@dreamer/plugins 模块导出", () => {
     });
   });
 
+  const cssPluginOutput = "dist/client/assets";
+
   describe("插件实例化", () => {
     it("tailwindPlugin 应该返回有效的插件对象", () => {
-      const plugin = tailwindPlugin();
+      const plugin = tailwindPlugin({ output: cssPluginOutput });
 
       expect(plugin.name).toBe("@dreamer/plugins-tailwindcss");
       expect(plugin.version).toBeDefined();
@@ -70,7 +72,7 @@ describe("@dreamer/plugins 模块导出", () => {
     });
 
     it("unocssPlugin 应该返回有效的插件对象", () => {
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: cssPluginOutput });
 
       expect(plugin.name).toBe("@dreamer/plugins-unocss");
       expect(plugin.version).toBeDefined();
@@ -120,8 +122,10 @@ describe("@dreamer/plugins 模块导出", () => {
 
   describe("插件接口", () => {
     it("所有插件应该有 validateConfig 方法", () => {
-      expect(tailwindPlugin().validateConfig).toBeDefined();
-      expect(unocssPlugin().validateConfig).toBeDefined();
+      expect(tailwindPlugin({ output: cssPluginOutput }).validateConfig)
+        .toBeDefined();
+      expect(unocssPlugin({ output: cssPluginOutput }).validateConfig)
+        .toBeDefined();
       expect(i18nPlugin().validateConfig).toBeDefined();
       expect(seoPlugin().validateConfig).toBeDefined();
       expect(pwaPlugin().validateConfig).toBeDefined();
@@ -130,8 +134,8 @@ describe("@dreamer/plugins 模块导出", () => {
     });
 
     it("所有插件应该有 onInit 钩子", () => {
-      expect(tailwindPlugin().onInit).toBeDefined();
-      expect(unocssPlugin().onInit).toBeDefined();
+      expect(tailwindPlugin({ output: cssPluginOutput }).onInit).toBeDefined();
+      expect(unocssPlugin({ output: cssPluginOutput }).onInit).toBeDefined();
       expect(i18nPlugin().onInit).toBeDefined();
       expect(seoPlugin().onInit).toBeDefined();
       expect(pwaPlugin().onInit).toBeDefined();
@@ -140,8 +144,8 @@ describe("@dreamer/plugins 模块导出", () => {
     });
 
     it("CSS 插件应该有 onRequest 和 onResponse 钩子", () => {
-      const tailwind = tailwindPlugin();
-      const unocss = unocssPlugin();
+      const tailwind = tailwindPlugin({ output: cssPluginOutput });
+      const unocss = unocssPlugin({ output: cssPluginOutput });
 
       expect(tailwind.onRequest).toBeDefined();
       expect(tailwind.onResponse).toBeDefined();
@@ -187,6 +191,7 @@ describe("@dreamer/plugins 模块导出", () => {
   describe("类型导出验证", () => {
     it("TailwindPluginOptions 类型应该可用", () => {
       const options: TailwindPluginOptions = {
+        output: cssPluginOutput,
         content: ["./src/**/*.tsx"],
         jit: true,
       };
@@ -198,6 +203,7 @@ describe("@dreamer/plugins 模块导出", () => {
 
     it("UnoCSSPluginOptions 类型应该可用", () => {
       const options: UnoCSSPluginOptions = {
+        output: cssPluginOutput,
         presets: ["@unocss/preset-wind"],
         icons: true,
       };

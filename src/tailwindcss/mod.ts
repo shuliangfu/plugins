@@ -15,7 +15,15 @@
  */
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
-import { basename, cwd, getEnv, join, readdir } from "@dreamer/runtime-adapter";
+import {
+    basename,
+    cwd,
+    getEnv,
+    join,
+    mkdir,
+    readdir,
+    writeTextFile,
+} from "@dreamer/runtime-adapter";
 import type { ServiceContainer } from "@dreamer/service";
 import { TailwindCompiler } from "./compiler.ts";
 
@@ -23,13 +31,15 @@ import { TailwindCompiler } from "./compiler.ts";
  * TailwindCSS 插件配置选项
  */
 export interface TailwindPluginOptions {
+  /** 编译输出目录（必传），CSS 文件将直接写入此目录（相对 cwd 或绝对路径） */
+  output: string;
   /** TailwindCSS 配置文件路径（可选，如果不提供则使用默认配置） */
   config?: string;
   /** 内容扫描路径（可选，TailwindCSS v4 可在 CSS 中使用 @source 指令） */
   content?: string[];
   /** CSS 入口文件路径（默认："./src/assets/tailwind.css"） */
   cssEntry?: string;
-  /** 静态资源 URL 路径前缀（默认："/assets"） */
+  /** 静态资源 URL 路径前缀（默认："/assets"），仅用于生产模式 link href */
   assetsPath?: string;
   /** 是否启用 JIT 模式（默认：true，TailwindCSS v4 默认启用） */
   jit?: boolean;
@@ -56,13 +66,15 @@ export interface TailwindPluginOptions {
  * ```typescript
  * import { tailwindPlugin } from "@dreamer/plugins/tailwindcss";
  *
- * // 基础用法（无需配置文件）
+ * // 基础用法（必传 output）
  * const plugin = tailwindPlugin({
+ *   output: "dist/client/assets",
  *   content: ["./src/.../*.{ts,tsx}"],
  * });
  *
  * // 高级用法（使用配置文件）
  * const plugin = tailwindPlugin({
+ *   output: "dist/client/assets",
  *   config: "./tailwind.config.ts",
  *   content: ["./src/.../*.{ts,tsx}"],
  * });
@@ -70,11 +82,10 @@ export interface TailwindPluginOptions {
  * await pluginManager.use(plugin);
  * ```
  */
-export function tailwindPlugin(
-  options: TailwindPluginOptions = {},
-): Plugin {
-  // 解构配置选项，设置默认值
+export function tailwindPlugin(options: TailwindPluginOptions): Plugin {
+  // 解构配置选项，output 必传
   const {
+    output,
     config,
     content,
     cssEntry = "./src/assets/tailwind.css",
@@ -87,6 +98,10 @@ export function tailwindPlugin(
       minify: true,
     },
   } = options;
+
+  /** 将 output 解析为绝对路径（相对 cwd） */
+  const resolveOutputDir = (): string =>
+    output.startsWith("/") ? output : join(cwd(), output);
 
   // CSS 编译器实例（延迟初始化）
   let compiler: TailwindCompiler | null = null;
@@ -317,9 +332,9 @@ export function tailwindPlugin(
           // 生产模式：注入 <link> 标签（使用 hash 文件名）
           // 通过扫描目录获取 CSS 文件名（只扫描一次，后续使用缓存）
           if (!cachedCssFilename) {
-            // 构建 CSS 资源目录路径：优先使用 dweb 注册的 clientAssetsDir（多应用时为 dist/<appDir>/client/assets）
+            // 构建 CSS 资源目录：优先使用 dweb 注册的 clientAssetsDir，否则使用插件配置的 output
             const assetsDir = container.tryGet<string>("clientAssetsDir") ??
-              join(cwd(), "dist", assetsPath.replace(/^\//, ""));
+              resolveOutputDir();
             cachedCssFilename = await findCssFile(assetsDir);
           }
           const filename = cachedCssFilename || `${cssEntryBasename}.css`;
@@ -355,7 +370,7 @@ export function tailwindPlugin(
 
     /**
      * 构建钩子
-     * 编译 CSS 并将结果存储到服务容器供构建系统使用
+     * 编译 CSS 并直接写入插件配置的 output 目录
      */
     async onBuild(
       _options: Record<string, unknown>,
@@ -365,33 +380,22 @@ export function tailwindPlugin(
         return;
       }
 
-      // 获取 logger（用于输出日志）
       const logger = container.tryGet<{ info: (msg: string) => void }>(
         "logger",
       );
 
       try {
-        // 编译 CSS
         const result = await compiler.compile();
+        if (!result.filename) {
+          return;
+        }
+        const outDir = resolveOutputDir();
+        await mkdir(outDir, { recursive: true });
+        await writeTextFile(join(outDir, result.filename), result.css);
+        // 供 dweb SSG 模板内联样式使用（可选）
+        container.tryGet<string[]>("pluginBuildCssParts")?.push(result.css);
 
-        // 通过 App 事件通知框架构建编译完成
-        // 统一使用 "plugin:build:compiled" 事件，所有插件共用
-        // 构建系统监听此事件，根据 type 和 name 判断写入路径
-        const app = container.tryGet<
-          { emit: (event: string, ...args: unknown[]) => boolean }
-        >("app");
-        app?.emit("plugin:build:compiled", {
-          type: "css",
-          name: "tailwind",
-          filename: result.filename,
-          result: result.css,
-          // CSS 文件应该输出到客户端目录下的 assetsPath 子目录
-          // 构建系统使用: `${build.client.output}/${outputDir}/${filename}`
-          // assetsPath 是 URL 前缀（如 "/assets"），去掉前导 "/" 作为目录
-          outputDir: assetsPath.replace(/^\//, ""),
-        });
-
-        if (logger && result.filename) {
+        if (logger) {
           logger.info(`TailwindCSS 编译完成: ${result.filename}`);
           logger.info(`CSS 大小: ${result.css.length} 字符`);
         }
@@ -404,7 +408,7 @@ export function tailwindPlugin(
 
 // 导出编译器（供高级用户使用）
 export {
-  type CSSCompileResult,
-  type TailwindCompileOptions,
-  TailwindCompiler,
+    TailwindCompiler, type CSSCompileResult,
+    type TailwindCompileOptions
 } from "./compiler.ts";
+

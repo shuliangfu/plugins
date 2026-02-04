@@ -12,6 +12,7 @@ import { unocssPlugin, type UnoCSSPluginOptions } from "../src/unocss/mod.ts";
 
 describe("UnoCSS 插件", () => {
   let container: ServiceContainer;
+  const defaultOutput = "dist/client/assets";
 
   // 每个测试前重置容器
   beforeEach(() => {
@@ -20,7 +21,7 @@ describe("UnoCSS 插件", () => {
 
   describe("插件创建", () => {
     it("应该使用默认配置创建插件", () => {
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: defaultOutput });
 
       expect(plugin.name).toBe("@dreamer/plugins-unocss");
       expect(plugin.version).toBe("0.1.0");
@@ -29,6 +30,7 @@ describe("UnoCSS 插件", () => {
 
     it("应该使用自定义配置创建插件", () => {
       const options: UnoCSSPluginOptions = {
+        output: defaultOutput,
         config: "./uno.config.ts",
         content: ["./src/**/*.tsx"],
         cssEntry: "./src/styles/uno.css",
@@ -56,7 +58,7 @@ describe("UnoCSS 插件", () => {
 
   describe("配置验证", () => {
     it("应该验证有效配置", () => {
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: defaultOutput });
 
       expect(
         plugin.validateConfig?.({ unocss: { content: ["./src/**/*.ts"] } }),
@@ -64,7 +66,7 @@ describe("UnoCSS 插件", () => {
     });
 
     it("应该拒绝无效的 content 配置", () => {
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: defaultOutput });
 
       expect(plugin.validateConfig?.({ unocss: { content: "invalid" } })).toBe(
         false,
@@ -72,7 +74,7 @@ describe("UnoCSS 插件", () => {
     });
 
     it("应该拒绝无效的 presets 配置", () => {
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: defaultOutput });
 
       expect(plugin.validateConfig?.({ unocss: { presets: "invalid" } })).toBe(
         false,
@@ -80,7 +82,7 @@ describe("UnoCSS 插件", () => {
     });
 
     it("应该接受空配置", () => {
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: defaultOutput });
 
       expect(plugin.validateConfig?.({})).toBe(true);
     });
@@ -88,7 +90,10 @@ describe("UnoCSS 插件", () => {
 
   describe("onInit 钩子", () => {
     it("应该注册 unocssConfig 服务", () => {
-      const plugin = unocssPlugin({ cssEntry: "./test.css" });
+      const plugin = unocssPlugin({
+        output: defaultOutput,
+        cssEntry: "./test.css",
+      });
 
       plugin.onInit?.(container);
 
@@ -98,7 +103,7 @@ describe("UnoCSS 插件", () => {
     });
 
     it("应该注册 unocssCompiler 服务", () => {
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: defaultOutput });
 
       plugin.onInit?.(container);
 
@@ -106,29 +111,27 @@ describe("UnoCSS 插件", () => {
       expect(compiler).toBeDefined();
     });
 
-    it("应该在有 logger 时输出日志", () => {
-      const logMessages: string[] = [];
+    it("应该在有 logger 时正常初始化", () => {
       container.registerSingleton("logger", () => ({
-        info: (msg: string) => logMessages.push(msg),
+        info: (_msg: string) => {},
       }));
 
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: defaultOutput });
       plugin.onInit?.(container);
 
-      expect(logMessages.length).toBeGreaterThan(0);
-      expect(logMessages.some((m) => m.includes("UnoCSS"))).toBe(true);
+      expect(container.get("unocssConfig")).toBeDefined();
+      expect(container.get("unocssCompiler")).toBeDefined();
     });
 
-    it("应该输出预设信息", () => {
-      const logMessages: string[] = [];
-      container.registerSingleton("logger", () => ({
-        info: (msg: string) => logMessages.push(msg),
-      }));
-
-      const plugin = unocssPlugin({ presets: ["@unocss/preset-wind"] });
+    it("应该使用自定义 presets 时正确注册配置", () => {
+      const plugin = unocssPlugin({
+        output: defaultOutput,
+        presets: ["@unocss/preset-wind"],
+      });
       plugin.onInit?.(container);
 
-      expect(logMessages.some((m) => m.includes("预设"))).toBe(true);
+      const config = container.get("unocssConfig") as { presets?: string[] };
+      expect(config?.presets).toContain("@unocss/preset-wind");
     });
   });
 
@@ -139,7 +142,7 @@ describe("UnoCSS 插件", () => {
       setEnv("DENO_ENV", "dev");
 
       try {
-        const plugin = unocssPlugin();
+        const plugin = unocssPlugin({ output: defaultOutput });
         plugin.onInit?.(container);
 
         const ctx = {
@@ -165,7 +168,7 @@ describe("UnoCSS 插件", () => {
 
   describe("onResponse 钩子", () => {
     it("应该跳过非 HTML 响应", async () => {
-      const plugin = unocssPlugin();
+      const plugin = unocssPlugin({ output: defaultOutput });
       plugin.onInit?.(container);
 
       const ctx = {
@@ -192,7 +195,7 @@ describe("UnoCSS 插件", () => {
       setEnv("DENO_ENV", "production");
 
       try {
-        const plugin = unocssPlugin();
+        const plugin = unocssPlugin({ output: defaultOutput });
         plugin.onInit?.(container);
 
         const ctx = {

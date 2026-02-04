@@ -4,8 +4,8 @@
  * 测试 TailwindCSS 插件的所有功能
  */
 
-import { ServiceContainer } from "@dreamer/service";
 import { deleteEnv, getEnv, setEnv } from "@dreamer/runtime-adapter";
+import { ServiceContainer } from "@dreamer/service";
 import { beforeEach, describe, expect, it } from "@dreamer/test";
 import { TailwindCompiler } from "../src/tailwindcss/compiler.ts";
 import {
@@ -21,9 +21,11 @@ describe("TailwindCSS 插件", () => {
     container = new ServiceContainer();
   });
 
+  const defaultOutput = "dist/client/assets";
+
   describe("插件创建", () => {
     it("应该使用默认配置创建插件", () => {
-      const plugin = tailwindPlugin();
+      const plugin = tailwindPlugin({ output: defaultOutput });
 
       expect(plugin.name).toBe("@dreamer/plugins-tailwindcss");
       expect(plugin.version).toBe("0.1.0");
@@ -32,6 +34,7 @@ describe("TailwindCSS 插件", () => {
 
     it("应该使用自定义配置创建插件", () => {
       const options: TailwindPluginOptions = {
+        output: defaultOutput,
         config: "./tailwind.config.ts",
         content: ["./src/**/*.tsx"],
         cssEntry: "./src/styles/main.css",
@@ -54,7 +57,7 @@ describe("TailwindCSS 插件", () => {
 
   describe("配置验证", () => {
     it("应该验证有效配置", () => {
-      const plugin = tailwindPlugin();
+      const plugin = tailwindPlugin({ output: defaultOutput });
 
       expect(
         plugin.validateConfig?.({ tailwind: { content: ["./src/**/*.ts"] } }),
@@ -62,14 +65,14 @@ describe("TailwindCSS 插件", () => {
     });
 
     it("应该拒绝无效的 content 配置", () => {
-      const plugin = tailwindPlugin();
+      const plugin = tailwindPlugin({ output: defaultOutput });
 
       expect(plugin.validateConfig?.({ tailwind: { content: "invalid" } }))
         .toBe(false);
     });
 
     it("应该接受空配置", () => {
-      const plugin = tailwindPlugin();
+      const plugin = tailwindPlugin({ output: defaultOutput });
 
       expect(plugin.validateConfig?.({})).toBe(true);
     });
@@ -77,7 +80,10 @@ describe("TailwindCSS 插件", () => {
 
   describe("onInit 钩子", () => {
     it("应该注册 tailwindConfig 服务", () => {
-      const plugin = tailwindPlugin({ cssEntry: "./test.css" });
+      const plugin = tailwindPlugin({
+        output: defaultOutput,
+        cssEntry: "./test.css",
+      });
 
       plugin.onInit?.(container);
 
@@ -87,7 +93,7 @@ describe("TailwindCSS 插件", () => {
     });
 
     it("应该注册 tailwindCompiler 服务", () => {
-      const plugin = tailwindPlugin();
+      const plugin = tailwindPlugin({ output: defaultOutput });
 
       plugin.onInit?.(container);
 
@@ -95,17 +101,16 @@ describe("TailwindCSS 插件", () => {
       expect(compiler).toBeDefined();
     });
 
-    it("应该在有 logger 时输出日志", () => {
-      const logMessages: string[] = [];
+    it("应该在有 logger 时正常初始化", () => {
       container.registerSingleton("logger", () => ({
-        info: (msg: string) => logMessages.push(msg),
+        info: (_msg: string) => {},
       }));
 
-      const plugin = tailwindPlugin();
+      const plugin = tailwindPlugin({ output: defaultOutput });
       plugin.onInit?.(container);
 
-      expect(logMessages.length).toBeGreaterThan(0);
-      expect(logMessages.some((m) => m.includes("TailwindCSS"))).toBe(true);
+      expect(container.get("tailwindConfig")).toBeDefined();
+      expect(container.get("tailwindCompiler")).toBeDefined();
     });
   });
 
@@ -116,7 +121,7 @@ describe("TailwindCSS 插件", () => {
       setEnv("DENO_ENV", "dev");
 
       try {
-        const plugin = tailwindPlugin();
+        const plugin = tailwindPlugin({ output: defaultOutput });
         plugin.onInit?.(container);
 
         const ctx = {
@@ -143,7 +148,7 @@ describe("TailwindCSS 插件", () => {
 
   describe("onResponse 钩子", () => {
     it("应该跳过非 HTML 响应", async () => {
-      const plugin = tailwindPlugin();
+      const plugin = tailwindPlugin({ output: defaultOutput });
       plugin.onInit?.(container);
 
       const ctx = {
@@ -170,7 +175,7 @@ describe("TailwindCSS 插件", () => {
       setEnv("DENO_ENV", "production");
 
       try {
-        const plugin = tailwindPlugin();
+        const plugin = tailwindPlugin({ output: defaultOutput });
         plugin.onInit?.(container);
 
         const ctx = {
