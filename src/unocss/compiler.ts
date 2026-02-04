@@ -6,6 +6,9 @@
  * 负责编译 UnoCSS 样式，使用 @unocss/core
  */
 
+import { createGenerator } from "@unocss/core";
+import { presetIcons } from "@unocss/preset-icons";
+import { presetWind3 } from "@unocss/preset-wind3";
 import {
   basename,
   cwd,
@@ -79,40 +82,32 @@ export class UnoCompiler {
   }
 
   /**
-   * 初始化 UnoCSS 生成器
+   * 初始化 UnoCSS 生成器（使用静态导入的 @unocss/core 与预设）
    */
   private async initGenerator(): Promise<void> {
     if (this.generator) return;
 
     try {
-      // 动态导入 @unocss/core 和预设
-      const { createGenerator } = await import("@unocss/core");
-      const { presetWind } = await import("@unocss/preset-wind");
-
       // 创建预设数组
       // deno-lint-ignore no-explicit-any
       const presets: any[] = [];
 
-      // 添加 Wind 预设（TailwindCSS 兼容）
+      // 添加 Wind3 预设（TailwindCSS/Windi 兼容，presetWind 已弃用）
       if (
+        this.options.presets?.includes("@unocss/preset-wind3") ||
         this.options.presets?.includes("@unocss/preset-wind") ||
         this.options.presets?.length === 0 ||
         !this.options.presets
       ) {
-        presets.push(presetWind());
+        presets.push(presetWind3());
       }
 
       // 如果启用图标系统，添加图标预设
       if (this.options.icons) {
-        try {
-          const { presetIcons } = await import("@unocss/preset-icons");
-          presets.push(presetIcons({
-            scale: 1.2,
-            cdn: "https://esm.sh/",
-          }));
-        } catch {
-          console.warn("[UnoCSS] 图标预设加载失败，跳过图标支持");
-        }
+        presets.push(presetIcons({
+          scale: 1.2,
+          cdn: "https://esm.sh/",
+        }));
       }
 
       // 创建 UnoCSS 生成器

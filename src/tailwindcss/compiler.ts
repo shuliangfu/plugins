@@ -6,6 +6,8 @@
  * 负责编译 TailwindCSS 样式，使用 PostCSS + @tailwindcss/postcss
  */
 
+import postcss from "postcss";
+import tailwindPlugin from "@tailwindcss/postcss";
 import { basename, cwd, exists, readTextFile } from "@dreamer/runtime-adapter";
 
 /**
@@ -52,10 +54,6 @@ export class TailwindCompiler {
   private options: TailwindCompileOptions;
   /** 编译结果缓存 */
   private cachedResult: CSSCompileResult | null = null;
-  /** PostCSS 实例 */
-  private postcss: typeof import("postcss").default | null = null;
-  /** TailwindCSS PostCSS 插件 */
-  private tailwindPlugin: unknown | null = null;
 
   /**
    * 创建 TailwindCSS 编译器实例
@@ -64,25 +62,6 @@ export class TailwindCompiler {
    */
   constructor(options: TailwindCompileOptions) {
     this.options = options;
-  }
-
-  /**
-   * 初始化 PostCSS 和 TailwindCSS 插件
-   */
-  private async initPostCSS(): Promise<void> {
-    if (this.postcss && this.tailwindPlugin) return;
-
-    try {
-      // 动态导入 postcss 和 @tailwindcss/postcss
-      const postcssModule = await import("postcss");
-      const tailwindModule = await import("@tailwindcss/postcss");
-
-      this.postcss = postcssModule.default;
-      this.tailwindPlugin = tailwindModule.default;
-    } catch (error) {
-      console.error("[TailwindCSS] 初始化 PostCSS 失败:", error);
-      throw error;
-    }
   }
 
   /**
@@ -127,9 +106,6 @@ export class TailwindCompiler {
     const dev = this.options.dev ?? false;
 
     try {
-      // 初始化 PostCSS
-      await this.initPostCSS();
-
       // 读取入口文件
       const cssContent = await readTextFile(cssEntry);
 
@@ -192,18 +168,13 @@ export class TailwindCompiler {
    * @returns 处理后的 CSS 内容
    */
   private async processWithPostCSS(css: string, from: string): Promise<string> {
-    if (!this.postcss || !this.tailwindPlugin) {
-      throw new Error("PostCSS 未初始化");
-    }
-
     try {
       // 获取工作目录用于解析相对路径
       const workDir = cwd();
 
-      // 创建 PostCSS 处理器
-      const processor = this.postcss([
-        // @ts-ignore - 类型定义问题
-        this.tailwindPlugin({
+      // 创建 PostCSS 处理器（使用静态导入的 postcss 与 @tailwindcss/postcss）
+      const processor = postcss([
+        tailwindPlugin({
           // TailwindCSS v4 配置（可选）
           base: workDir,
         }),

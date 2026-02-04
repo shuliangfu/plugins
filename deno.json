@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/plugins",
-  "version": "1.0.0-beta.14",
+  "version": "1.0.0-beta.15",
   "description": "dweb 框架的官方插件集合",
   "exports": {
     ".": "./src/mod.ts",
@@ -39,7 +39,7 @@
     "postcss": "npm:postcss@^8.5.0",
     "@tailwindcss/postcss": "npm:@tailwindcss/postcss@^4.0.0",
     "@unocss/core": "npm:@unocss/core@^66.0.0",
-    "@unocss/preset-wind": "npm:@unocss/preset-wind@^66.0.0",
+    "@unocss/preset-wind3": "npm:@unocss/preset-wind3@^66.0.0",
     "@unocss/preset-icons": "npm:@unocss/preset-icons@^66.0.0"
   },
   "tasks": {
