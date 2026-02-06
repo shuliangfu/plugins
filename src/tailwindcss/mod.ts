@@ -396,8 +396,8 @@ export function tailwindPlugin(options: TailwindPluginOptions): Plugin {
         container.tryGet<string[]>("pluginBuildCssParts")?.push(result.css);
 
         if (logger) {
-          logger.info(`TailwindCSS 编译完成: ${result.filename}`);
-          logger.info(`CSS 大小: ${result.css.length} 字符`);
+          const sizeKb = (result.css.length / 1024).toFixed(1);
+          logger.info(`TailwindCSS: ${result.filename} (${sizeKb} KB)`);
         }
       } catch (error) {
         console.error("[TailwindCSS] 构建编译失败:", error);

@@ -1,609 +1,609 @@
-# @dreamer/plugins 测试报告
+# @dreamer/plugins Test Report
 
-## 测试概览
+## Test Overview
 
-| 项目 | 信息 |
+| Item | Info |
 |------|------|
-| 测试库版本 | @dreamer/test@1.0.0-beta.40 |
-| 运行时适配器 | @dreamer/runtime-adapter@1.0.0 |
-| 测试框架 | Deno Test |
-| 测试时间 | 2026-02-01 |
-| 测试环境 | Deno 2.5+, macOS/Linux |
+| Test library version | @dreamer/test@1.0.0-beta.40 |
+| Runtime adapter | @dreamer/runtime-adapter@1.0.0 |
+| Test framework | Deno Test |
+| Test date | 2026-02-01 |
+| Test environment | Deno 2.5+, macOS/Linux |
 
 ---
 
-## 测试结果
+## Test Results
 
-### 总体统计
+### Overall Statistics
 
-| 指标 | 结果 |
-|------|------|
-| 总测试数 | 322 |
-| 通过 | 322 |
-| 失败 | 0 |
-| 通过率 | 100% |
-| 执行时间 | ~2s |
+| Metric | Result |
+|--------|--------|
+| Total tests | 322 |
+| Passed | 322 |
+| Failed | 0 |
+| Pass rate | 100% |
+| Execution time | ~2s |
 
-### 测试文件统计
+### Test File Statistics
 
-| 测试文件 | 测试数 | 状态 |
-|----------|--------|------|
-| analytics.test.ts | 24 | ✅ 全部通过 |
-| auth.test.ts | 20 | ✅ 全部通过 |
-| compression.test.ts | 21 | ✅ 全部通过 |
-| cors.test.ts | 20 | ✅ 全部通过 |
-| i18n.test.ts | 27 | ✅ 全部通过 |
-| mod.test.ts | 36 | ✅ 全部通过 |
-| pwa.test.ts | 18 | ✅ 全部通过 |
-| ratelimit.test.ts | 22 | ✅ 全部通过 |
-| security.test.ts | 16 | ✅ 全部通过 |
-| seo.test.ts | 23 | ✅ 全部通过 |
-| social.test.ts | 23 | ✅ 全部通过 |
-| static.test.ts | 17 | ✅ 全部通过 |
-| tailwindcss.test.ts | 14 | ✅ 全部通过 |
-| theme.test.ts | 24 | ✅ 全部通过 |
-| unocss.test.ts | 17 | ✅ 全部通过 |
-
----
-
-## 功能测试详情
-
-### 1. Analytics 分析统计插件 (analytics.test.ts) - 24 个测试
-
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 customEvents 配置
-- ✅ 应该拒绝无效的 otherServices 配置
-- ✅ 应该接受空配置
-
-#### onInit 钩子
-- ✅ 应该注册 analyticsConfig 服务
-- ✅ 应该注册 analyticsService 服务
-- ✅ analyticsService 应该提供 trackPageview 方法
-- ✅ analyticsService 应该提供 trackEvent 方法
-- ✅ analyticsService 应该提供 trackPerformance 方法
-- ✅ analyticsService 应该提供 trackUserBehavior 方法
-- ✅ 开启 debug 模式时应该输出日志
-- ✅ 应该在有 logger 时输出初始化日志
-
-#### onRequest 钩子
-- ✅ 应该在开发环境且 disableInDev 时跳过
-- ✅ 应该在生产环境记录请求开始时间
-- ✅ 禁用性能追踪时不应该记录开始时间
-
-#### onResponse 钩子
-- ✅ 应该在开发环境且 disableInDev 时跳过
-- ✅ 应该跳过非 HTML 响应
-- ✅ 应该注入 Google Analytics 4 脚本
-- ✅ 应该注入 Universal Analytics 脚本
-- ✅ 应该注入 Plausible Analytics 脚本
-- ✅ 应该同时注入多个分析服务脚本
-- ✅ 没有配置分析服务时不应该注入脚本
+| Test file | Count | Status |
+|-----------|-------|--------|
+| analytics.test.ts | 24 | ✅ All passed |
+| auth.test.ts | 20 | ✅ All passed |
+| compression.test.ts | 21 | ✅ All passed |
+| cors.test.ts | 20 | ✅ All passed |
+| i18n.test.ts | 27 | ✅ All passed |
+| mod.test.ts | 36 | ✅ All passed |
+| pwa.test.ts | 18 | ✅ All passed |
+| ratelimit.test.ts | 22 | ✅ All passed |
+| security.test.ts | 16 | ✅ All passed |
+| seo.test.ts | 23 | ✅ All passed |
+| social.test.ts | 23 | ✅ All passed |
+| static.test.ts | 17 | ✅ All passed |
+| tailwindcss.test.ts | 14 | ✅ All passed |
+| theme.test.ts | 24 | ✅ All passed |
+| unocss.test.ts | 17 | ✅ All passed |
 
 ---
 
-### 2. 认证插件 (auth.test.ts) - 20 个测试
+## Feature Test Details
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+### 1. Analytics Plugin (analytics.test.ts) - 24 tests
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的认证类型
-- ✅ 应该接受空配置
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### onInit 钩子
-- ✅ 应该注册 authConfig 服务
-- ✅ 应该注册 authService 服务
-- ✅ authService 应该提供正确的方法
-- ✅ hasRole 应该正确检查角色
-- ✅ hasPermission 应该正确检查权限
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid customEvents config
+- ✅ Should reject invalid otherServices config
+- ✅ Should accept empty config
 
-#### onRequest 钩子 - 公开路径
-- ✅ 应该跳过公开路径
-- ✅ 应该跳过不在保护路径中的路径
+#### onInit hook
+- ✅ Should register analyticsConfig service
+- ✅ Should register analyticsService service
+- ✅ analyticsService should provide trackPageview method
+- ✅ analyticsService should provide trackEvent method
+- ✅ analyticsService should provide trackPerformance method
+- ✅ analyticsService should provide trackUserBehavior method
+- ✅ Should output logs when debug mode is enabled
+- ✅ Should output init logs when logger is present
 
-#### onRequest 钩子 - JWT 认证
-- ✅ 应该拒绝没有 token 的请求
-- ✅ 应该拒绝过期的 token
-- ✅ 应该接受有效的 JWT
-- ✅ 应该验证 JWT 签发者
+#### onRequest hook
+- ✅ Should skip in dev when disableInDev is set
+- ✅ Should record request start time in production
+- ✅ Should not record start time when performance tracking is disabled
 
-#### onRequest 钩子 - Bearer Token 认证
-- ✅ 应该使用自定义验证函数
-
-#### onRequest 钩子 - Basic 认证
-- ✅ 应该验证基础认证
-
-#### onRequest 钩子 - 角色权限
-- ✅ 应该检查角色权限
-
-#### getUser 方法
-- ✅ 应该从上下文获取用户
+#### onResponse hook
+- ✅ Should skip in dev when disableInDev is set
+- ✅ Should skip non-HTML responses
+- ✅ Should inject Google Analytics 4 script
+- ✅ Should inject Universal Analytics script
+- ✅ Should inject Plausible Analytics script
+- ✅ Should inject multiple analytics service scripts
+- ✅ Should not inject scripts when no analytics service configured
 
 ---
 
-### 3. 压缩插件 (compression.test.ts) - 21 个测试
+### 2. Auth Plugin (auth.test.ts) - 20 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的压缩级别
-- ✅ 应该拒绝无效的阈值
-- ✅ 应该拒绝无效的编码列表
-- ✅ 应该接受空配置
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid auth type
+- ✅ Should accept empty config
 
-#### onInit 钩子
-- ✅ 应该注册 compressionConfig 服务
-- ✅ 应该注册 compressionService 服务
-- ✅ compressionService 应该提供 compress 方法
-- ✅ 应该在有 logger 且开启 debug 时输出日志
+#### onInit hook
+- ✅ Should register authConfig service
+- ✅ Should register authService service
+- ✅ authService should provide correct methods
+- ✅ hasRole should check roles correctly
+- ✅ hasPermission should check permissions correctly
+
+#### onRequest hook - Public paths
+- ✅ Should skip public paths
+- ✅ Should skip paths not in protected paths
+
+#### onRequest hook - JWT auth
+- ✅ Should reject requests without token
+- ✅ Should reject expired token
+- ✅ Should accept valid JWT
+- ✅ Should validate JWT issuer
+
+#### onRequest hook - Bearer Token auth
+- ✅ Should use custom validation function
+
+#### onRequest hook - Basic auth
+- ✅ Should validate basic auth
+
+#### onRequest hook - Role permissions
+- ✅ Should check role permissions
+
+#### getUser method
+- ✅ Should get user from context
+
+---
+
+### 3. Compression Plugin (compression.test.ts) - 21 tests
+
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
+
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid compression level
+- ✅ Should reject invalid threshold
+- ✅ Should reject invalid encoding list
+- ✅ Should accept empty config
+
+#### onInit hook
+- ✅ Should register compressionConfig service
+- ✅ Should register compressionService service
+- ✅ compressionService should provide compress method
+- ✅ Should output logs when logger and debug are enabled
 
 #### compressionService
-- ✅ 应该能使用 gzip 压缩数据
-- ✅ 应该能使用 deflate 压缩数据
+- ✅ Should compress data with gzip
+- ✅ Should compress data with deflate
 
-#### onResponse 钩子
-- ✅ 应该跳过没有 Accept-Encoding 的请求
-- ✅ 应该跳过已压缩的响应
-- ✅ 应该跳过不支持压缩的 MIME 类型
-- ✅ 应该跳过小于阈值的响应
-- ✅ 应该使用 gzip 压缩响应
-- ✅ 应该使用 deflate 压缩响应
-- ✅ 应该添加 Vary 头
-- ✅ 应该更新 Content-Length
-
----
-
-### 4. CORS 插件 (cors.test.ts) - 20 个测试
-
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 methods 配置
-- ✅ 应该拒绝无效的 maxAge 配置
-- ✅ 应该接受空配置
-
-#### onInit 钩子
-- ✅ 应该注册 corsConfig 服务
-- ✅ 应该在有 logger 且开启 debug 时输出日志
-
-#### onRequest 钩子（预检请求）
-- ✅ 应该处理 OPTIONS 预检请求
-- ✅ 应该在预检请求中返回允许的头部
-- ✅ 应该在允许凭证时设置相应头
-- ✅ 应该设置预检缓存时间
-
-#### onResponse 钩子
-- ✅ 应该为允许的源添加 CORS 头
-- ✅ 应该为特定源返回该源而不是 *
-- ✅ 应该不为不允许的源添加 CORS 头
-- ✅ 应该使用函数判断源是否允许
-- ✅ 应该在允许凭证时设置相应头
-- ✅ 应该暴露指定的响应头
-- ✅ 应该添加 Vary: Origin 头
-- ✅ 应该跳过没有 Origin 的请求
+#### onResponse hook
+- ✅ Should skip requests without Accept-Encoding
+- ✅ Should skip already compressed responses
+- ✅ Should skip unsupported MIME types
+- ✅ Should skip responses smaller than threshold
+- ✅ Should compress response with gzip
+- ✅ Should compress response with deflate
+- ✅ Should add Vary header
+- ✅ Should update Content-Length
 
 ---
 
-### 5. i18n 国际化插件 (i18n.test.ts) - 27 个测试
+### 4. CORS Plugin (cors.test.ts) - 20 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 locales 配置
-- ✅ 应该拒绝无效的 detectMethods 配置
-- ✅ 应该接受空配置
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid methods config
+- ✅ Should reject invalid maxAge config
+- ✅ Should accept empty config
 
-#### onInit 钩子
-- ✅ 应该注册 i18nConfig 服务
-- ✅ 应该注册 i18nService 服务
-- ✅ i18nService 应该提供 t 函数
-- ✅ i18nService 应该提供 getLocale 和 setLocale
-- ✅ i18nService 应该忽略不支持的语言
-- ✅ 应该在有 logger 时输出日志
+#### onInit hook
+- ✅ Should register corsConfig service
+- ✅ Should output logs when logger and debug are enabled
 
-#### onRequest 钩子 - 语言检测
-- ✅ 应该从 Accept-Language 头检测语言
-- ✅ 应该从 Cookie 检测语言
-- ✅ 应该从 Query 参数检测语言
-- ✅ 应该从路径检测语言
-- ✅ 未检测到时应该使用默认语言
-- ✅ 禁用语言检测时应该跳过
+#### onRequest hook (preflight)
+- ✅ Should handle OPTIONS preflight request
+- ✅ Should return allowed headers in preflight
+- ✅ Should set credentials header when enabled
+- ✅ Should set preflight cache time
 
-#### onResponse 钩子
-- ✅ 应该设置响应头
-- ✅ 应该在 HTML 中注入 lang 属性
-- ✅ 应该更新已存在的 lang 属性
-
-#### 全局 $t 方法
-- ✅ 应该注册全局 $t 函数
-- ✅ 应该注册全局 $i18n 实例
-- ✅ $t 应该返回未翻译的 key
-- ✅ $t 应该支持加载翻译并翻译
-- ✅ $t 应该支持嵌套键
-- ✅ 切换语言后应该使用正确的翻译
+#### onResponse hook
+- ✅ Should add CORS headers for allowed origins
+- ✅ Should return specific origin instead of * for that origin
+- ✅ Should not add CORS headers for disallowed origins
+- ✅ Should use function to determine origin allowance
+- ✅ Should set credentials header when enabled
+- ✅ Should expose specified response headers
+- ✅ Should add Vary: Origin header
+- ✅ Should skip requests without Origin
 
 ---
 
-### 6. 模块导出测试 (mod.test.ts) - 36 个测试
+### 5. i18n Plugin (i18n.test.ts) - 27 tests
 
-#### 插件函数导出
-- ✅ 应该导出 tailwindPlugin 函数
-- ✅ 应该导出 unocssPlugin 函数
-- ✅ 应该导出 i18nPlugin 函数
-- ✅ 应该导出 seoPlugin 函数
-- ✅ 应该导出 pwaPlugin 函数
-- ✅ 应该导出 analyticsPlugin 函数
-- ✅ 应该导出 themePlugin 函数
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 插件实例化
-- ✅ tailwindPlugin 应该返回有效的插件对象
-- ✅ unocssPlugin 应该返回有效的插件对象
-- ✅ i18nPlugin 应该返回有效的插件对象
-- ✅ seoPlugin 应该返回有效的插件对象
-- ✅ pwaPlugin 应该返回有效的插件对象
-- ✅ analyticsPlugin 应该返回有效的插件对象
-- ✅ themePlugin 应该返回有效的插件对象
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid locales config
+- ✅ Should reject invalid detectMethods config
+- ✅ Should accept empty config
 
-#### 插件接口
-- ✅ 所有插件应该有 validateConfig 方法
-- ✅ 所有插件应该有 onInit 钩子
-- ✅ CSS 插件应该有 onRequest 和 onResponse 钩子
-- ✅ i18n 插件应该有 onRequest 和 onResponse 钩子
-- ✅ SEO 插件应该有 onResponse 和 onBuildComplete 钩子
-- ✅ PWA 插件应该有 onResponse 钩子
-- ✅ Analytics 插件应该有 onRequest 和 onResponse 钩子
-- ✅ Theme 插件应该有 onRequest 和 onResponse 钩子
+#### onInit hook
+- ✅ Should register i18nConfig service
+- ✅ Should register i18nService service
+- ✅ i18nService should provide t function
+- ✅ i18nService should provide getLocale and setLocale
+- ✅ i18nService should ignore unsupported languages
+- ✅ Should output logs when logger is present
 
-#### 类型导出验证
-- ✅ TailwindPluginOptions 类型应该可用
-- ✅ UnoCSSPluginOptions 类型应该可用
-- ✅ I18nPluginOptions 类型应该可用
-- ✅ SEOPluginOptions 类型应该可用
-- ✅ PWAPluginOptions 类型应该可用
-- ✅ AnalyticsPluginOptions 类型应该可用
-- ✅ ThemePluginOptions 类型应该可用
+#### onRequest hook - Language detection
+- ✅ Should detect language from Accept-Language header
+- ✅ Should detect language from Cookie
+- ✅ Should detect language from Query param
+- ✅ Should detect language from path
+- ✅ Should use default language when not detected
+- ✅ Should skip when detection is disabled
 
-#### 子模块导出
-- ✅ 应该能从 tailwindcss 子模块导入
-- ✅ 应该能从 unocss 子模块导入
-- ✅ 应该能从 i18n 子模块导入
-- ✅ 应该能从 seo 子模块导入
-- ✅ 应该能从 pwa 子模块导入
-- ✅ 应该能从 analytics 子模块导入
-- ✅ 应该能从 theme 子模块导入
+#### onResponse hook
+- ✅ Should set response headers
+- ✅ Should inject lang attribute in HTML
+- ✅ Should update existing lang attribute
+
+#### Global $t method
+- ✅ Should register global $t function
+- ✅ Should register global $i18n instance
+- ✅ $t should return untranslated key
+- ✅ $t should support loading translations and translating
+- ✅ $t should support nested keys
+- ✅ Should use correct translation after locale switch
 
 ---
 
-### 7. PWA 插件 (pwa.test.ts) - 18 个测试
+### 6. Module Export Tests (mod.test.ts) - 36 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+#### Plugin function exports
+- ✅ Should export tailwindPlugin function
+- ✅ Should export unocssPlugin function
+- ✅ Should export i18nPlugin function
+- ✅ Should export seoPlugin function
+- ✅ Should export pwaPlugin function
+- ✅ Should export analyticsPlugin function
+- ✅ Should export themePlugin function
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 icons 配置
-- ✅ 应该接受空配置
+#### Plugin instantiation
+- ✅ tailwindPlugin should return valid plugin object
+- ✅ unocssPlugin should return valid plugin object
+- ✅ i18nPlugin should return valid plugin object
+- ✅ seoPlugin should return valid plugin object
+- ✅ pwaPlugin should return valid plugin object
+- ✅ analyticsPlugin should return valid plugin object
+- ✅ themePlugin should return valid plugin object
 
-#### onInit 钩子
-- ✅ 应该注册 pwaConfig 服务
-- ✅ 应该注册 pwaService 服务
-- ✅ pwaService 应该提供 generateManifest 方法
-- ✅ 应该在有 logger 时输出日志
-- ✅ 应该输出 Service Worker 信息
-- ✅ 应该输出推送通知信息
+#### Plugin interface
+- ✅ All plugins should have validateConfig method
+- ✅ All plugins should have onInit hook
+- ✅ CSS plugins should have onRequest and onResponse hooks
+- ✅ i18n plugin should have onRequest and onResponse hooks
+- ✅ SEO plugin should have onResponse and onBuildComplete hooks
+- ✅ PWA plugin should have onResponse hook
+- ✅ Analytics plugin should have onRequest and onResponse hooks
+- ✅ Theme plugin should have onRequest and onResponse hooks
 
-#### onResponse 钩子
-- ✅ 应该跳过非 HTML 响应
-- ✅ 应该注入 manifest 链接
-- ✅ 应该注入 theme-color meta 标签
-- ✅ 应该注入移动端 meta 标签
-- ✅ 应该注入 Apple Touch Icon
-- ✅ 应该注入 Service Worker 注册脚本
-- ✅ 禁用离线支持时不应该注入 Service Worker 脚本
+#### Type export validation
+- ✅ TailwindPluginOptions type should be available
+- ✅ UnoCSSPluginOptions type should be available
+- ✅ I18nPluginOptions type should be available
+- ✅ SEOPluginOptions type should be available
+- ✅ PWAPluginOptions type should be available
+- ✅ AnalyticsPluginOptions type should be available
+- ✅ ThemePluginOptions type should be available
+
+#### Submodule exports
+- ✅ Should import from tailwindcss submodule
+- ✅ Should import from unocss submodule
+- ✅ Should import from i18n submodule
+- ✅ Should import from seo submodule
+- ✅ Should import from pwa submodule
+- ✅ Should import from analytics submodule
+- ✅ Should import from theme submodule
 
 ---
 
-### 8. 速率限制插件 (ratelimit.test.ts) - 22 个测试
+### 7. PWA Plugin (pwa.test.ts) - 18 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 max 配置
-- ✅ 应该拒绝无效的 windowMs 配置
-- ✅ 应该接受空配置
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid icons config
+- ✅ Should accept empty config
 
-#### onInit 钩子
-- ✅ 应该注册 rateLimitConfig 服务
-- ✅ 应该注册 rateLimitService 服务
-- ✅ rateLimitService 应该提供正确的方法
-- ✅ 应该在有 logger 且开启 debug 时输出日志
+#### onInit hook
+- ✅ Should register pwaConfig service
+- ✅ Should register pwaService service
+- ✅ pwaService should provide generateManifest method
+- ✅ Should output logs when logger is present
+- ✅ Should output Service Worker info
+- ✅ Should output push notification info
+
+#### onResponse hook
+- ✅ Should skip non-HTML responses
+- ✅ Should inject manifest link
+- ✅ Should inject theme-color meta tag
+- ✅ Should inject mobile meta tags
+- ✅ Should inject Apple Touch Icon
+- ✅ Should inject Service Worker registration script
+- ✅ Should not inject Service Worker script when offline disabled
+
+---
+
+### 8. Rate Limit Plugin (ratelimit.test.ts) - 22 tests
+
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
+
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid max config
+- ✅ Should reject invalid windowMs config
+- ✅ Should accept empty config
+
+#### onInit hook
+- ✅ Should register rateLimitConfig service
+- ✅ Should register rateLimitService service
+- ✅ rateLimitService should provide correct methods
+- ✅ Should output logs when logger and debug are enabled
 
 #### rateLimitService
-- ✅ 应该正确检查是否超出限制
-- ✅ 应该返回正确的重置时间
+- ✅ Should correctly check if limit exceeded
+- ✅ Should return correct reset time
 
-#### onRequest 钩子
-- ✅ 应该允许在限制内的请求
-- ✅ 应该阻止超出限制的请求
-- ✅ 应该返回正确的限流响应
-- ✅ 应该在限流响应中包含正确的头部
-- ✅ 应该跳过字符串配置的路径
-- ✅ 应该跳过正则配置的路径
-- ✅ 应该使用自定义的标识符生成器
+#### onRequest hook
+- ✅ Should allow requests within limit
+- ✅ Should block requests exceeding limit
+- ✅ Should return correct rate limit response
+- ✅ Should include correct headers in rate limit response
+- ✅ Should skip string-configured paths
+- ✅ Should skip regex-configured paths
+- ✅ Should use custom identifier generator
 
-#### onResponse 钩子
-- ✅ 应该在响应中添加限流头
-- ✅ 应该在 skipSuccessfulRequests 时减少计数
-- ✅ 应该在 skipFailedRequests 时减少计数
-
----
-
-### 9. 安全头插件 (security.test.ts) - 16 个测试
-
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 frameOptions 配置
-- ✅ 应该接受空配置
-
-#### onInit 钩子
-- ✅ 应该注册 securityConfig 服务
-- ✅ 应该在有 logger 且开启 debug 时输出日志
-
-#### onResponse 钩子
-- ✅ 应该添加默认安全头
-- ✅ 应该添加 HSTS 头
-- ✅ 应该添加带 preload 的 HSTS 头
-- ✅ 应该添加 CSP 头
-- ✅ 应该添加完整的 CSP 指令
-- ✅ 应该添加 Permissions-Policy 头
-- ✅ 应该添加其他安全头
-- ✅ 应该能禁用特定安全头
-- ✅ 应该跳过没有响应的请求
+#### onResponse hook
+- ✅ Should add rate limit headers to response
+- ✅ Should decrement count when skipSuccessfulRequests
+- ✅ Should decrement count when skipFailedRequests
 
 ---
 
-### 10. SEO 优化插件 (seo.test.ts) - 23 个测试
+### 9. Security Headers Plugin (security.test.ts) - 16 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 keywords 配置
-- ✅ 应该拒绝无效的 robotsRules 配置
-- ✅ 应该接受空配置
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid frameOptions config
+- ✅ Should accept empty config
 
-#### onInit 钩子
-- ✅ 应该注册 seoConfig 服务
-- ✅ 应该注册 seoService 服务
-- ✅ seoService 应该提供 generateMetaTags 方法
-- ✅ seoService 应该提供 generateSitemap 方法
-- ✅ seoService 应该提供 generateRobots 方法
-- ✅ 应该在有 logger 时输出日志
+#### onInit hook
+- ✅ Should register securityConfig service
+- ✅ Should output logs when logger and debug are enabled
 
-#### onResponse 钩子
-- ✅ 应该跳过非 HTML 响应
-- ✅ 应该注入 title 标签
-- ✅ 应该注入 description meta 标签
-- ✅ 应该注入 keywords meta 标签
-- ✅ 应该注入 canonical 链接
-- ✅ 应该注入 favicon 链接
-- ✅ 应该注入 Open Graph 标签
-- ✅ 应该注入 Twitter Card 标签
-- ✅ 应该注入结构化数据
-
-#### onBuildComplete 钩子
-- ✅ 应该在启用时生成 Sitemap
-- ✅ 应该在启用时生成 Robots.txt
+#### onResponse hook
+- ✅ Should add default security headers
+- ✅ Should add HSTS header
+- ✅ Should add HSTS header with preload
+- ✅ Should add CSP header
+- ✅ Should add full CSP directives
+- ✅ Should add Permissions-Policy header
+- ✅ Should add other security headers
+- ✅ Should be able to disable specific security headers
+- ✅ Should skip requests without response
 
 ---
 
-### 11. 社交分享插件 (social.test.ts) - 23 个测试
+### 10. SEO Plugin (seo.test.ts) - 23 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-- ✅ 应该支持 OAuth 配置
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该接受空配置
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid keywords config
+- ✅ Should reject invalid robotsRules config
+- ✅ Should accept empty config
 
-#### onInit 钩子
-- ✅ 应该注册 socialConfig 服务
-- ✅ 应该注册 socialService 服务
-- ✅ socialService 应该提供 getShareUrl 方法
-- ✅ socialService 应该提供 getOAuthUrl 方法
-- ✅ socialService 应该提供 getEnabledPlatforms 方法
+#### onInit hook
+- ✅ Should register seoConfig service
+- ✅ Should register seoService service
+- ✅ seoService should provide generateMetaTags method
+- ✅ seoService should provide generateSitemap method
+- ✅ seoService should provide generateRobots method
+- ✅ Should output logs when logger is present
 
-#### socialService - 分享链接
-- ✅ 应该生成 Twitter 分享链接
-- ✅ 应该生成 Facebook 分享链接
-- ✅ 应该生成微博分享链接
-- ✅ 应该生成 LinkedIn 分享链接
-- ✅ 应该生成微信分享链接
-- ✅ 应该生成所有平台的分享链接
+#### onResponse hook
+- ✅ Should skip non-HTML responses
+- ✅ Should inject title tag
+- ✅ Should inject description meta tag
+- ✅ Should inject keywords meta tag
+- ✅ Should inject canonical link
+- ✅ Should inject favicon link
+- ✅ Should inject Open Graph tags
+- ✅ Should inject Twitter Card tags
+- ✅ Should inject structured data
+
+#### onBuildComplete hook
+- ✅ Should generate Sitemap when enabled
+- ✅ Should generate Robots.txt when enabled
+
+---
+
+### 11. Social Share Plugin (social.test.ts) - 23 tests
+
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
+- ✅ Should support OAuth config
+
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should accept empty config
+
+#### onInit hook
+- ✅ Should register socialConfig service
+- ✅ Should register socialService service
+- ✅ socialService should provide getShareUrl method
+- ✅ socialService should provide getOAuthUrl method
+- ✅ socialService should provide getEnabledPlatforms method
+
+#### socialService - Share links
+- ✅ Should generate Twitter share link
+- ✅ Should generate Facebook share link
+- ✅ Should generate Weibo share link
+- ✅ Should generate LinkedIn share link
+- ✅ Should generate WeChat share link
+- ✅ Should generate share links for all platforms
 
 #### socialService - OAuth
-- ✅ 应该生成 GitHub OAuth 链接
-- ✅ 应该生成 Google OAuth 链接
-- ✅ 应该返回 null 当 OAuth 提供商未配置时
-- ✅ 应该返回可用的 OAuth 提供商列表
+- ✅ Should generate GitHub OAuth link
+- ✅ Should generate Google OAuth link
+- ✅ Should return null when OAuth provider not configured
+- ✅ Should return list of available OAuth providers
 
-#### onResponse 钩子
-- ✅ 应该跳过非 HTML 响应
-- ✅ 应该为 HTML 响应注入分享脚本
-- ✅ 应该跳过注入当 injectShareButtons 为 false
-
----
-
-### 12. 静态文件插件 (static.test.ts) - 17 个测试
-
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
-
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 index 配置
-- ✅ 应该接受空配置
-
-#### onInit 钩子
-- ✅ 应该注册 staticConfig 服务
-- ✅ 应该注册 staticService 服务
-- ✅ staticService 应该提供 getMimeType 方法
-- ✅ staticService 应该提供 computeEtag 方法
-
-#### onRequest 钩子
-- ✅ 应该跳过不匹配前缀的请求
-- ✅ 应该拒绝目录遍历攻击
-- ✅ 应该拒绝隐藏文件访问（默认）
-- ✅ 应该只处理 GET 和 HEAD 请求
-
-#### MIME 类型检测
-- ✅ 应该正确检测常见 MIME 类型
-- ✅ 应该支持自定义 MIME 类型
-
-#### ETag 支持
-- ✅ 应该生成一致的 ETag
-- ✅ 不同内容应该生成不同的 ETag
+#### onResponse hook
+- ✅ Should skip non-HTML responses
+- ✅ Should inject share script for HTML responses
+- ✅ Should skip injection when injectShareButtons is false
 
 ---
 
-### 13. TailwindCSS 插件 (tailwindcss.test.ts) - 14 个测试
+### 12. Static File Plugin (static.test.ts) - 17 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 content 配置
-- ✅ 应该接受空配置
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid index config
+- ✅ Should accept empty config
 
-#### onInit 钩子
-- ✅ 应该注册 tailwindConfig 服务
-- ✅ 应该注册 tailwindCompiler 服务
-- ✅ 应该在有 logger 时输出日志
+#### onInit hook
+- ✅ Should register staticConfig service
+- ✅ Should register staticService service
+- ✅ staticService should provide getMimeType method
+- ✅ staticService should provide computeEtag method
 
-#### onRequest 钩子
-- ✅ 应该在开发模式下编译 CSS
+#### onRequest hook
+- ✅ Should skip requests not matching prefix
+- ✅ Should reject directory traversal attacks
+- ✅ Should reject hidden file access (default)
+- ✅ Should only handle GET and HEAD requests
 
-#### onResponse 钩子
-- ✅ 应该跳过非 HTML 响应
-- ✅ 应该在生产模式下注入 link 标签
+#### MIME type detection
+- ✅ Should correctly detect common MIME types
+- ✅ Should support custom MIME types
+
+#### ETag support
+- ✅ Should generate consistent ETag
+- ✅ Different content should generate different ETag
+
+---
+
+### 13. TailwindCSS Plugin (tailwindcss.test.ts) - 14 tests
+
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
+
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid content config
+- ✅ Should accept empty config
+
+#### onInit hook
+- ✅ Should register tailwindConfig service
+- ✅ Should register tailwindCompiler service
+- ✅ Should output logs when logger is present
+
+#### onRequest hook
+- ✅ Should compile CSS in dev mode
+
+#### onResponse hook
+- ✅ Should skip non-HTML responses
+- ✅ Should inject link tag in production mode
 
 #### TailwindCompiler
-- ✅ 应该创建编译器实例
-- ✅ 应该在文件不存在时返回空 CSS
-- ✅ 应该清除缓存
+- ✅ Should create compiler instance
+- ✅ Should return empty CSS when file does not exist
+- ✅ Should clear cache
 
 ---
 
-### 14. 主题插件 (theme.test.ts) - 24 个测试
+### 14. Theme Plugin (theme.test.ts) - 24 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 defaultMode
-- ✅ 应该拒绝无效的 strategy
-- ✅ 应该拒绝无效的 transitionDuration
-- ✅ 应该接受空配置
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid defaultMode
+- ✅ Should reject invalid strategy
+- ✅ Should reject invalid transitionDuration
+- ✅ Should accept empty config
 
-#### onInit 钩子
-- ✅ 应该注册 themeConfig 服务
-- ✅ 应该注册 themeService 服务
-- ✅ themeService 应该提供 getCurrentTheme 方法
-- ✅ themeService 应该提供 getCurrentMode 方法
-- ✅ themeService 应该提供 setTheme 方法
-- ✅ themeService 应该提供 setMode 方法
+#### onInit hook
+- ✅ Should register themeConfig service
+- ✅ Should register themeService service
+- ✅ themeService should provide getCurrentTheme method
+- ✅ themeService should provide getCurrentMode method
+- ✅ themeService should provide setTheme method
+- ✅ themeService should provide setMode method
 
-#### onRequest 钩子
-- ✅ 应该从 Cookie 读取主题
-- ✅ 应该处理 system 模式
-- ✅ 无 Cookie 时应该使用默认模式
+#### onRequest hook
+- ✅ Should read theme from Cookie
+- ✅ Should handle system mode
+- ✅ Should use default mode when no Cookie
 
-#### onResponse 钩子
-- ✅ 应该跳过非 HTML 响应
-- ✅ 应该注入防闪烁脚本
-- ✅ 应该为 class 策略添加 dark class
-- ✅ 应该为 attribute 策略添加属性
-- ✅ 禁用脚本注入时不应该注入脚本
+#### onResponse hook
+- ✅ Should skip non-HTML responses
+- ✅ Should inject flash prevention script
+- ✅ Should add dark class for class strategy
+- ✅ Should add attribute for attribute strategy
+- ✅ Should not inject script when disabled
 
-#### 配置选项
-- ✅ 应该支持自定义 cookieName
-- ✅ 应该支持自定义 cookieExpireDays
-- ✅ 应该支持自定义 transitionDuration
+#### Config options
+- ✅ Should support custom cookieName
+- ✅ Should support custom cookieExpireDays
+- ✅ Should support custom transitionDuration
 
 ---
 
-### 15. UnoCSS 插件 (unocss.test.ts) - 17 个测试
+### 15. UnoCSS Plugin (unocss.test.ts) - 17 tests
 
-#### 插件创建
-- ✅ 应该使用默认配置创建插件
-- ✅ 应该使用自定义配置创建插件
+#### Plugin creation
+- ✅ Should create plugin with default config
+- ✅ Should create plugin with custom config
 
-#### 配置验证
-- ✅ 应该验证有效配置
-- ✅ 应该拒绝无效的 content 配置
-- ✅ 应该拒绝无效的 presets 配置
-- ✅ 应该接受空配置
+#### Config validation
+- ✅ Should validate valid config
+- ✅ Should reject invalid content config
+- ✅ Should reject invalid presets config
+- ✅ Should accept empty config
 
-#### onInit 钩子
-- ✅ 应该注册 unocssConfig 服务
-- ✅ 应该注册 unocssCompiler 服务
-- ✅ 应该在有 logger 时输出日志
-- ✅ 应该输出预设信息
+#### onInit hook
+- ✅ Should register unocssConfig service
+- ✅ Should register unocssCompiler service
+- ✅ Should output logs when logger is present
+- ✅ Should output preset info
 
-#### onRequest 钩子
-- ✅ 应该在开发模式下编译 CSS
+#### onRequest hook
+- ✅ Should compile CSS in dev mode
 
-#### onResponse 钩子
-- ✅ 应该跳过非 HTML 响应
-- ✅ 应该在生产模式下注入 link 标签
+#### onResponse hook
+- ✅ Should skip non-HTML responses
+- ✅ Should inject link tag in production mode
 
 #### UnoCompiler
-- ✅ 应该创建编译器实例
-- ✅ 应该在文件不存在时仍生成 preflights
-- ✅ 应该清除缓存
-- ✅ 应该在开发模式下返回 needsRebuild 标志
+- ✅ Should create compiler instance
+- ✅ Should still generate preflights when file does not exist
+- ✅ Should clear cache
+- ✅ Should return needsRebuild flag in dev mode
 
 ---
 
-## 测试覆盖分析
+## Test Coverage Analysis
 
-### 接口方法覆盖
+### API Method Coverage
 
-| 插件 | 公共 API | 覆盖率 |
-|------|----------|--------|
+| Plugin | Public API | Coverage |
+|--------|-------------|----------|
 | Analytics | trackPageview, trackEvent, trackPerformance, trackUserBehavior | 100% |
 | Auth | hasRole, hasPermission, getUser | 100% |
 | Compression | compress | 100% |
@@ -619,32 +619,32 @@
 | Theme | getCurrentTheme, getCurrentMode, setTheme, setMode | 100% |
 | UnoCSS | compile, clearCache, getLastResult | 100% |
 
-### 边界情况覆盖
+### Edge Case Coverage
 
-- ✅ 空配置处理
-- ✅ 无效配置拒绝
-- ✅ 非 HTML 响应跳过
-- ✅ 缺少必要头部处理
-- ✅ 文件不存在处理
-- ✅ 目录遍历攻击防护
+- ✅ Empty config handling
+- ✅ Invalid config rejection
+- ✅ Non-HTML response skip
+- ✅ Missing required headers handling
+- ✅ File not found handling
+- ✅ Directory traversal attack protection
 
-### 错误处理覆盖
+### Error Handling Coverage
 
-- ✅ 配置验证错误
-- ✅ 认证失败处理
-- ✅ 速率限制超出处理
-- ✅ 文件访问错误处理
+- ✅ Config validation errors
+- ✅ Auth failure handling
+- ✅ Rate limit exceeded handling
+- ✅ File access error handling
 
 ---
 
-## 结论
+## Conclusion
 
-@dreamer/plugins 测试套件包含 **322 个单元测试**，全部通过，覆盖了所有 15 个插件的核心功能：
+The @dreamer/plugins test suite includes **322 unit tests**, all passing, covering core functionality of all 15 plugins:
 
-1. **CSS 框架插件**：TailwindCSS v4、UnoCSS
-2. **国际化插件**：i18n
-3. **SEO 优化插件**：SEO、PWA
-4. **安全插件**：认证、CORS、安全头、速率限制
-5. **功能增强插件**：压缩、静态文件、主题、分析统计、社交分享
+1. **CSS framework plugins**: TailwindCSS v4, UnoCSS
+2. **i18n plugin**: i18n
+3. **SEO plugins**: SEO, PWA
+4. **Security plugins**: Auth, CORS, Security headers, Rate limit
+5. **Feature plugins**: Compression, Static files, Theme, Analytics, Social share
 
-所有插件均通过了配置验证、生命周期钩子、服务注册和边界情况的测试。
+All plugins pass config validation, lifecycle hooks, service registration, and edge case tests.
