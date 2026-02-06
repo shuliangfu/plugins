@@ -1,6 +1,8 @@
 # @dreamer/plugins
 
-> 一个兼容 Deno 和 Bun 的官方插件集合，提供 CSS 原子化、国际化、SEO、PWA、认证等开箱即用的 Web 应用功能插件
+> Official plugin collection for Deno and Bun: CSS utilities, i18n, SEO, PWA, auth, and more
+
+English | [中文 (Chinese)](./README-zh.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
@@ -10,13 +12,13 @@
 
 ---
 
-## 🎯 功能
+## 🎯 Features
 
-官方插件集合，为 dweb 框架提供常用的功能扩展。依赖 `@dreamer/plugin` 插件管理系统，用于注册和管理插件生命周期。
+Official plugin collection for the dweb framework. Depends on `@dreamer/plugin` for lifecycle management.
 
 ---
 
-## 📦 安装
+## 📦 Installation
 
 ### Deno
 
@@ -32,92 +34,90 @@ bunx jsr add @dreamer/plugins
 
 ---
 
-## 🌍 环境兼容性
+## 🌍 Environment Compatibility
 
-| 环境 | 版本要求 | 状态 |
-|------|---------|------|
-| **Deno** | 2.5+ | ✅ 完全支持 |
-| **Bun** | 1.0+ | ✅ 完全支持 |
-| **服务端** | - | ✅ 支持（兼容 Deno 和 Bun 运行时） |
-| **客户端** | - | ✅ 支持（主题使用 `@dreamer/theme`，国际化使用 `@dreamer/i18n`） |
-| **依赖** | `@dreamer/plugin` | 📦 插件管理系统（必须） |
-
----
-
-## ✨ 特性
-
-### CSS 处理插件
-- **TailwindCSS v4**：自动编译、热重载、生产优化（使用 PostCSS + @tailwindcss/postcss）
-- **UnoCSS**：预设系统、图标支持、高性能构建（使用 @unocss/core + preset-wind）
-- **配置简化**：`content` 参数可选，TailwindCSS v4 推荐在 CSS 文件中使用 `@source` 指令
-
-### 国际化插件（i18n）
-- 多语言检测和切换
-- 翻译文件管理
-- 路由本地化
-- 日期和数字格式化
-- **服务端全局 $t 方法**：在服务端直接使用 `$t()` 翻译
-- **客户端模块**：提供浏览器端翻译函数
-
-### SEO 优化插件
-- 自动生成 meta 标签
-- Sitemap 和 Robots.txt 生成
-- Open Graph 和 Twitter Card 支持
-- 结构化数据（JSON-LD）
-
-### PWA 插件
-- Service Worker 注册
-- Web App Manifest 生成
-- 离线支持
-- 推送通知
-
-### 认证插件（Auth）
-- JWT 认证
-- Bearer Token 认证
-- Basic 认证
-- 角色和权限验证
-- 公开路径配置
-
-### 安全插件
-- **Security**：安全头注入（CSP、HSTS、X-Frame-Options 等）
-- **CORS**：跨域资源共享配置
-- **RateLimit**：请求速率限制
-
-### 其他插件
-- **Analytics**：分析统计（Google Analytics、Plausible）
-- **Theme**：主题切换（亮色/暗色/系统模式）
-- **Compression**：响应压缩（gzip、deflate）
-- **Static**：静态文件服务（多目录配置、MIME 类型、ETag、环境缓存控制、安全防护）
-- **Social**：社交分享和 OAuth 登录
+| Environment | Version | Status |
+|-------------|---------|--------|
+| **Deno** | 2.5+ | ✅ Full support |
+| **Bun** | 1.0+ | ✅ Full support |
+| **Server** | - | ✅ Deno/Bun compatible |
+| **Client** | - | ✅ Theme: @dreamer/theme, i18n: @dreamer/i18n |
+| **Dependencies** | `@dreamer/plugin` | 📦 Required |
 
 ---
 
-## 🎯 使用场景
+## ✨ Characteristics
 
-- **现代 CSS 开发**：使用 TailwindCSS 或 UnoCSS 进行原子化 CSS 开发
-- **多语言应用**：构建支持多种语言的国际化应用
-- **SEO 优化**：提升搜索引擎排名和社交媒体分享效果
-- **PWA 应用**：构建可安装的渐进式 Web 应用
-- **安全防护**：添加安全头、CORS、速率限制
-- **用户认证**：JWT、Bearer Token、Basic Auth 认证
+### CSS Plugins
+- **TailwindCSS v4**: Auto compile, HMR, production optimization (PostCSS + @tailwindcss/postcss)
+- **UnoCSS**: Presets, icons, fast build (@unocss/core + preset-wind)
+- **Config**: `content` optional; TailwindCSS v4 recommends `@source` in CSS
+
+### i18n Plugin
+- Locale detection and switching
+- Translation file management
+- Route localization
+- Date and number formatting
+- **Server $t**: Use `$t()` on server
+- **Client module**: Browser translation functions
+
+### SEO Plugin
+- Auto meta tags
+- Sitemap and Robots.txt
+- Open Graph and Twitter Card
+- Structured data (JSON-LD)
+
+### PWA Plugin
+- Service Worker registration
+- Web App Manifest
+- Offline support
+- Push notifications
+
+### Auth Plugin
+- JWT, Bearer Token, Basic auth
+- Role and permission checks
+- Public path config
+
+### Security Plugins
+- **Security**: CSP, HSTS, X-Frame-Options, etc.
+- **CORS**: Cross-origin config
+- **RateLimit**: Request rate limiting
+
+### Other Plugins
+- **Analytics**: Google Analytics, Plausible
+- **Theme**: Light/dark/system mode
+- **Compression**: gzip, deflate
+- **Static**: Multi-dir, MIME, ETag, cache, security
+- **Social**: Share links and OAuth
 
 ---
 
-## 🚀 快速开始
+## 🎯 Use Cases
 
-### 基础用法
+- **Modern CSS**: TailwindCSS or UnoCSS
+- **i18n**: Multi-language apps
+- **SEO**: Search ranking and social sharing
+- **PWA**: Installable progressive web apps
+- **Security**: Headers, CORS, rate limiting
+- **Auth**: JWT, Bearer Token, Basic Auth
+
+---
+
+## 🚀 Quick Start
+
+### Basic Usage
 
 ```typescript
 import { PluginManager } from "@dreamer/plugin";
 import { ServiceContainer } from "@dreamer/service";
 import { tailwindPlugin, i18nPlugin, seoPlugin, themePlugin } from "@dreamer/plugins";
 
-// 创建服务容器和插件管理器
+// Create service container and plugin manager
 const container = new ServiceContainer();
 const pluginManager = new PluginManager(container);
 
-// 添加插件
-// TailwindCSS v4：content 可选，推荐在 CSS 文件中使用 @source 指令
+// Add plugins
+// TailwindCSS v4: content optional, prefer @source in CSS
 await pluginManager.use(tailwindPlugin({
   cssEntry: "./src/assets/tailwind.css",
 }));
@@ -137,11 +137,11 @@ await pluginManager.use(themePlugin({
   darkClass: "dark",
 }));
 
-// 触发初始化
+// Trigger init
 await pluginManager.triggerInit();
 ```
 
-### 与 dweb 框架集成
+### dweb Integration
 
 ```typescript
 import { App } from "@dreamer/dweb";
@@ -157,12 +157,12 @@ import {
 
 const app = new App({
   plugins: [
-    // TailwindCSS v4（content 可选，推荐在 CSS 文件中使用 @source 指令）
+    // TailwindCSS v4 (content optional, prefer @source in CSS)
     tailwindPlugin({
       cssEntry: "./src/assets/tailwind.css",
     }),
 
-    // PWA 支持
+    // PWA
     pwaPlugin({
       name: "My App",
       themeColor: "#3498db",
@@ -175,12 +175,12 @@ const app = new App({
       trackPageviews: true,
     }),
 
-    // 主题切换
+    // Theme
     themePlugin({
       defaultMode: "system",
     }),
 
-    // 认证
+    // Auth
     authPlugin({
       type: "jwt",
       jwt: { secret: "your-secret-key" },
@@ -188,7 +188,7 @@ const app = new App({
       publicPaths: ["/api/auth/login"],
     }),
 
-    // 安全头
+    // Security headers
     securityPlugin({
       hsts: { maxAge: 31536000 },
       csp: { defaultSrc: ["'self'"] },
@@ -207,68 +207,68 @@ await app.start();
 
 ---
 
-## 🎨 使用示例
+## 🎨 Examples
 
-### TailwindCSS v4 插件
+### TailwindCSS v4 Plugin
 
 ```typescript
 import { tailwindPlugin } from "@dreamer/plugins/tailwindcss";
 
-// 基础用法（推荐：在 CSS 文件中使用 @source 指令）
+// Basic (recommend @source in CSS)
 const plugin = tailwindPlugin({
   cssEntry: "./src/assets/tailwind.css",
 });
 
-// 完整配置
+// Full config
 const plugin = tailwindPlugin({
   cssEntry: "./src/assets/tailwind.css",
-  content: ["./src/**/*.{ts,tsx}"], // 可选，推荐使用 @source 指令
-  config: "./tailwind.config.ts",   // 可选
-  assetsPath: "/assets",            // 静态资源 URL 路径（默认 "/assets"）
-  jit: true,                        // 默认开启
-  darkMode: "class",                // 暗色模式策略
+  content: ["./src/**/*.{ts,tsx}"], // Optional, prefer @source
+  config: "./tailwind.config.ts",   // Optional
+  assetsPath: "/assets",            // Static asset URL (default "/assets")
+  jit: true,                        // Default on
+  darkMode: "class",                // Dark mode strategy
 });
 ```
 
-**CSS 入口文件示例 (tailwind.css):**
+**CSS entry (tailwind.css):**
 
 ```css
-/* TailwindCSS v4 使用 @source 指令指定扫描路径 */
+/* TailwindCSS v4 uses @source for scan paths */
 @source "../**/*.{ts,tsx}";
 
 @import "tailwindcss";
 
-/* 自定义样式 */
+/* Custom styles */
 .custom-class {
   @apply bg-blue-500 text-white;
 }
 ```
 
-### UnoCSS 插件
+### UnoCSS Plugin
 
 ```typescript
 import { unocssPlugin } from "@dreamer/plugins/unocss";
 
-// 基础用法
+// Basic
 const plugin = unocssPlugin({
   cssEntry: "./src/assets/unocss.css",
   content: ["./src/**/*.{ts,tsx}"],
 });
 
-// 完整配置
+// Full config
 const plugin = unocssPlugin({
   cssEntry: "./src/assets/unocss.css",
   content: ["./src/**/*.{ts,tsx}"],
-  assetsPath: "/assets",              // 静态资源 URL 路径（默认 "/assets"）
-  presets: ["@unocss/preset-wind"],   // TailwindCSS 兼容
-  icons: true,                        // 启用图标系统
+  assetsPath: "/assets",              // Static asset URL (default "/assets")
+  presets: ["@unocss/preset-wind"],   // TailwindCSS compatible
+  icons: true,                        // Enable icons
   shortcuts: {
     "btn": "px-4 py-2 rounded bg-blue-500 text-white",
   },
 });
 ```
 
-### 认证插件
+### Auth Plugin
 
 ```typescript
 import { authPlugin } from "@dreamer/plugins/auth";
@@ -277,7 +277,7 @@ const plugin = authPlugin({
   type: "jwt",
   jwt: {
     secret: "your-jwt-secret",
-    expiresIn: 3600 * 24 * 7, // 7 天
+    expiresIn: 3600 * 24 * 7, // 7 days
   },
   protectedPaths: ["/api/", "/admin/"],
   publicPaths: ["/api/login", "/api/register"],
@@ -287,15 +287,15 @@ const plugin = authPlugin({
   },
 });
 
-// 在处理器中获取用户
+// Get user in handler
 const authService = container.get("authService");
 const user = authService.getUser(context);
 if (authService.hasRole(user, "admin")) {
-  // 管理员操作
+  // Admin action
 }
 ```
 
-### 国际化插件
+### i18n Plugin
 
 ```typescript
 import { i18nPlugin, $t, $i18n } from "@dreamer/plugins/i18n";
@@ -310,29 +310,29 @@ const plugin = i18nPlugin({
 await pluginManager.use(plugin);
 await pluginManager.triggerInit();
 
-// 加载翻译数据
+// Load translations
 $i18n.loadTranslations("zh-CN", {
-  hello: "你好",
-  welcome: "欢迎 {name}",
+  hello: "Hello",
+  welcome: "Welcome {name}",
   menu: {
-    home: "首页",
-    about: "关于",
+    home: "Home",
+    about: "About",
   },
 });
 
-// 使用导出的 $t 方法
-console.log($t("hello")); // "你好"
-console.log($t("welcome", { name: "张三" })); // "欢迎 张三"
-console.log($t("menu.home")); // "首页"
+// Use $t
+console.log($t("hello")); // "Hello"
+console.log($t("welcome", { name: "John" })); // "Welcome John"
+console.log($t("menu.home")); // "Home"
 
-// 使用 $i18n 服务
+// Use $i18n
 $i18n.setLocale("en-US");
 console.log($i18n.getLocale()); // "en-US"
 ```
 
-#### 全局 $t 类型声明（可选）
+#### Global $t type declaration (optional)
 
-如果你希望在任何文件中不需要 import 就能直接使用 `$t` 和 `$i18n`，可以从本仓库复制 [`src/i18n/global.d.ts`](./src/i18n/global.d.ts) 到你的项目中，然后在 `deno.json` 或 `tsconfig.json` 中引用：
+To use `$t` and `$i18n` without import, copy [`src/i18n/global.d.ts`](./src/i18n/global.d.ts) to your project and reference in `deno.json` or `tsconfig.json`:
 
 ```json
 {
@@ -342,38 +342,38 @@ console.log($i18n.getLocale()); // "en-US"
 }
 ```
 
-或者在文件顶部添加三斜杠引用：
+Or add triple-slash reference at file top:
 
 ```typescript
 /// <reference path="./global.d.ts" />
 
-// 然后可以直接使用，无需 import
+// Then use directly without import
 const text = $t("hello");
 $i18n.setLocale("en-US");
 ```
 
-### 静态文件插件
+### Static File Plugin
 
 ```typescript
 import { staticPlugin } from "@dreamer/plugins/static";
 
-// 基础用法（默认 root: "assets", prefix: "/assets"）
+// Basic (default root: "assets", prefix: "/assets")
 const plugin = staticPlugin();
 
-// 单目录配置
+// Single directory
 const plugin = staticPlugin({
   root: "./public",
   prefix: "/static",
   index: ["index.html"],
   etag: true,
-  cacheControl: "public, max-age=31536000, immutable", // 生产环境缓存
-  // 开发环境自动使用 "no-cache, no-store, must-revalidate"
+  cacheControl: "public, max-age=31536000, immutable", // Production cache
+  // Dev auto uses "no-cache, no-store, must-revalidate"
   mimeTypes: {
     ".wasm": "application/wasm",
   },
 });
 
-// 多目录配置（支持同时服务多个静态目录）
+// Multi-directory (serve multiple static dirs)
 const plugin = staticPlugin({
   statics: [
     { root: "./assets", prefix: "/assets" },
@@ -384,16 +384,16 @@ const plugin = staticPlugin({
 });
 ```
 
-**缓存控制说明**：
-- **开发环境**（`DENO_ENV=dev` 或 `BUN_ENV=dev`，默认）：自动使用 `devCacheControl`（默认禁用缓存）
-- **生产环境**（`DENO_ENV=prod` 或 `BUN_ENV=prod`）：使用 `cacheControl`（默认缓存 24 小时）
+**Cache control**:
+- **Dev** (`DENO_ENV=dev` or `BUN_ENV=dev`, default): Uses `devCacheControl` (no cache by default)
+- **Prod** (`DENO_ENV=prod` or `BUN_ENV=prod`): Uses `cacheControl` (24h cache by default)
 
-### 安全插件
+### Security Plugins
 
 ```typescript
 import { securityPlugin, corsPlugin, rateLimitPlugin } from "@dreamer/plugins";
 
-// 安全头
+// Security headers
 const security = securityPlugin({
   hsts: { maxAge: 31536000, includeSubDomains: true },
   csp: {
@@ -414,16 +414,16 @@ const cors = corsPlugin({
   maxAge: 86400,
 });
 
-// 速率限制
+// Rate limit
 const rateLimit = rateLimitPlugin({
   max: 100,
-  windowMs: 60 * 1000, // 1 分钟
+  windowMs: 60 * 1000, // 1 minute
   skipPaths: ["/health"],
   keyGenerator: (req) => req.headers.get("x-forwarded-for") || "unknown",
 });
 ```
 
-### 社交分享插件
+### Social Share Plugin
 
 ```typescript
 import { socialPlugin } from "@dreamer/plugins/social";
@@ -444,149 +444,134 @@ const plugin = socialPlugin({
   },
 });
 
-// 生成分享链接
+// Generate share link
 const socialService = container.get("socialService");
 const twitterUrl = socialService.getShareUrl("twitter", {
   url: "https://example.com",
   title: "Check this out!",
 });
 
-// 生成 OAuth 链接
+// Generate OAuth link
 const githubAuthUrl = socialService.getOAuthUrl("github");
 ```
 
 ---
 
-### 构建系统集成
+### Build System Integration
 
-CSS 插件在构建时会生成带 hash 的文件名，构建系统可通过以下方式获取编译结果：
+CSS plugins generate hashed filenames at build time. Build system can get compile result from compiler:
 
 ```typescript
-// 方式 1：监听 App 事件（推荐）
-// 所有 CSS 插件统一使用 "plugin:build:compiled" 事件
-app.on("plugin:build:compiled", async (data) => {
-  // data.type: "css"
-  // data.name: "tailwind" | "unocss"
-  // data.filename: "tailwind.a51ff10f.css"
-  // data.result: CSS 内容
-  // data.outputDir: "assets" (输出目录)
-
-  // 将 CSS 写入到输出目录
-  const outputPath = `./dist/client/${data.outputDir}/${data.filename}`;
-  await writeTextFile(outputPath, data.result);
-});
-
-// 方式 2：从编译器获取
 const compiler = container.get("tailwindCompiler");
 const lastResult = compiler.getLastResult();
 
-console.log(lastResult.css);       // CSS 内容
+console.log(lastResult.css);       // CSS content
 console.log(lastResult.hash);      // "a51ff10f"
 console.log(lastResult.filename);  // "tailwind.a51ff10f.css"
 ```
 
 ---
 
-## 📚 API 文档
+## 📚 API Reference
 
-### 插件列表
+### Plugin List
 
-| 插件 | 导入路径 | 说明 |
-|------|---------|------|
-| `tailwindPlugin` | `@dreamer/plugins/tailwindcss` | TailwindCSS v4 支持 |
-| `unocssPlugin` | `@dreamer/plugins/unocss` | UnoCSS 支持 |
-| `i18nPlugin` | `@dreamer/plugins/i18n` | 国际化支持（含全局 $t） |
-| `seoPlugin` | `@dreamer/plugins/seo` | SEO 优化 |
-| `pwaPlugin` | `@dreamer/plugins/pwa` | PWA 支持 |
-| `analyticsPlugin` | `@dreamer/plugins/analytics` | 分析统计 |
-| `themePlugin` | `@dreamer/plugins/theme` | 主题切换 |
-| `authPlugin` | `@dreamer/plugins/auth` | 认证授权 |
-| `securityPlugin` | `@dreamer/plugins/security` | 安全头 |
-| `corsPlugin` | `@dreamer/plugins/cors` | CORS 跨域 |
-| `rateLimitPlugin` | `@dreamer/plugins/ratelimit` | 速率限制 |
-| `staticPlugin` | `@dreamer/plugins/static` | 静态文件 |
-| `compressionPlugin` | `@dreamer/plugins/compression` | 响应压缩 |
-| `socialPlugin` | `@dreamer/plugins/social` | 社交分享/OAuth |
+| Plugin | Import | Description |
+|--------|--------|-------------|
+| `tailwindPlugin` | `@dreamer/plugins/tailwindcss` | TailwindCSS v4 |
+| `unocssPlugin` | `@dreamer/plugins/unocss` | UnoCSS |
+| `i18nPlugin` | `@dreamer/plugins/i18n` | i18n (incl. global $t) |
+| `seoPlugin` | `@dreamer/plugins/seo` | SEO |
+| `pwaPlugin` | `@dreamer/plugins/pwa` | PWA |
+| `analyticsPlugin` | `@dreamer/plugins/analytics` | Analytics |
+| `themePlugin` | `@dreamer/plugins/theme` | Theme |
+| `authPlugin` | `@dreamer/plugins/auth` | Auth |
+| `securityPlugin` | `@dreamer/plugins/security` | Security headers |
+| `corsPlugin` | `@dreamer/plugins/cors` | CORS |
+| `rateLimitPlugin` | `@dreamer/plugins/ratelimit` | Rate limit |
+| `staticPlugin` | `@dreamer/plugins/static` | Static files |
+| `compressionPlugin` | `@dreamer/plugins/compression` | Compression |
+| `socialPlugin` | `@dreamer/plugins/social` | Social share/OAuth |
 
-### 独立客户端库
+### Standalone Client Libraries
 
-客户端功能已移至独立库，可直接在浏览器中使用：
+Client features moved to separate packages:
 
-| 库 | 导入路径 | 说明 |
-|------|---------|------|
-| `@dreamer/i18n` | `jsr:@dreamer/i18n` | 国际化（客户端/服务端通用） |
-| `@dreamer/theme` | `jsr:@dreamer/theme` | 主题切换（TailwindCSS/UnoCSS） |
+| Package | Import | Description |
+|---------|--------|-------------|
+| `@dreamer/i18n` | `jsr:@dreamer/i18n` | i18n (client/server) |
+| `@dreamer/theme` | `jsr:@dreamer/theme` | Theme (TailwindCSS/UnoCSS) |
 
-### 事件钩子
+### Event Hooks
 
-所有插件都实现以下事件钩子（按需）：
+All plugins implement these hooks (as needed):
 
-| 钩子 | 说明 |
-|------|------|
-| `onInit` | 初始化时注册服务 |
-| `onRequest` | 请求处理前（如语言检测、认证、CSS 编译） |
-| `onResponse` | 响应处理后（如注入 meta 标签、压缩、安全头） |
-| `onBuildComplete` | 构建完成后（如生成 Sitemap） |
+| Hook | Description |
+|------|-------------|
+| `onInit` | Register services |
+| `onRequest` | Before request (locale, auth, CSS compile) |
+| `onResponse` | After response (meta, compression, headers) |
+| `onBuildComplete` | After build (e.g. Sitemap) |
 
 ---
 
-## 📊 测试报告
+## 📊 Test Report
 
 [![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
 
-### 单元测试
+### Unit Tests
 
-| 指标 | 值 |
-|------|-----|
-| 总测试数 | 322 |
-| 通过 | 322 |
-| 失败 | 0 |
-| 通过率 | 100% |
-| 测试时间 | 2026-02-02 |
+| Metric | Value |
+|--------|-------|
+| Total tests | 322 |
+| Passed | 322 |
+| Failed | 0 |
+| Pass rate | 100% |
+| Test date | 2026-02-01 |
 
-### CSS 编译器实际测试
+### CSS Compiler Tests
 
-| 编译器 | 状态 | 技术栈 | 输出大小 |
-|--------|------|--------|----------|
-| TailwindCSS v4 | ✅ 通过 | PostCSS + @tailwindcss/postcss | 9417 字符 |
-| UnoCSS | ✅ 通过 | @unocss/core + preset-wind | 3294 字符 |
+| Compiler | Status | Stack | Output size |
+|----------|--------|-------|-------------|
+| TailwindCSS v4 | ✅ Pass | PostCSS + @tailwindcss/postcss | 9417 chars |
+| UnoCSS | ✅ Pass | @unocss/core + preset-wind | 3294 chars |
 
-详细测试报告请查看 [TEST_REPORT.md](./TEST_REPORT.md)
-
----
-
-## 📝 注意事项
-
-1. **依赖关系**：所有插件都依赖 `@dreamer/plugin` 插件管理系统。
-
-2. **事件驱动**：插件通过事件钩子响应应用生命周期，不需要实现 `install`/`activate` 等生命周期方法。
-
-3. **服务注册**：插件在 `onInit` 钩子中注册服务到容器，可通过 `container.get()` 获取。
-
-4. **CSS 编译**：
-   - **TailwindCSS v4**：使用 PostCSS + @tailwindcss/postcss 编译，`content` 参数可选
-   - **UnoCSS**：使用 @unocss/core + preset-wind 编译，支持类名扫描
-   - 开发模式下实时编译，生产模式使用预编译 CSS
-
-5. **配置验证**：所有插件都提供 `validateConfig` 方法验证配置有效性。
-
-6. **独立客户端库**：客户端功能已移至独立库（`@dreamer/i18n`、`@dreamer/theme`），可直接在浏览器中使用。
-
-7. **全局 $t 方法**：使用 `@dreamer/i18n` 库的 `$t` 和 `$i18n` 函数进行国际化。
-
-8. **JSR 兼容**：所有模块都使用类型安全的方式处理全局变量，确保 JSR 发布兼容性。
+See [TEST_REPORT.md](./TEST_REPORT.md) for details.
 
 ---
 
-## 🤝 贡献
+## 📝 Notes
 
-欢迎提交 Issue 和 Pull Request！
+1. **Dependencies**: All plugins depend on `@dreamer/plugin`.
+
+2. **Event-driven**: Plugins use hooks for lifecycle; no `install`/`activate` methods.
+
+3. **Service registration**: Plugins register services in `onInit`; use `container.get()` to access.
+
+4. **CSS compilation**:
+   - **TailwindCSS v4**: PostCSS + @tailwindcss/postcss, `content` optional
+   - **UnoCSS**: @unocss/core + preset-wind, class scanning
+   - Dev: live compile; Prod: precompiled CSS
+
+5. **Config validation**: All plugins provide `validateConfig`.
+
+6. **Client libraries**: Use `@dreamer/i18n` and `@dreamer/theme` for browser.
+
+7. **Global $t**: Use `$t` and `$i18n` from `@dreamer/i18n` for i18n.
+
+8. **JSR compatibility**: Type-safe global handling for JSR publish.
 
 ---
 
-## 📄 许可证
+## 🤝 Contributing
 
-MIT License - 详见 [LICENSE.md](./LICENSE.md)
+Issues and Pull Requests are welcome!
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE.md](./LICENSE.md)
 
 ---
 
