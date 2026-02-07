@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.1] - 2026-02-07
+
+### Added
+
+- CHANGELOG-zh.md (Chinese changelog)
+- Changelog section in README.md and README-zh.md linking to changelog files
+
+### Changed
+
+- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Dev mode now injects `<link>` instead of `<style>` for consistency with production, fixing style loss after client-side navigation in Hybrid mode
+- **UnoCSS** (`@dreamer/plugins/unocss`): Same change as TailwindCSS—dev mode uses `<link>` to avoid style loss in Hybrid SPA navigation
+- **Dependencies**:
+  - `@dreamer/plugin`: ^1.0.0-beta.6 → ^1.0.0
+  - `@dreamer/service`: ^1.0.0-beta.4 → ^1.0.0
+  - `@dreamer/i18n`: ^1.0.0-beta.4 → ^1.0.0
+
+---
+
 ## [1.0.0] - 2026-02-06
 
 ### Added

@@ -7,6 +7,24 @@
 
 ---
 
+## [1.0.1] - 2026-02-07
+
+### Added
+
+- CHANGELOG-zh.md（中文变更日志）
+- README.md 与 README-zh.md 中新增变更日志章节，链接至变更日志文件
+
+### Changed
+
+- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：开发模式改为注入 `<link>` 而非 `<style>`，与生产模式一致，修复 Hybrid 模式下客户端导航后样式丢失
+- **UnoCSS**（`@dreamer/plugins/unocss`）：同上，开发模式使用 `<link>` 避免 Hybrid SPA 导航后样式丢失
+- **依赖升级**：
+  - `@dreamer/plugin`：^1.0.0-beta.6 → ^1.0.0
+  - `@dreamer/service`：^1.0.0-beta.4 → ^1.0.0
+  - `@dreamer/i18n`：^1.0.0-beta.4 → ^1.0.0
+
+---
+
 ## [1.0.0] - 2026-02-06
 
 ### Added
