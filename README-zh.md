@@ -565,6 +565,12 @@ console.log(lastResult.filename);  // "tailwind.a51ff10f.css"
 
 ---
 
+## 📜 变更日志
+
+详见 [CHANGELOG-zh.md](./CHANGELOG-zh.md) 了解版本历史与发布说明。
+
+---
+
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！

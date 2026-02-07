@@ -563,6 +563,12 @@ See [TEST_REPORT.md](./TEST_REPORT.md) for details.
 
 ---
 
+## 📜 Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for version history and release notes.
+
+---
+
 ## 🤝 Contributing
 
 Issues and Pull Requests are welcome!
