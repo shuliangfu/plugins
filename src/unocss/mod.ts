@@ -331,14 +331,14 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
         let injectedHtml = html;
 
         if (isDev) {
-          // 开发模式：注入 <style> 标签（HMR 时 client 从容器配置得到的 URL 拉取最新 CSS）
-          const css = (ctx as Record<string, unknown>).unocssCSS as
-            | string
-            | undefined;
-          if (css) {
-            const styleTag = `<style id="unocss-injected">${css}</style>`;
-            injectedHtml = html.replace(/<\/head>/i, `  ${styleTag}\n</head>`);
-          }
+          // 开发模式：注入 <link> 标签，与生产模式一致，避免 Hybrid 模式下客户端导航后内联 style 失效导致样式丢失
+          const normalizedPath = assetsPath.startsWith("/")
+            ? assetsPath.replace(/\/$/, "")
+            : `/${assetsPath.replace(/\/$/, "")}`;
+          const devCssPath = normalizedPath + "/" + cssEntryBasename + ".css";
+          const linkTag =
+            `<link rel="stylesheet" href="${devCssPath}" id="unocss-injected">`;
+          injectedHtml = html.replace(/<\/head>/i, `  ${linkTag}\n</head>`);
         } else {
           // 生产模式：注入 <link> 标签（使用 hash 文件名）
           // 通过扫描目录获取 CSS 文件名（只扫描一次，后续使用缓存）
