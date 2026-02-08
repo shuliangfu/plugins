@@ -53,6 +53,8 @@ export interface UnoCSSPluginOptions {
   shortcuts?: Record<string, string>;
   /** 自定义主题（仅在无配置文件时使用） */
   theme?: Record<string, unknown>;
+  /** 安全列表：始终包含的类名（用于动态生成的 class，如 badge 颜色） */
+  safelist?: string[];
 }
 
 /**
@@ -95,6 +97,7 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
     rules = [],
     shortcuts = {},
     theme = {},
+    safelist = [],
   } = options;
 
   /** 将 output 解析为绝对路径（相对 cwd） */
@@ -156,6 +159,7 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
         rules,
         shortcuts,
         theme,
+        safelist,
       },
     },
 
@@ -197,6 +201,7 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
         rules,
         shortcuts,
         theme,
+        safelist,
       }));
 
       // 创建 CSS 编译器
@@ -211,6 +216,7 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
         rules,
         shortcuts,
         theme,
+        safelist,
       });
 
       // 注册 CSS 编译器服务
@@ -241,6 +247,7 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
               ...(rules.length > 0 ? { rules } : {}),
               ...(Object.keys(shortcuts).length > 0 ? { shortcuts } : {}),
               ...(Object.keys(theme).length > 0 ? { theme } : {}),
+              ...(safelist?.length ? { safelist } : {}),
             },
           };
         }
