@@ -565,12 +565,10 @@ See [TEST_REPORT.md](./TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.0.1] - 2026-02-07
+### [1.0.2] - 2026-02-08
 
-- CHANGELOG-zh.md (Chinese changelog)
-- Changelog section in README.md and README-zh.md linking to changelog files
-- **TailwindCSS / UnoCSS**: Dev mode now injects `<link>` instead of `<style>` to fix style loss after client-side navigation in Hybrid mode
-- **Dependencies**: Bump @dreamer/plugin, @dreamer/service, @dreamer/i18n to ^1.0.0
+- **UnoCSS**: Added `safelist` option for dynamic class names
+- **UnoCSS**: Fixed content glob scanning to respect pattern directory
 
 See [CHANGELOG.md](./CHANGELOG.md) for full version history.
 

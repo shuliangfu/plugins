@@ -7,6 +7,18 @@
 
 ---
 
+## [1.0.2] - 2026-02-08
+
+### Added
+
+- **UnoCSS**（`@dreamer/plugins/unocss`）：新增 `safelist` 配置项，用于动态 class 名（如条件 badge 颜色）无法被静态提取时强制包含
+
+### Fixed
+
+- **UnoCSS**（`@dreamer/plugins/unocss`）：content glob 扫描现正确按 pattern 目录扫描（如 `./src/backend/**/*.{ts,tsx}` 仅扫描 `src/backend/` 而非项目根目录）
+
+---
+
 ## [1.0.1] - 2026-02-07
 
 ### Added

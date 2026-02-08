@@ -567,12 +567,10 @@ console.log(lastResult.filename);  // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.0.1] - 2026-02-07
+### [1.0.2] - 2026-02-08
 
-- CHANGELOG-zh.md（中文变更日志）
-- README.md 与 README-zh.md 中新增变更日志章节，链接至变更日志文件
-- **TailwindCSS / UnoCSS**：开发模式改为注入 `<link>` 替代 `<style>`，修复 Hybrid 模式下客户端导航后样式丢失
-- **依赖升级**：@dreamer/plugin、@dreamer/service、@dreamer/i18n 升级至 ^1.0.0
+- **UnoCSS**：新增 `safelist` 配置项，用于动态 class 名
+- **UnoCSS**：修复 content glob 扫描以正确按 pattern 目录扫描
 
 完整版本历史详见 [CHANGELOG-zh.md](./CHANGELOG-zh.md)。
 

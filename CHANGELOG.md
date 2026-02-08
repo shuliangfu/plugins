@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.2] - 2026-02-08
+
+### Added
+
+- **UnoCSS** (`@dreamer/plugins/unocss`): `safelist` option for dynamic class names (e.g. conditional badge colors) that cannot be extracted statically
+
+### Fixed
+
+- **UnoCSS** (`@dreamer/plugins/unocss`): Content glob scanning now respects pattern directory (e.g. `./src/backend/**/*.{ts,tsx}` scans only `src/backend/` instead of project root)
+
+---
+
 ## [1.0.1] - 2026-02-07
 
 ### Added

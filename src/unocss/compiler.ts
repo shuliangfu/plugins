@@ -42,6 +42,8 @@ export interface UnoCompileOptions {
   shortcuts?: Record<string, string>;
   /** 自定义主题 */
   theme?: Record<string, unknown>;
+  /** 安全列表：始终包含的类名（用于动态生成的 class） */
+  safelist?: string[];
 }
 
 /**
@@ -117,6 +119,7 @@ export class UnoCompiler {
         theme: this.options.theme || {},
         // @ts-ignore - 规则类型复杂
         rules: this.options.rules || [],
+        safelist: this.options.safelist || [],
       });
     } catch (error) {
       console.error("[UnoCSS] 初始化生成器失败:", error);
@@ -275,26 +278,30 @@ export class UnoCompiler {
   /**
    * 简单的 glob 文件匹配
    *
-   * @param baseDir - 基础目录
-   * @param pattern - glob 模式
+   * 从 pattern 提取目录和扩展名，支持 ./src/backend/**、/*.{ts,tsx} 格式
+   *
+   * @param baseDir - 基础目录（cwd）
+   * @param pattern - glob 模式，如 ./src/backend/**、/*.{ts,tsx}
    * @returns 匹配的文件列表
    */
   private async globFiles(baseDir: string, pattern: string): Promise<string[]> {
     const files: string[] = [];
 
-    // 简化的 glob 处理
-    // 实际生产环境应该使用更完善的 glob 库
     try {
-      // 移除 ** 前缀
-      const cleanPattern = pattern.replace(/^\.\/*\*+\//g, "");
-      // 提取扩展名
-      const extMatch = cleanPattern.match(/\.\{([^}]+)\}$/);
+      // 提取扩展名，如 .{ts,tsx} -> [".ts", ".tsx"]
+      const extMatch = pattern.match(/\.\{([^}]+)\}$/);
       const extensions = extMatch
         ? extMatch[1].split(",").map((e) => `.${e.trim()}`)
         : [".ts", ".tsx", ".js", ".jsx"];
 
-      // 递归扫描目录
-      await this.scanDir(baseDir, extensions, files);
+      // 提取 base 路径：./src/backend/**/*.{ts,tsx} -> src/backend
+      const afterExt = pattern.replace(/\.\{[^}]+\}$/, "");
+      const basePath = afterExt.includes("/**/")
+        ? afterExt.replace(/\/\*\*\/\*$/, "").replace(/^\.\//, "") || "."
+        : ".";
+      const scanDirPath = join(baseDir, basePath);
+
+      await this.scanDir(scanDirPath, extensions, files);
     } catch {
       // 忽略扫描错误
     }
