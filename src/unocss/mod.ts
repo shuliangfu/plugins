@@ -362,8 +362,15 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
             ? assetsPath
             : `/${assetsPath}`;
           const cssPath = `${normalizedPath.replace(/\/$/, "")}/${filename}`;
-          const linkTag = `<link rel="stylesheet" href="${cssPath}">`;
-          injectedHtml = html.replace(/<\/head>/i, `  ${linkTag}\n</head>`);
+          // 若 SSG 已注入 link 则跳过（避免重复注入）
+          const alreadyInjected = html.includes(cssPath) ||
+            new RegExp(`href=["'][^"']*${cssEntryBasename}[^"']*\\.css["']`).test(
+              html,
+            );
+          if (!alreadyInjected) {
+            const linkTag = `<link rel="stylesheet" href="${cssPath}">`;
+            injectedHtml = html.replace(/<\/head>/i, `  ${linkTag}\n</head>`);
+          }
         }
 
         ctx.response = new Response(injectedHtml, {
@@ -410,8 +417,13 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
         const outDir = resolveOutputDir();
         await mkdir(outDir, { recursive: true });
         await writeTextFile(join(outDir, result.filename), result.css);
-        // 供 dweb SSG 模板内联样式使用（可选）
-        container.tryGet<string[]>("pluginBuildCssParts")?.push(result.css);
+        // 供 dweb SSG 模板注入 link 标签（SSG 静态 HTML 无 onResponse，需在构建时注入）
+        const normPath = assetsPath.startsWith("/")
+          ? assetsPath.replace(/\/$/, "")
+          : "/" + (assetsPath || "assets").replace(/\/$/, "");
+        const linkTag =
+          `<link rel="stylesheet" href="${normPath}/${result.filename}">`;
+        container.tryGet<string[]>("pluginBuildCssLinks")?.push(linkTag);
 
         if (logger) {
           logger.info(`UnoCSS 编译完成: ${result.filename}`);

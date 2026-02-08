@@ -7,6 +7,19 @@
 
 ---
 
+## [1.0.3] - 2026-02-08
+
+### Added
+
+- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：onBuild 中推送 link 标签到 `pluginBuildCssLinks`，供 dweb SSG 模板注入
+
+### Changed
+
+- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：生产环境 onResponse 若检测到 link 已存在（如 SSG 模板已注入）则跳过，避免重复注入
+- **UnoCSS**（`@dreamer/plugins/unocss`）：同上—SSG 通过 pluginBuildCssLinks 注入 link，生产环境已注入时跳过
+
+---
+
 ## [1.0.2] - 2026-02-08
 
 ### Added

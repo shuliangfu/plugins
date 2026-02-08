@@ -565,10 +565,10 @@ See [TEST_REPORT.md](./TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.0.2] - 2026-02-08
+### [1.0.3] - 2026-02-08
 
-- **UnoCSS**: Added `safelist` option for dynamic class names
-- **UnoCSS**: Fixed content glob scanning to respect pattern directory
+- **Added**: Push link tags to pluginBuildCssLinks in onBuild for SSG template injection
+- **Changed**: Production onResponse skips injection when link already present (SSG) to avoid duplicate
 
 See [CHANGELOG.md](./CHANGELOG.md) for full version history.
 

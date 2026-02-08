@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.3] - 2026-02-08
+
+### Added
+
+- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Push link tags to `pluginBuildCssLinks` in onBuild for dweb SSG template injection
+
+### Changed
+
+- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Production onResponse skips injection if CSS link already present (e.g. from SSG template) to avoid duplicate
+- **UnoCSS** (`@dreamer/plugins/unocss`): Same changes as TailwindCSS—SSG link injection via pluginBuildCssLinks, production skip when already injected
+
+---
+
 ## [1.0.2] - 2026-02-08
 
 ### Added
