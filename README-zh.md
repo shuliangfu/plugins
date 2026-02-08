@@ -567,10 +567,10 @@ console.log(lastResult.filename);  // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.0.2] - 2026-02-08
+### [1.0.3] - 2026-02-08
 
-- **UnoCSS**：新增 `safelist` 配置项，用于动态 class 名
-- **UnoCSS**：修复 content glob 扫描以正确按 pattern 目录扫描
+- **Added**：onBuild 推送 link 标签到 pluginBuildCssLinks，供 SSG 模板注入
+- **Changed**：生产环境 onResponse 若 link 已存在则跳过注入，避免重复
 
 完整版本历史详见 [CHANGELOG-zh.md](./CHANGELOG-zh.md)。
 
