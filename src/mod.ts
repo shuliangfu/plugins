@@ -26,8 +26,8 @@ export { i18nPlugin, type I18nPluginOptions } from "./i18n/mod.ts";
 export { pwaPlugin, type PWAPluginOptions } from "./pwa/mod.ts";
 export { seoPlugin, type SEOPluginOptions } from "./seo/mod.ts";
 export {
+  type DarkModeStrategy,
+  type ThemeMode,
   themePlugin,
   type ThemePluginOptions,
-  type ThemeMode,
-  type DarkModeStrategy,
 } from "./theme/mod.ts";

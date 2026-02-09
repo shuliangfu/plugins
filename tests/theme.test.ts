@@ -55,28 +55,38 @@ describe("主题插件", () => {
     it("应该验证有效配置", () => {
       const plugin = themePlugin();
 
-      expect(plugin.validateConfig?.({ theme: { defaultMode: "dark" } })).toBe(true);
-      expect(plugin.validateConfig?.({ theme: { defaultMode: "light" } })).toBe(true);
-      expect(plugin.validateConfig?.({ theme: { defaultMode: "system" } })).toBe(true);
+      expect(plugin.validateConfig?.({ theme: { defaultMode: "dark" } })).toBe(
+        true,
+      );
+      expect(plugin.validateConfig?.({ theme: { defaultMode: "light" } })).toBe(
+        true,
+      );
+      expect(plugin.validateConfig?.({ theme: { defaultMode: "system" } }))
+        .toBe(true);
     });
 
     it("应该拒绝无效的 defaultMode", () => {
       const plugin = themePlugin();
 
-      expect(plugin.validateConfig?.({ theme: { defaultMode: "invalid" } })).toBe(false);
+      expect(plugin.validateConfig?.({ theme: { defaultMode: "invalid" } }))
+        .toBe(false);
     });
 
     it("应该拒绝无效的 strategy", () => {
       const plugin = themePlugin();
 
-      expect(plugin.validateConfig?.({ theme: { strategy: "invalid" } })).toBe(false);
+      expect(plugin.validateConfig?.({ theme: { strategy: "invalid" } })).toBe(
+        false,
+      );
     });
 
     it("应该拒绝无效的 transitionDuration", () => {
       const plugin = themePlugin();
 
-      expect(plugin.validateConfig?.({ theme: { transitionDuration: -1 } })).toBe(false);
-      expect(plugin.validateConfig?.({ theme: { transitionDuration: "fast" } })).toBe(false);
+      expect(plugin.validateConfig?.({ theme: { transitionDuration: -1 } }))
+        .toBe(false);
+      expect(plugin.validateConfig?.({ theme: { transitionDuration: "fast" } }))
+        .toBe(false);
     });
 
     it("应该接受空配置", () => {
@@ -178,7 +188,10 @@ describe("主题插件", () => {
         },
       };
 
-      await plugin.onRequest?.(ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0], container);
+      await plugin.onRequest?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0],
+        container,
+      );
 
       expect((ctx as unknown as { theme: string }).theme).toBe("dark");
       expect((ctx as unknown as { themeMode: string }).themeMode).toBe("dark");
@@ -199,9 +212,14 @@ describe("主题插件", () => {
         },
       };
 
-      await plugin.onRequest?.(ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0], container);
+      await plugin.onRequest?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0],
+        container,
+      );
 
-      expect((ctx as unknown as { themeMode: string }).themeMode).toBe("system");
+      expect((ctx as unknown as { themeMode: string }).themeMode).toBe(
+        "system",
+      );
       // 服务端 system 模式默认为 light
       expect((ctx as unknown as { theme: string }).theme).toBe("light");
     });
@@ -221,7 +239,10 @@ describe("主题插件", () => {
         },
       };
 
-      await plugin.onRequest?.(ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0], container);
+      await plugin.onRequest?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0],
+        container,
+      );
 
       expect((ctx as unknown as { themeMode: string }).themeMode).toBe("dark");
       expect((ctx as unknown as { theme: string }).theme).toBe("dark");
@@ -244,7 +265,10 @@ describe("主题插件", () => {
         }),
       };
 
-      await plugin.onResponse?.(ctx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0], container);
+      await plugin.onResponse?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0],
+        container,
+      );
 
       const body = await ctx.response?.text();
       expect(body).toBe('{"data": "test"}');
@@ -266,7 +290,10 @@ describe("主题插件", () => {
         }),
       };
 
-      await plugin.onResponse?.(ctx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0], container);
+      await plugin.onResponse?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0],
+        container,
+      );
 
       const body = await ctx.response?.text();
       expect(body).toContain("<script>");
@@ -286,7 +313,12 @@ describe("主题插件", () => {
         headers: new Headers(),
         cookies: { get: () => "dark" },
       };
-      await plugin.onRequest?.(reqCtx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0], container);
+      await plugin.onRequest?.(
+        reqCtx as unknown as Parameters<
+          NonNullable<typeof plugin.onRequest>
+        >[0],
+        container,
+      );
 
       const html = `<html><head></head><body>Test</body></html>`;
       const resCtx = {
@@ -296,14 +328,22 @@ describe("主题插件", () => {
         }),
       };
 
-      await plugin.onResponse?.(resCtx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0], container);
+      await plugin.onResponse?.(
+        resCtx as unknown as Parameters<
+          NonNullable<typeof plugin.onResponse>
+        >[0],
+        container,
+      );
 
       const body = await resCtx.response?.text();
       expect(body).toContain('class="dark"');
     });
 
     it("应该为 attribute 策略添加属性", async () => {
-      const plugin = themePlugin({ strategy: "attribute", attribute: "data-theme" });
+      const plugin = themePlugin({
+        strategy: "attribute",
+        attribute: "data-theme",
+      });
       await plugin.onInit?.(container);
 
       // 模拟请求设置为 dark
@@ -315,7 +355,12 @@ describe("主题插件", () => {
         headers: new Headers(),
         cookies: { get: () => "dark" },
       };
-      await plugin.onRequest?.(reqCtx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0], container);
+      await plugin.onRequest?.(
+        reqCtx as unknown as Parameters<
+          NonNullable<typeof plugin.onRequest>
+        >[0],
+        container,
+      );
 
       const html = `<html><head></head><body>Test</body></html>`;
       const resCtx = {
@@ -325,7 +370,12 @@ describe("主题插件", () => {
         }),
       };
 
-      await plugin.onResponse?.(resCtx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0], container);
+      await plugin.onResponse?.(
+        resCtx as unknown as Parameters<
+          NonNullable<typeof plugin.onResponse>
+        >[0],
+        container,
+      );
 
       const body = await resCtx.response?.text();
       expect(body).toContain('data-theme="dark"');
@@ -348,8 +398,14 @@ describe("主题插件", () => {
         }),
       };
 
-      await plugin.onRequest?.(ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0], container);
-      await plugin.onResponse?.(ctx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0], container);
+      await plugin.onRequest?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0],
+        container,
+      );
+      await plugin.onResponse?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0],
+        container,
+      );
 
       const body = await ctx.response?.text();
       expect(body).not.toContain("$theme");

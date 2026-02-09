@@ -307,7 +307,10 @@ describe("压缩插件", () => {
     });
 
     it("应该使用 deflate 压缩响应", async () => {
-      const plugin = compressionPlugin({ threshold: 100, encodings: ["deflate"] });
+      const plugin = compressionPlugin({
+        threshold: 100,
+        encodings: ["deflate"],
+      });
       plugin.onInit?.(container);
 
       const text = "Hello World! ".repeat(100);

@@ -18,9 +18,11 @@
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import {
+  cwd,
   type DirEntry,
   type FileInfo,
   getEnv,
+  join,
   readdir,
   readFile,
   stat,
@@ -402,8 +404,8 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
           return;
         }
 
-        // 构建文件路径
-        let filePath = dirRoot + relativePath;
+        // 构建文件路径（使用 join 确保 Windows 兼容）
+        let filePath = join(cwd(), dirRoot, relativePath);
 
         try {
           // 获取文件信息（使用 runtime-adapter）
@@ -429,9 +431,7 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
           // 如果是目录，尝试索引文件
           if (fileStat.isDirectory) {
             for (const indexFile of index) {
-              const indexPath = filePath.endsWith("/")
-                ? filePath + indexFile
-                : filePath + "/" + indexFile;
+              const indexPath = join(filePath, indexFile);
 
               try {
                 const indexInfo: FileInfo = await stat(indexPath);

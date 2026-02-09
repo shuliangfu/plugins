@@ -494,4 +494,4 @@ describe("速率限制插件", () => {
       expect(ctx.response).toBeUndefined();
     });
   });
-}, { sanitizeOps: false , sanitizeResources: false });
+}, { sanitizeOps: false, sanitizeResources: false });

@@ -7,10 +7,10 @@
 import { ServiceContainer } from "@dreamer/service";
 import { beforeEach, describe, expect, it } from "@dreamer/test";
 import {
-  socialPlugin,
-  type SocialPlatform,
-  type ShareContent,
   type OAuthProvider,
+  type ShareContent,
+  type SocialPlatform,
+  socialPlugin,
 } from "../src/social/mod.ts";
 
 describe("社交分享插件", () => {
@@ -83,7 +83,9 @@ describe("社交分享插件", () => {
 
       const config = container.get("socialConfig");
       expect(config).toBeDefined();
-      expect((config as { platforms: string[] }).platforms).toEqual(["twitter"]);
+      expect((config as { platforms: string[] }).platforms).toEqual([
+        "twitter",
+      ]);
     });
 
     it("应该注册 socialService 服务", () => {
@@ -386,7 +388,8 @@ describe("社交分享插件", () => {
       });
       plugin.onInit?.(container);
 
-      const html = `<html><head></head><body><div id="share"></div></body></html>`;
+      const html =
+        `<html><head></head><body><div id="share"></div></body></html>`;
       const ctx = {
         request: new Request("http://localhost/"),
         path: "/",

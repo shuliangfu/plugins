@@ -114,8 +114,10 @@ async function compressGzip(
   // 使用 Blob.stream().pipeThrough() 方式进行压缩，避免手动写入导致的 Promise 挂起问题
   // 使用 data.slice() 创建一个新的 Uint8Array 副本来避免类型问题
   const blob = new Blob([data.slice()]);
-  const compressedStream = blob.stream().pipeThrough(new CompressionStream("gzip"));
-  
+  const compressedStream = blob.stream().pipeThrough(
+    new CompressionStream("gzip"),
+  );
+
   // 使用 Response.arrayBuffer() 读取压缩后的数据
   const response = new Response(compressedStream);
   const buffer = await response.arrayBuffer();
@@ -135,8 +137,10 @@ async function compressDeflate(
   // 使用 Blob.stream().pipeThrough() 方式进行压缩，避免手动写入导致的 Promise 挂起问题
   // 使用 data.slice() 创建一个新的 Uint8Array 副本来避免类型问题
   const blob = new Blob([data.slice()]);
-  const compressedStream = blob.stream().pipeThrough(new CompressionStream("deflate"));
-  
+  const compressedStream = blob.stream().pipeThrough(
+    new CompressionStream("deflate"),
+  );
+
   // 使用 Response.arrayBuffer() 读取压缩后的数据
   const response = new Response(compressedStream);
   const buffer = await response.arrayBuffer();

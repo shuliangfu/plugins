@@ -7,9 +7,9 @@
 import { ServiceContainer } from "@dreamer/service";
 import { beforeEach, describe, expect, it } from "@dreamer/test";
 import {
+  getGlobalI18n,
   i18nPlugin,
   type I18nPluginOptions,
-  getGlobalI18n,
   isI18nInstalled,
   uninstallI18n,
 } from "../src/i18n/mod.ts";
