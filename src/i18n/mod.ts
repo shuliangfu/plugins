@@ -234,7 +234,10 @@ export function i18nPlugin(options: I18nPluginOptions = {}): Plugin {
       }));
 
       // 注册 i18n 服务实例
-      container.registerSingleton<I18nService>("i18nService", () => i18nInstance!);
+      container.registerSingleton<I18nService>(
+        "i18nService",
+        () => i18nInstance!,
+      );
 
       // 输出日志（logger 可能不存在）
       const logger = container.has("logger")

@@ -104,7 +104,15 @@ function generateAntiFlashScript(options: {
   defaultMode: ThemeMode;
   transitionDuration: number;
 }): string {
-  const { cookieName, cookieExpireDays, strategy, darkClass, attribute, defaultMode, transitionDuration } = options;
+  const {
+    cookieName,
+    cookieExpireDays,
+    strategy,
+    darkClass,
+    attribute,
+    defaultMode,
+    transitionDuration,
+  } = options;
 
   return `<script>
 (function() {
@@ -126,17 +134,23 @@ function generateAntiFlashScript(options: {
   // 解析主题
   var stored = getStoredTheme();
   var theme = stored === 'system' || !stored ? getSystemPreference() : stored;
-  if (stored === null) theme = '${defaultMode === "system" ? "' + getSystemPreference() + '" : defaultMode}';
+  if (stored === null) theme = '${
+    defaultMode === "system" ? "' + getSystemPreference() + '" : defaultMode
+  }';
 
   // 应用主题
   var html = document.documentElement;
-  ${strategy === "class" ? `
+  ${
+    strategy === "class"
+      ? `
   if (theme === 'dark') {
     html.classList.add('${darkClass}');
   } else {
     html.classList.remove('${darkClass}');
-  }` : `
-  html.setAttribute('${attribute}', theme);`}
+  }`
+      : `
+  html.setAttribute('${attribute}', theme);`
+  }
 
   // 主题管理器
   window.$theme = {
@@ -163,18 +177,24 @@ function generateAntiFlashScript(options: {
         html.style.transition = 'background-color ${transitionDuration}ms, color ${transitionDuration}ms';
         setTimeout(function() { html.style.transition = ''; }, ${transitionDuration});
       }
-      ${strategy === "class" ? `
+      ${
+    strategy === "class"
+      ? `
       if (this.current === 'dark') {
         html.classList.add('${darkClass}');
       } else {
         html.classList.remove('${darkClass}');
-      }` : `
-      html.setAttribute('${attribute}', this.current);`}
+      }`
+      : `
+      html.setAttribute('${attribute}', this.current);`
+  }
     },
 
     save: function(mode) {
       try { localStorage.setItem('${cookieName}', mode); } catch(e) {}
-      document.cookie = '${cookieName}=' + mode + ';path=/;max-age=${cookieExpireDays * 24 * 60 * 60};SameSite=Lax';
+      document.cookie = '${cookieName}=' + mode + ';path=/;max-age=${
+    cookieExpireDays * 24 * 60 * 60
+  };SameSite=Lax';
     },
 
     dispatch: function() {
@@ -276,7 +296,9 @@ export function themePlugin(options: ThemePluginOptions = {}): Plugin {
       // 验证 strategy
       if (
         themeConfig.strategy &&
-        !["class", "attribute", "media"].includes(themeConfig.strategy as string)
+        !["class", "attribute", "media"].includes(
+          themeConfig.strategy as string,
+        )
       ) {
         return false;
       }
@@ -473,7 +495,9 @@ export function themePlugin(options: ThemePluginOptions = {}): Plugin {
             : null;
           if (logger) {
             logger.warn(
-              `主题注入失败: ${error instanceof Error ? error.message : String(error)}`,
+              `主题注入失败: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
             );
           }
         }

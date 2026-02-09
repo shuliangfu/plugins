@@ -14,7 +14,7 @@
  * - 生命周期由 PluginManager 统一管理
  */
 
-import type { Plugin, RequestContext } from "@dreamer/plugin"
+import type { Plugin, RequestContext } from "@dreamer/plugin";
 import {
   basename,
   cwd,
@@ -23,9 +23,9 @@ import {
   mkdir,
   readdir,
   writeTextFile,
-} from "@dreamer/runtime-adapter"
-import type { ServiceContainer } from "@dreamer/service"
-import { UnoCompiler } from "./compiler.ts"
+} from "@dreamer/runtime-adapter";
+import type { ServiceContainer } from "@dreamer/service";
+import { UnoCompiler } from "./compiler.ts";
 
 /**
  * UnoCSS 插件配置选项
@@ -270,7 +270,7 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
       const normalizedAssets = assetsPath.startsWith("/")
         ? assetsPath.replace(/\/$/, "")
         : `/${assetsPath.replace(/\/$/, "")}`;
-      const devCssPath = normalizedAssets + "/" + cssEntryBasename + ".css";
+      const devCssPath = join(normalizedAssets, `${cssEntryBasename}.css`);
 
       const pathname = ctx.url?.pathname ?? ctx.path ?? "";
       const isGetCss = (ctx.method === "GET" || ctx.method === "get") &&
@@ -342,7 +342,7 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
           const normalizedPath = assetsPath.startsWith("/")
             ? assetsPath.replace(/\/$/, "")
             : `/${assetsPath.replace(/\/$/, "")}`;
-          const devCssPath = normalizedPath + "/" + cssEntryBasename + ".css";
+          const devCssPath = join(normalizedPath, `${cssEntryBasename}.css`);
           const linkTag =
             `<link rel="stylesheet" href="${devCssPath}" id="unocss-injected">`;
           injectedHtml = html.replace(/<\/head>/i, `  ${linkTag}\n</head>`);
@@ -359,14 +359,15 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
 
           // 确保 assetsPath 以 / 开头但不以 / 结尾
           const normalizedPath = assetsPath.startsWith("/")
-            ? assetsPath
-            : `/${assetsPath}`;
-          const cssPath = `${normalizedPath.replace(/\/$/, "")}/${filename}`;
+            ? assetsPath.replace(/\/$/, "")
+            : `/${assetsPath.replace(/\/$/, "")}`;
+          const cssPath = join(normalizedPath, filename);
           // 若 SSG 已注入 link 则跳过（避免重复注入）
           const alreadyInjected = html.includes(cssPath) ||
-            new RegExp(`href=["'][^"']*${cssEntryBasename}[^"']*\\.css["']`).test(
-              html,
-            );
+            new RegExp(`href=["'][^"']*${cssEntryBasename}[^"']*\\.css["']`)
+              .test(
+                html,
+              );
           if (!alreadyInjected) {
             const linkTag = `<link rel="stylesheet" href="${cssPath}">`;
             injectedHtml = html.replace(/<\/head>/i, `  ${linkTag}\n</head>`);
@@ -421,8 +422,9 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
         const normPath = assetsPath.startsWith("/")
           ? assetsPath.replace(/\/$/, "")
           : "/" + (assetsPath || "assets").replace(/\/$/, "");
-        const linkTag =
-          `<link rel="stylesheet" href="${normPath}/${result.filename}">`;
+        const linkTag = `<link rel="stylesheet" href="${
+          join(normPath, result.filename)
+        }">`;
         container.tryGet<string[]>("pluginBuildCssLinks")?.push(linkTag);
 
         if (logger) {
@@ -438,7 +440,7 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
 
 // 导出编译器（供高级用户使用）
 export {
-  UnoCompiler, type CSSCompileResult,
-  type UnoCompileOptions
-} from "./compiler.ts"
-
+  type CSSCompileResult,
+  type UnoCompileOptions,
+  UnoCompiler,
+} from "./compiler.ts";

@@ -7,16 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.4] - 2026-02-08
+
+### Fixed
+
+- **Static** (`@dreamer/plugins/static`): Use `join()` from runtime-adapter for
+  file path construction to ensure Windows path compatibility
+- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Use `join()` for path
+  construction in dev/prod CSS serving for Windows compatibility
+- **UnoCSS** (`@dreamer/plugins/unocss`): Same as TailwindCSS—use `join()` for
+  path construction for Windows compatibility
+
+---
+
 ## [1.0.3] - 2026-02-08
 
 ### Added
 
-- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Push link tags to `pluginBuildCssLinks` in onBuild for dweb SSG template injection
+- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Push link tags to
+  `pluginBuildCssLinks` in onBuild for dweb SSG template injection
 
 ### Changed
 
-- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Production onResponse skips injection if CSS link already present (e.g. from SSG template) to avoid duplicate
-- **UnoCSS** (`@dreamer/plugins/unocss`): Same changes as TailwindCSS—SSG link injection via pluginBuildCssLinks, production skip when already injected
+- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Production onResponse skips
+  injection if CSS link already present (e.g. from SSG template) to avoid
+  duplicate
+- **UnoCSS** (`@dreamer/plugins/unocss`): Same changes as TailwindCSS—SSG link
+  injection via pluginBuildCssLinks, production skip when already injected
 
 ---
 
@@ -24,11 +41,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- **UnoCSS** (`@dreamer/plugins/unocss`): `safelist` option for dynamic class names (e.g. conditional badge colors) that cannot be extracted statically
+- **UnoCSS** (`@dreamer/plugins/unocss`): `safelist` option for dynamic class
+  names (e.g. conditional badge colors) that cannot be extracted statically
 
 ### Fixed
 
-- **UnoCSS** (`@dreamer/plugins/unocss`): Content glob scanning now respects pattern directory (e.g. `./src/backend/**/*.{ts,tsx}` scans only `src/backend/` instead of project root)
+- **UnoCSS** (`@dreamer/plugins/unocss`): Content glob scanning now respects
+  pattern directory (e.g. `./src/backend/**/*.{ts,tsx}` scans only
+  `src/backend/` instead of project root)
 
 ---
 
@@ -41,8 +61,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Dev mode now injects `<link>` instead of `<style>` for consistency with production, fixing style loss after client-side navigation in Hybrid mode
-- **UnoCSS** (`@dreamer/plugins/unocss`): Same change as TailwindCSS—dev mode uses `<link>` to avoid style loss in Hybrid SPA navigation
+- **TailwindCSS** (`@dreamer/plugins/tailwindcss`): Dev mode now injects
+  `<link>` instead of `<style>` for consistency with production, fixing style
+  loss after client-side navigation in Hybrid mode
+- **UnoCSS** (`@dreamer/plugins/unocss`): Same change as TailwindCSS—dev mode
+  uses `<link>` to avoid style loss in Hybrid SPA navigation
 - **Dependencies**:
   - `@dreamer/plugin`: ^1.0.0-beta.6 → ^1.0.0
   - `@dreamer/service`: ^1.0.0-beta.4 → ^1.0.0
@@ -54,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-First stable release. Official plugin collection for Deno and Bun, compatible with the dweb framework.
+First stable release. Official plugin collection for Deno and Bun, compatible
+with the dweb framework.
 
 #### CSS Plugins
 
@@ -103,17 +127,25 @@ First stable release. Official plugin collection for Deno and Bun, compatible wi
 
 #### Security Plugins
 
-- **Security** (`@dreamer/plugins/security`): CSP, HSTS, X-Frame-Options, Permissions-Policy
-- **CORS** (`@dreamer/plugins/cors`): Cross-origin config, preflight, credentials
-- **RateLimit** (`@dreamer/plugins/ratelimit`): Request rate limiting, skip paths, custom key generator
+- **Security** (`@dreamer/plugins/security`): CSP, HSTS, X-Frame-Options,
+  Permissions-Policy
+- **CORS** (`@dreamer/plugins/cors`): Cross-origin config, preflight,
+  credentials
+- **RateLimit** (`@dreamer/plugins/ratelimit`): Request rate limiting, skip
+  paths, custom key generator
 
 #### Other Plugins
 
-- **Analytics** (`@dreamer/plugins/analytics`): Google Analytics 4, Universal Analytics, Plausible
-- **Theme** (`@dreamer/plugins/theme`): Light/dark/system mode, class/attribute strategy
-- **Compression** (`@dreamer/plugins/compression`): gzip, deflate response compression
-- **Static** (`@dreamer/plugins/static`): Multi-directory, MIME types, ETag, cache control, path traversal protection
-- **Social** (`@dreamer/plugins/social`): Share links (Twitter, Facebook, Weibo, LinkedIn, WeChat), OAuth (GitHub, Google)
+- **Analytics** (`@dreamer/plugins/analytics`): Google Analytics 4, Universal
+  Analytics, Plausible
+- **Theme** (`@dreamer/plugins/theme`): Light/dark/system mode, class/attribute
+  strategy
+- **Compression** (`@dreamer/plugins/compression`): gzip, deflate response
+  compression
+- **Static** (`@dreamer/plugins/static`): Multi-directory, MIME types, ETag,
+  cache control, path traversal protection
+- **Social** (`@dreamer/plugins/social`): Share links (Twitter, Facebook, Weibo,
+  LinkedIn, WeChat), OAuth (GitHub, Google)
 
 #### Plugin System
 

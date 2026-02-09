@@ -2,8 +2,21 @@
 
 本项目的所有重要变更均记录于此文件。
 
-格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
-版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)， 版本遵循
+[语义化版本](https://semver.org/lang/zh-CN/)。
+
+---
+
+## [1.0.4] - 2026-02-08
+
+### 修复
+
+- **Static**（`@dreamer/plugins/static`）：使用 runtime-adapter 的 `join()`
+  构建文件路径，确保 Windows 路径兼容
+- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：dev/prod CSS
+  服务路径构建使用 `join()`，确保 Windows 兼容
+- **UnoCSS**（`@dreamer/plugins/unocss`）：同上—路径构建使用 `join()`，确保
+  Windows 兼容
 
 ---
 
@@ -11,12 +24,15 @@
 
 ### Added
 
-- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：onBuild 中推送 link 标签到 `pluginBuildCssLinks`，供 dweb SSG 模板注入
+- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：onBuild 中推送 link 标签到
+  `pluginBuildCssLinks`，供 dweb SSG 模板注入
 
 ### Changed
 
-- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：生产环境 onResponse 若检测到 link 已存在（如 SSG 模板已注入）则跳过，避免重复注入
-- **UnoCSS**（`@dreamer/plugins/unocss`）：同上—SSG 通过 pluginBuildCssLinks 注入 link，生产环境已注入时跳过
+- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：生产环境 onResponse
+  若检测到 link 已存在（如 SSG 模板已注入）则跳过，避免重复注入
+- **UnoCSS**（`@dreamer/plugins/unocss`）：同上—SSG 通过 pluginBuildCssLinks
+  注入 link，生产环境已注入时跳过
 
 ---
 
@@ -24,11 +40,14 @@
 
 ### Added
 
-- **UnoCSS**（`@dreamer/plugins/unocss`）：新增 `safelist` 配置项，用于动态 class 名（如条件 badge 颜色）无法被静态提取时强制包含
+- **UnoCSS**（`@dreamer/plugins/unocss`）：新增 `safelist` 配置项，用于动态
+  class 名（如条件 badge 颜色）无法被静态提取时强制包含
 
 ### Fixed
 
-- **UnoCSS**（`@dreamer/plugins/unocss`）：content glob 扫描现正确按 pattern 目录扫描（如 `./src/backend/**/*.{ts,tsx}` 仅扫描 `src/backend/` 而非项目根目录）
+- **UnoCSS**（`@dreamer/plugins/unocss`）：content glob 扫描现正确按 pattern
+  目录扫描（如 `./src/backend/**/*.{ts,tsx}` 仅扫描 `src/backend/`
+  而非项目根目录）
 
 ---
 
@@ -41,8 +60,10 @@
 
 ### Changed
 
-- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：开发模式改为注入 `<link>` 而非 `<style>`，与生产模式一致，修复 Hybrid 模式下客户端导航后样式丢失
-- **UnoCSS**（`@dreamer/plugins/unocss`）：同上，开发模式使用 `<link>` 避免 Hybrid SPA 导航后样式丢失
+- **TailwindCSS**（`@dreamer/plugins/tailwindcss`）：开发模式改为注入 `<link>`
+  而非 `<style>`，与生产模式一致，修复 Hybrid 模式下客户端导航后样式丢失
+- **UnoCSS**（`@dreamer/plugins/unocss`）：同上，开发模式使用 `<link>` 避免
+  Hybrid SPA 导航后样式丢失
 - **依赖升级**：
   - `@dreamer/plugin`：^1.0.0-beta.6 → ^1.0.0
   - `@dreamer/service`：^1.0.0-beta.4 → ^1.0.0
@@ -105,14 +126,17 @@
 
 - **Security**（`@dreamer/plugins/security`）：CSP、HSTS、X-Frame-Options、Permissions-Policy
 - **CORS**（`@dreamer/plugins/cors`）：跨域配置、预检、凭证
-- **RateLimit**（`@dreamer/plugins/ratelimit`）：请求速率限制、跳过路径、自定义 key 生成器
+- **RateLimit**（`@dreamer/plugins/ratelimit`）：请求速率限制、跳过路径、自定义
+  key 生成器
 
 #### 其他插件
 
-- **Analytics**（`@dreamer/plugins/analytics`）：Google Analytics 4、Universal Analytics、Plausible
+- **Analytics**（`@dreamer/plugins/analytics`）：Google Analytics 4、Universal
+  Analytics、Plausible
 - **Theme**（`@dreamer/plugins/theme`）：亮/暗/系统模式，class/attribute 策略
 - **Compression**（`@dreamer/plugins/compression`）：gzip、deflate 响应压缩
-- **Static**（`@dreamer/plugins/static`）：多目录、MIME 类型、ETag、缓存控制、路径遍历防护
+- **Static**（`@dreamer/plugins/static`）：多目录、MIME
+  类型、ETag、缓存控制、路径遍历防护
 - **Social**（`@dreamer/plugins/social`）：分享链接（Twitter、Facebook、Weibo、LinkedIn、WeChat）、OAuth（GitHub、Google）
 
 #### 插件系统

@@ -1,15 +1,30 @@
 /**
  * TailwindCSS 编译器测试
+ *
+ * 测试完成后自动清理 tests/data/tailwindcss-test 下生成的测试文件
  */
 
-import { exists, mkdir, writeTextFile } from "@dreamer/runtime-adapter";
+import { exists, mkdir, remove, writeTextFile } from "@dreamer/runtime-adapter";
 import { TailwindCompiler } from "../src/tailwindcss/compiler.ts";
 
-// 测试目录
+// 测试目录（测试完成后自动清空）
 const TEST_DIR = "./tests/data/tailwindcss-test";
 
+/**
+ * 清理测试生成的目录和文件
+ */
+async function cleanupTestOutput(): Promise<void> {
+  try {
+    if (await exists(TEST_DIR)) {
+      await remove(TEST_DIR, { recursive: true });
+    }
+  } catch {
+    // 忽略清理失败
+  }
+}
+
 // 创建测试 CSS 文件
-async function setupTestFiles() {
+async function setupTestFiles(): Promise<void> {
   if (!(await exists(TEST_DIR))) {
     await mkdir(TEST_DIR, { recursive: true });
   }
@@ -41,6 +56,8 @@ async function testTailwindCompiler() {
   console.log("🧪 测试 TailwindCSS 编译器...\n");
 
   try {
+    // 测试前先清理可能存在的上次测试残留
+    await cleanupTestOutput();
     // 设置测试文件
     await setupTestFiles();
     console.log("✅ 测试文件创建成功");
@@ -80,8 +97,11 @@ async function testTailwindCompiler() {
     }
   } catch (error) {
     console.error("\n❌ 测试失败:", error);
+  } finally {
+    // 测试完成后自动清理测试输出
+    await cleanupTestOutput();
   }
 }
 
-// 运行测试
-testTailwindCompiler();
+// 运行测试（必须 await 确保 finally 中的清理能执行）
+await testTailwindCompiler();
