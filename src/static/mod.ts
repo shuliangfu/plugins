@@ -28,6 +28,7 @@ import {
   stat,
 } from "@dreamer/runtime-adapter";
 import type { ServiceContainer } from "@dreamer/service";
+import { $tr } from "../i18n.ts";
 
 /**
  * 静态目录配置
@@ -385,7 +386,7 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
         // 但如果原始路径试图逃逸根目录，返回 403）
         const originalPath = path.slice(dirPrefix.length);
         if (originalPath.includes("..")) {
-          ctx.response = new Response("Forbidden", {
+          ctx.response = new Response($tr("plugins.static.forbidden"), {
             status: 403,
             headers: { "Content-Type": "text/plain" },
           });
@@ -397,7 +398,7 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
           !allowHidden &&
           (relativePath.includes("/.") || originalPath.includes("/."))
         ) {
-          ctx.response = new Response("Forbidden", {
+          ctx.response = new Response($tr("plugins.static.forbidden"), {
             status: 403,
             headers: { "Content-Type": "text/plain" },
           });

@@ -1,0 +1,21 @@
+{
+  "plugins": {
+    "social": {
+      "unsupportedOAuthProvider": "Unsupported OAuth provider: {provider}",
+      "oauthAuthFailed": "OAuth authorization failed: {error}",
+      "missingCodeOrState": "Missing authorization code or state parameter",
+      "invalidStateParam": "Invalid state parameter",
+      "shareLinkFailed": "Failed to generate share links"
+    },
+    "ratelimit": {
+      "defaultMessage": "Too many requests, please try again later"
+    },
+    "auth": {
+      "unauthorized": "Unauthorized",
+      "forbidden": "Forbidden"
+    },
+    "static": {
+      "forbidden": "Forbidden"
+    }
+  }
+}

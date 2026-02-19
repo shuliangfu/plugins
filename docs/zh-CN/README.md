@@ -1,12 +1,12 @@
 # @dreamer/plugins
 
+> 📖 [English](../../README.md) | 中文
+
 > 一个兼容 Deno 和 Bun 的官方插件集合，提供 CSS
 > 原子化、国际化、SEO、PWA、认证等开箱即用的 Web 应用功能插件
 
-[English](./README.md) | 中文 (Chinese)
-
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
 [![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.1-38bdf8)](https://tailwindcss.com)
 [![UnoCSS](https://img.shields.io/badge/UnoCSS-v66+-333)](https://unocss.dev)
@@ -352,8 +352,8 @@ console.log($i18n.getLocale()); // "en-US"
 #### 全局 $t 类型声明（可选）
 
 如果你希望在任何文件中不需要 import 就能直接使用 `$t` 和
-`$i18n`，可以从本仓库复制 [`src/i18n/global.d.ts`](./src/i18n/global.d.ts)
-到你的项目中，然后在 `deno.json` 或 `tsconfig.json` 中引用：
+`$i18n`，可以在项目中添加全局类型声明文件（如 `global.d.ts`）， 然后在
+`deno.json` 或 `tsconfig.json` 中引用：
 
 ```json
 {
@@ -517,11 +517,11 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 | `compressionPlugin` | `@dreamer/plugins/compression` | 响应压缩                |
 | `socialPlugin`      | `@dreamer/plugins/social`      | 社交分享/OAuth          |
 
-### 独立客户端库
+### 独立客户端包
 
-客户端功能已移至独立库，可直接在浏览器中使用：
+客户端功能已移至独立包，可直接在浏览器中使用：
 
-| 库               | 导入路径             | 说明                           |
+| 包               | 导入路径             | 说明                           |
 | ---------------- | -------------------- | ------------------------------ |
 | `@dreamer/i18n`  | `jsr:@dreamer/i18n`  | 国际化（客户端/服务端通用）    |
 | `@dreamer/theme` | `jsr:@dreamer/theme` | 主题切换（TailwindCSS/UnoCSS） |
@@ -582,9 +582,9 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 5. **配置验证**：所有插件都提供 `validateConfig` 方法验证配置有效性。
 
-6. **独立客户端库**：客户端功能已移至独立库（`@dreamer/i18n`、`@dreamer/theme`），可直接在浏览器中使用。
+6. **独立客户端包**：客户端功能已移至独立包（`@dreamer/i18n`、`@dreamer/theme`），可直接在浏览器中使用。
 
-7. **全局 $t 方法**：使用 `@dreamer/i18n` 库的 `$t`和`$i18n` 函数进行国际化。
+7. **全局 $t 方法**：使用 `@dreamer/i18n` 包的 `$t`和`$i18n` 函数进行国际化。
 
 8. **JSR 兼容**：所有模块都使用类型安全的方式处理全局变量，确保 JSR 发布兼容性。
 
@@ -592,11 +592,13 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.0.4] - 2026-02-08
+### [1.0.6] - 2026-02-19
 
-- **Fixed**：Static、TailwindCSS、UnoCSS 使用 `join()` 构建路径（Windows 兼容）
+- **新增**：包级 i18n（en-US/zh-CN），social、ratelimit、auth、static
+  文案国际化；`$tr`、`setPluginsLocale`、`detectLocale`。
+- **变更**：social、ratelimit、auth、static 用户可见文案改为 `$tr`。
 
-完整版本历史详见 [CHANGELOG-zh.md](./CHANGELOG-zh.md)。
+完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 
 ---
 
@@ -608,7 +610,7 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE.md](./LICENSE.md)
+Apache License 2.0 - 详见 [LICENSE](../../LICENSE)
 
 ---
 

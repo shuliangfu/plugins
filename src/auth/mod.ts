@@ -41,6 +41,7 @@ import {
 } from "@dreamer/auth";
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
+import { $tr } from "../i18n.ts";
 
 // 从 @dreamer/auth 重新导出类型和工具函数
 export type {
@@ -419,11 +420,14 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
       // 保存用户信息到上下文
       (ctx as Record<string, unknown>)._authUser = user;
 
-      // 如果未认证，返回 401
+      // 如果未认证，返回 401（默认文案走 i18n）
       if (!user) {
-        const body = typeof unauthorizedMessage === "string"
-          ? JSON.stringify({ error: unauthorizedMessage })
-          : JSON.stringify(unauthorizedMessage);
+        const unauthorizedText = unauthorizedMessage === "未授权访问"
+          ? $tr("plugins.auth.unauthorized")
+          : unauthorizedMessage;
+        const body = typeof unauthorizedText === "string"
+          ? JSON.stringify({ error: unauthorizedText })
+          : JSON.stringify(unauthorizedText);
 
         const headers = new Headers({
           "Content-Type": "application/json",
@@ -456,9 +460,12 @@ export function authPlugin(options: AuthPluginOptions = {}): Plugin {
       if (requiredRoles.length > 0) {
         // 使用 @dreamer/auth 的 hasAnyRole
         if (!hasAnyRole(user, requiredRoles)) {
-          const body = typeof forbiddenMessage === "string"
-            ? JSON.stringify({ error: forbiddenMessage })
-            : JSON.stringify(forbiddenMessage);
+          const forbiddenText = forbiddenMessage === "禁止访问"
+            ? $tr("plugins.auth.forbidden")
+            : forbiddenMessage;
+          const body = typeof forbiddenText === "string"
+            ? JSON.stringify({ error: forbiddenText })
+            : JSON.stringify(forbiddenText);
 
           ctx.response = new Response(body, {
             status: forbiddenStatus,

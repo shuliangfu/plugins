@@ -3,11 +3,11 @@
 > Official plugin collection for Deno and Bun: CSS utilities, i18n, SEO, PWA,
 > auth, and more
 
-English | [中文 (Chinese)](./README-zh.md)
+English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
-[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
+[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.1-38bdf8)](https://tailwindcss.com)
 [![UnoCSS](https://img.shields.io/badge/UnoCSS-v66+-333)](https://unocss.dev)
 
@@ -347,9 +347,9 @@ console.log($i18n.getLocale()); // "en-US"
 
 #### Global $t type declaration (optional)
 
-To use `$t` and `$i18n` without import, copy
-[`src/i18n/global.d.ts`](./src/i18n/global.d.ts) to your project and reference
-in `deno.json` or `tsconfig.json`:
+To use `$t` and `$i18n` without import, add a global type declaration file (e.g.
+`global.d.ts`) to your project and reference it in `deno.json` or
+`tsconfig.json`:
 
 ```json
 {
@@ -538,7 +538,7 @@ All plugins implement these hooks (as needed):
 
 ## 📊 Test Report
 
-[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 ### Unit Tests
 
@@ -557,7 +557,7 @@ All plugins implement these hooks (as needed):
 | TailwindCSS v4 | ✅ Pass | PostCSS + @tailwindcss/postcss | 9417 chars  |
 | UnoCSS         | ✅ Pass | @unocss/core + preset-wind     | 3294 chars  |
 
-See [TEST_REPORT.md](./TEST_REPORT.md) for details.
+See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ---
 
@@ -588,12 +588,14 @@ See [TEST_REPORT.md](./TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.0.4] - 2026-02-08
+### [1.0.6] - 2026-02-19
 
-- **Fixed**: Static, TailwindCSS, UnoCSS use `join()` for path construction
-  (Windows compatibility)
+- **Added**: Package i18n (en-US/zh-CN) for social, ratelimit, auth, static;
+  `$tr`, `setPluginsLocale`, `detectLocale`.
+- **Changed**: Social, ratelimit, auth, static use `$tr` for user-facing
+  messages.
 
-See [CHANGELOG.md](./CHANGELOG.md) for full version history.
+See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 
 ---
 
@@ -605,7 +607,7 @@ Issues and Pull Requests are welcome!
 
 ## 📄 License
 
-MIT License - see [LICENSE.md](./LICENSE.md)
+Apache License 2.0 - see [LICENSE](./LICENSE)
 
 ---
 

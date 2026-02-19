@@ -1,0 +1,21 @@
+{
+  "plugins": {
+    "social": {
+      "unsupportedOAuthProvider": "不支持的 OAuth 提供商: {provider}",
+      "oauthAuthFailed": "OAuth 授权失败: {error}",
+      "missingCodeOrState": "缺少授权码或状态参数",
+      "invalidStateParam": "无效的状态参数",
+      "shareLinkFailed": "生成分享链接失败"
+    },
+    "ratelimit": {
+      "defaultMessage": "请求过于频繁，请稍后再试"
+    },
+    "auth": {
+      "unauthorized": "未授权访问",
+      "forbidden": "禁止访问"
+    },
+    "static": {
+      "forbidden": "禁止访问"
+    }
+  }
+}

@@ -17,6 +17,7 @@
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
+import { $tr } from "../i18n.ts";
 
 /**
  * 速率限制插件配置选项
@@ -386,10 +387,14 @@ export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
           );
         }
 
-        // 构建响应体
-        const body = typeof message === "string"
-          ? JSON.stringify({ error: message })
-          : JSON.stringify(message);
+        // 构建响应体（默认文案走 i18n）
+        const displayMessage = typeof message === "string" &&
+            message === "请求过于频繁，请稍后再试"
+          ? $tr("plugins.ratelimit.defaultMessage")
+          : message;
+        const body = typeof displayMessage === "string"
+          ? JSON.stringify({ error: displayMessage })
+          : JSON.stringify(displayMessage);
 
         responseHeaders.set("Content-Type", "application/json");
 

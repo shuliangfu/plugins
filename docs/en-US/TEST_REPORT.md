@@ -1,5 +1,7 @@
 # @dreamer/plugins Test Report
 
+**中文版**：[docs/zh-CN/TEST_REPORT.md](../zh-CN/TEST_REPORT.md)
+
 ## Test Overview
 
 | Item                 | Info                           |

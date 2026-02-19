@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.6] - 2026-02-19
+
+### Added
+
+- **Package i18n** (`src/i18n.ts`): Server-side messages for social
+  (OAuth/share), ratelimit, auth, and static in en-US and zh-CN. Locale from
+  `LANGUAGE` / `LC_ALL` / `LANG`. Export `$tr`, `setPluginsLocale`,
+  `detectLocale`, `Locale`, `DEFAULT_LOCALE`. Locales in
+  `src/locales/en-US.json` and `src/locales/zh-CN.json`.
+
+### Changed
+
+- **Social plugin**: OAuth and share error messages use
+  `$tr("plugins.social.*")`.
+- **Ratelimit plugin**: Default rate-limit message uses
+  `$tr("plugins.ratelimit.defaultMessage")`.
+- **Auth plugin**: Default unauthorized/forbidden messages use
+  `$tr("plugins.auth.*")`.
+- **Static plugin**: 403 response body uses `$tr("plugins.static.forbidden")`.
+
+---
+
+## [1.0.5] - 2026-02-19
+
+### Added
+
+- **Documentation**: Reorganized docs into `docs/zh-CN` and `docs/en-US` (same
+  structure as @dreamer/render). Chinese README, CHANGELOG, and TEST_REPORT in
+  `docs/zh-CN`; English CHANGELOG and TEST_REPORT in `docs/en-US` with full
+  translation.
+
+### Changed
+
+- **README**: Root README and doc links now point to `docs/zh-CN/README.md`,
+  `docs/en-US/TEST_REPORT.md`, and `docs/en-US/CHANGELOG.md`. Removed references
+  to obsolete root-level duplicate docs.
+- **Global $t / $i18n**: Replaced broken link to non-existent
+  `src/i18n/global.d.ts` with wording that refers to adding a global type
+  declaration file (e.g. `global.d.ts`) in the project, in both root README and
+  `docs/zh-CN/README.md`.
+
+---
+
 ## [1.0.4] - 2026-02-08
 
 ### Fixed

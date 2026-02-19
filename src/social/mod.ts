@@ -16,6 +16,7 @@
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
+import { $tr } from "../i18n.ts";
 
 /**
  * 社交平台类型
@@ -218,7 +219,9 @@ function getOAuthAuthorizationUrl(
       }&state=${state}`;
 
     default:
-      throw new Error(`不支持的 OAuth 提供商: ${provider}`);
+      throw new Error(
+        $tr("plugins.social.unsupportedOAuthProvider", { provider }),
+      );
   }
 }
 
@@ -414,7 +417,11 @@ export function socialPlugin(options: SocialPluginOptions = {}): Plugin {
 
           if (!config) {
             ctx.response = new Response(
-              JSON.stringify({ error: `不支持的 OAuth 提供商: ${provider}` }),
+              JSON.stringify({
+                error: $tr("plugins.social.unsupportedOAuthProvider", {
+                  provider,
+                }),
+              }),
               {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
@@ -455,7 +462,9 @@ export function socialPlugin(options: SocialPluginOptions = {}): Plugin {
 
           if (error) {
             ctx.response = new Response(
-              JSON.stringify({ error: `OAuth 授权失败: ${error}` }),
+              JSON.stringify({
+                error: $tr("plugins.social.oauthAuthFailed", { error }),
+              }),
               {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
@@ -466,7 +475,9 @@ export function socialPlugin(options: SocialPluginOptions = {}): Plugin {
 
           if (!code || !state) {
             ctx.response = new Response(
-              JSON.stringify({ error: "缺少授权码或状态参数" }),
+              JSON.stringify({
+                error: $tr("plugins.social.missingCodeOrState"),
+              }),
               {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
@@ -479,7 +490,9 @@ export function socialPlugin(options: SocialPluginOptions = {}): Plugin {
           const storedState = oauthStates.get(state);
           if (!storedState || storedState.provider !== provider) {
             ctx.response = new Response(
-              JSON.stringify({ error: "无效的状态参数" }),
+              JSON.stringify({
+                error: $tr("plugins.social.invalidStateParam"),
+              }),
               {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
@@ -547,7 +560,7 @@ export function socialPlugin(options: SocialPluginOptions = {}): Plugin {
         } catch (error) {
           ctx.response = new Response(
             JSON.stringify({
-              error: "生成分享链接失败",
+              error: $tr("plugins.social.shareLinkFailed"),
               message: error instanceof Error ? error.message : String(error),
             }),
             {

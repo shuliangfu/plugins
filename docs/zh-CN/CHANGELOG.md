@@ -7,6 +7,44 @@
 
 ---
 
+## [1.0.6] - 2026-02-19
+
+### 新增
+
+- **包级 i18n**（`src/i18n.ts`）：social（OAuth/分享）、ratelimit、auth、static
+  的服务端文案提供 en-US 与 zh-CN，语言由 `LANGUAGE` / `LC_ALL` / `LANG` 决定。
+  导出 `$tr`、`setPluginsLocale`、`detectLocale`、`Locale`、`DEFAULT_LOCALE`。
+  文案位于 `src/locales/en-US.json` 与 `src/locales/zh-CN.json`。
+
+### 变更
+
+- **Social 插件**：OAuth 与分享错误文案改为 `$tr("plugins.social.*")`。
+- **Ratelimit 插件**：默认限流文案改为
+  `$tr("plugins.ratelimit.defaultMessage")`。
+- **Auth 插件**：默认未授权/禁止访问文案改为 `$tr("plugins.auth.*")`。
+- **Static 插件**：403 响应正文改为 `$tr("plugins.static.forbidden")`。
+
+---
+
+## [1.0.5] - 2026-02-19
+
+### 新增
+
+- **文档**：文档整理至 `docs/zh-CN` 与 `docs/en-US`（与 @dreamer/render
+  结构一致）。 中文 README、CHANGELOG、TEST_REPORT 位于 `docs/zh-CN`；英文
+  CHANGELOG、TEST_REPORT 位于 `docs/en-US`，并为英文版提供完整翻译。
+
+### 变更
+
+- **README**：根目录 README 及文档链接改为指向 `docs/zh-CN/README.md`、
+  `docs/en-US/TEST_REPORT.md`、`docs/en-US/CHANGELOG.md`。移除对已删除的根目录
+  重复文档的引用。
+- **全局 $t / $i18n**：移除对不存在的 `src/i18n/global.d.ts`
+  的无效链接，改为说明 在项目中添加全局类型声明文件（如 `global.d.ts`），根目录
+  README 与 `docs/zh-CN/README.md` 均已更新。
+
+---
+
 ## [1.0.4] - 2026-02-08
 
 ### 修复
