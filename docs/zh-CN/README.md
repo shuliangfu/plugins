@@ -592,11 +592,11 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.0.6] - 2026-02-19
+### [1.0.7] - 2026-02-24
 
-- **新增**：包级 i18n（en-US/zh-CN），social、ratelimit、auth、static
-  文案国际化；`$tr`、`setPluginsLocale`、`detectLocale`。
-- **变更**：social、ratelimit、auth、static 用户可见文案改为 `$tr`。
+- **新增**：Static 插件前缀 `"/*"` 匹配所有路由；无后缀的纯 SPA 路由从 root 返回
+  index.html。
+- **变更**：`StaticDirectory.prefix` 支持 `"/*"`；JSDoc 已更新。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

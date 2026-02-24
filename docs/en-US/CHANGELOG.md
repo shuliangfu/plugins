@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.7] - 2026-02-24
+
+### Added
+
+- **Static plugin** (`@dreamer/plugins/static`): Prefix `"/*"` matches all
+  routes. When prefix is `"/*"` and the request path has no file extension (pure
+  SPA route), the plugin serves `index.html` from the configured root so
+  client-side routing can handle the path. Paths with an extension are served as
+  static files only; no fallback to index.
+
+### Changed
+
+- **Static plugin**: `StaticDirectory.prefix` supports `"/*"`; JSDoc documents
+  that `"/*"` means match-all and pure routes return index.
+
+---
+
 ## [1.0.6] - 2026-02-19
 
 ### Added

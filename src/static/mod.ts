@@ -36,7 +36,10 @@ import { $tr } from "../i18n.ts";
 export interface StaticDirectory {
   /** 静态文件根目录 */
   root: string;
-  /** URL 前缀 */
+  /**
+   * URL 前缀。使用 "/*" 表示匹配所有路由：无后缀的纯路由（如 /path/path2）会返回 root 下的 index.html，
+   * 有后缀的路径（如 /assets/main.js）按静态文件解析，找不到则不返回 index。
+   */
   prefix: string;
 }
 
@@ -373,18 +376,20 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
       for (const dir of staticDirs) {
         const dirRoot = dir.root;
         const dirPrefix = dir.prefix;
+        // "/*" 表示匹配所有路由：等价于前缀 "/"，用于 SPA 纯路由返回 index.html
+        const effectivePrefix = dirPrefix === "/*" ? "/" : dirPrefix;
 
         // 检查路径前缀是否匹配
-        if (!path.startsWith(dirPrefix)) {
+        if (!path.startsWith(effectivePrefix)) {
           continue;
         }
 
         // 规范化路径（去掉前缀后的相对路径）
-        const relativePath = normalizePath(path.slice(dirPrefix.length));
+        const relativePath = normalizePath(path.slice(effectivePrefix.length));
 
         // 检查目录遍历攻击（路径中包含 .. 应该已被规范化移除，
         // 但如果原始路径试图逃逸根目录，返回 403）
-        const originalPath = path.slice(dirPrefix.length);
+        const originalPath = path.slice(effectivePrefix.length);
         if (originalPath.includes("..")) {
           ctx.response = new Response($tr("plugins.static.forbidden"), {
             status: 403,
@@ -403,6 +408,42 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
             headers: { "Content-Type": "text/plain" },
           });
           return;
+        }
+
+        // prefix 为 "/*" 且当前路径无后缀：视为纯路由，直接返回 index.html，由前端路由接管
+        if (dirPrefix === "/*" && getExtension(path) === "") {
+          for (const indexFile of index) {
+            const indexPath = join(cwd(), dirRoot, indexFile);
+            try {
+              const indexInfo: FileInfo = await stat(indexPath);
+              if (indexInfo.isFile) {
+                const content = await readFile(indexPath);
+                const cacheControlHeader = getCacheControl();
+                const headers = new Headers();
+                headers.set("Content-Type", "text/html; charset=utf-8");
+                if (cacheControlHeader !== false) {
+                  headers.set("Cache-Control", cacheControlHeader);
+                }
+                ctx.response = new Response(
+                  ctx.method === "HEAD" ? null : content.buffer as ArrayBuffer,
+                  { status: 200, headers },
+                );
+                if (debug) {
+                  const logger = container.has("logger")
+                    ? container.get<{ info: (msg: string) => void }>("logger")
+                    : null;
+                  if (logger) {
+                    logger.info(`SPA route: ${path} -> ${indexFile}`);
+                  }
+                }
+                return;
+              }
+            } catch {
+              // 当前目录无此 index 文件，尝试下一个 index 项
+            }
+          }
+          // 未找到 index 文件，尝试下一个静态目录
+          continue;
         }
 
         // 构建文件路径（使用 join 确保 Windows 兼容）

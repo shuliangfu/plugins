@@ -588,12 +588,11 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.0.6] - 2026-02-19
+### [1.0.7] - 2026-02-24
 
-- **Added**: Package i18n (en-US/zh-CN) for social, ratelimit, auth, static;
-  `$tr`, `setPluginsLocale`, `detectLocale`.
-- **Changed**: Social, ratelimit, auth, static use `$tr` for user-facing
-  messages.
+- **Added**: Static plugin prefix `"/*"` matches all routes; pure SPA routes (no
+  extension) serve index.html from root.
+- **Changed**: `StaticDirectory.prefix` supports `"/*"`; JSDoc updated.
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 

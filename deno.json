@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/plugins",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "dweb 框架的官方插件集合",
   "exports": {
     ".": "./src/mod.ts",
@@ -20,12 +20,7 @@
     "./social": "./src/social/mod.ts"
   },
   "publish": {
-    "exclude": [
-      "tests/",
-      ".github/",
-      "*.test.ts",
-      "TEST_REPORT.md"
-    ]
+    "exclude": ["tests/", ".github/", "*.test.ts", "TEST_REPORT.md"]
   },
   "imports": {
     "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.0.15",
@@ -43,13 +38,8 @@
     "@unocss/preset-icons": "npm:@unocss/preset-icons@66.0.0"
   },
   "nodeModulesDir": "auto",
-  "tasks": {
-    "test": "deno test --allow-all tests/"
-  },
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact"
-  },
+  "tasks": { "test": "deno test --allow-all tests/" },
+  "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "preact" },
   "allowScripts": {
     "allow": [],
     "deny": [
