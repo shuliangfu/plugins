@@ -592,11 +592,11 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.0.7] - 2026-02-24
+### [1.0.8] - 2026-02-25
 
-- **新增**：Static 插件前缀 `"/*"` 匹配所有路由；无后缀的纯 SPA 路由从 root 返回
-  index.html。
-- **变更**：`StaticDirectory.prefix` 支持 `"/*"`；JSDoc 已更新。
+- **新增**：所有插件从主入口 `@dreamer/plugins` 统一再导出（compression、cors、
+  ratelimit、security、auth、static、social 及其选项类型）。
+- **变更**：PostCSS 固定为 8.5.6，与 @tailwindcss/postcss 类型兼容。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

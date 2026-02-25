@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/plugins",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Official plugin collection for dweb (tailwindcss, static, auth, etc.).",
   "type": "module",
   "exports": {

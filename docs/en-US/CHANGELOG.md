@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.8] - 2026-02-25
+
+### Added
+
+- **Main module exports**: All plugins are now re-exported from the main entry
+  `@dreamer/plugins`. Compression, CORS, ratelimit, security, auth, static, and
+  social plugins (and their option types) can be imported from the package root
+  in addition to subpaths like `@dreamer/plugins/compression`.
+
+### Changed
+
+- **PostCSS**: Pinned `postcss` to `8.5.6` in imports to align with
+  `@tailwindcss/postcss` dependency and fix type-check conflict.
+
+---
+
 ## [1.0.7] - 2026-02-24
 
 ### Added

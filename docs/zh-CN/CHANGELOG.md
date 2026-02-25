@@ -7,6 +7,22 @@
 
 ---
 
+## [1.0.8] - 2026-02-25
+
+### 新增
+
+- **主模块导出**：所有插件现从主入口 `@dreamer/plugins`
+  统一再导出。compression、 cors、ratelimit、security、auth、static、social
+  等插件及其选项类型除子路径 （如
+  `@dreamer/plugins/compression`）外，也可从包根直接导入。
+
+### 变更
+
+- **PostCSS**：imports 中将 `postcss` 固定为 `8.5.6`，与
+  `@tailwindcss/postcss` 依赖一致，解决类型检查冲突。
+
+---
+
 ## [1.0.7] - 2026-02-24
 
 ### 新增

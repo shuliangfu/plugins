@@ -31,3 +31,36 @@ export {
   themePlugin,
   type ThemePluginOptions,
 } from "./theme/mod.ts";
+
+// 基础设施与安全插件
+export {
+  compressionPlugin,
+  type CompressionPluginOptions,
+} from "./compression/mod.ts";
+export { corsPlugin, type CorsPluginOptions } from "./cors/mod.ts";
+export {
+  rateLimitPlugin,
+  type RateLimitPluginOptions,
+} from "./ratelimit/mod.ts";
+export {
+  type CspDirectives,
+  securityPlugin,
+  type SecurityPluginOptions,
+} from "./security/mod.ts";
+export { authPlugin, type AuthPluginOptions } from "./auth/mod.ts";
+
+// 静态与社交插件
+export {
+  type StaticDirectory,
+  staticPlugin,
+  type StaticPluginOptions,
+} from "./static/mod.ts";
+export {
+  type OAuthConfig,
+  type OAuthProvider,
+  type OAuthUser,
+  type ShareContent,
+  type SocialPlatform,
+  socialPlugin,
+  type SocialPluginOptions,
+} from "./social/mod.ts";

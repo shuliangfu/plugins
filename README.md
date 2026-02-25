@@ -588,11 +588,13 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.0.7] - 2026-02-24
+### [1.0.8] - 2026-02-25
 
-- **Added**: Static plugin prefix `"/*"` matches all routes; pure SPA routes (no
-  extension) serve index.html from root.
-- **Changed**: `StaticDirectory.prefix` supports `"/*"`; JSDoc updated.
+- **Added**: All plugins re-exported from main entry `@dreamer/plugins`
+  (compression, cors, ratelimit, security, auth, static, social and their option
+  types).
+- **Changed**: PostCSS pinned to 8.5.6 for type compatibility with
+  @tailwindcss/postcss.
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 
