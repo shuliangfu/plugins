@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.9] - 2026-03-12
+
+### Added
+
+- **UnoCSS presets as instances**: `unocssPlugin` `presets` option now accepts
+  preset instances (objects) in addition to module-name strings. Use
+  `@unocss/preset-wind4` and `unocss-preset-daisy` (e.g.
+  ameinhardt/unocss-preset-daisy) by importing and passing instances in
+  `main.ts`: `presets: [presetWind4(), presetDaisy()]`.
+- **UnoCSSPresetItem type**: Exported from `@dreamer/plugins` and
+  `@dreamer/plugins/unocss` for typing preset arrays.
+- **Tests**: Unit tests for preset-instance config validation and for
+  plugin/compiler using preset instances (README presetWind4/presetDaisy flow).
+
+### Changed
+
+- **UnoCSS compiler**: Resolves only known preset strings (wind3/wind); custom
+  presets (wind4, daisy) must be passed as instances. Default preset remains
+  wind3 when no presets are provided.
+
+---
+
 ## [1.0.8] - 2026-02-25
 
 ### Added

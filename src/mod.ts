@@ -15,7 +15,11 @@ export {
   tailwindPlugin,
   type TailwindPluginOptions,
 } from "./tailwindcss/mod.ts";
-export { unocssPlugin, type UnoCSSPluginOptions } from "./unocss/mod.ts";
+export {
+  unocssPlugin,
+  type UnoCSSPluginOptions,
+  type UnoCSSPresetItem,
+} from "./unocss/mod.ts";
 
 // 功能插件
 export {

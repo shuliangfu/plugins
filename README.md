@@ -275,12 +275,30 @@ const plugin = unocssPlugin({
   cssEntry: "./src/assets/unocss.css",
   content: ["./src/**/*.{ts,tsx}"],
   assetsPath: "/assets", // Static asset URL (default "/assets")
-  presets: ["@unocss/preset-wind"], // TailwindCSS compatible
+  presets: ["@unocss/preset-wind"], // TailwindCSS compatible (string)
   icons: true, // Enable icons
   shortcuts: {
     "btn": "px-4 py-2 rounded bg-blue-500 text-white",
   },
 });
+```
+
+**Using UnoCSS preset-wind4 and daisyUI:** `presets` accepts either module-name
+strings (e.g. `"@unocss/preset-wind3"`) or **preset instances**. For
+`@unocss/preset-wind4` and `unocss-preset-daisy` (e.g.
+[ameinhardt/unocss-preset-daisy](https://github.com/ameinhardt/unocss-preset-daisy)),
+add the packages to your project and pass the preset instances in `main.ts`:
+
+```typescript
+import presetWind4 from "@unocss/preset-wind4";
+import presetDaisy from "unocss-preset-daisy";
+
+app.registerPlugin(unocssPlugin({
+  output: "dist/client/assets",
+  cssEntry: "assets/uno.css",
+  content: ["./src/**/*.{ts,tsx}"],
+  presets: [presetWind4(), presetDaisy()],
+}));
 ```
 
 ### Auth Plugin
@@ -588,13 +606,13 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.0.8] - 2026-02-25
+### [1.0.9] - 2026-03-12
 
-- **Added**: All plugins re-exported from main entry `@dreamer/plugins`
-  (compression, cors, ratelimit, security, auth, static, social and their option
-  types).
-- **Changed**: PostCSS pinned to 8.5.6 for type compatibility with
-  @tailwindcss/postcss.
+- **Added**: UnoCSS `presets` accept preset instances (e.g. presetWind4,
+  presetDaisy); export `UnoCSSPresetItem`; README and tests for preset
+  instances.
+- **Changed**: UnoCSS compiler resolves only known preset strings; custom
+  presets (wind4, daisy) must be passed as instances.
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 

@@ -7,6 +7,26 @@
 
 ---
 
+## [1.0.9] - 2026-03-12
+
+### 新增
+
+- **UnoCSS 预设实例**：`unocssPlugin` 的 `presets` 现支持传入预设实例（对象），
+  除模块名字符串外可使用 `@unocss/preset-wind4`、`unocss-preset-daisy`（如
+  ameinhardt/unocss-preset-daisy）在 main.ts 中 import 后传入：
+  `presets: [presetWind4(), presetDaisy()]`。
+- **UnoCSSPresetItem 类型**：从 `@dreamer/plugins` 与 `@dreamer/plugins/unocss`
+  导出，用于预设数组类型标注。
+- **测试**：预设实例配置校验及插件/编译器使用预设实例的单元测试（对应 README
+  presetWind4/presetDaisy 用法）。
+
+### 变更
+
+- **UnoCSS 编译器**：仅解析已知预设字符串（wind3/wind）；自定义预设（wind4、
+  daisy）须以实例传入。未提供预设时仍默认使用 wind3。
+
+---
+
 ## [1.0.8] - 2026-02-25
 
 ### 新增
@@ -18,8 +38,8 @@
 
 ### 变更
 
-- **PostCSS**：imports 中将 `postcss` 固定为 `8.5.6`，与
-  `@tailwindcss/postcss` 依赖一致，解决类型检查冲突。
+- **PostCSS**：imports 中将 `postcss` 固定为 `8.5.6`，与 `@tailwindcss/postcss`
+  依赖一致，解决类型检查冲突。
 
 ---
 

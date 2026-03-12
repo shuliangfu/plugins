@@ -81,6 +81,16 @@ describe("UnoCSS 插件", () => {
       );
     });
 
+    it("应该接受 presets 为预设实例（对象）", () => {
+      const plugin = unocssPlugin({ output: defaultOutput });
+
+      expect(
+        plugin.validateConfig?.({
+          unocss: { presets: [{ name: "custom-preset" }] },
+        }),
+      ).toBe(true);
+    });
+
     it("应该接受空配置", () => {
       const plugin = unocssPlugin({ output: defaultOutput });
 
@@ -132,6 +142,37 @@ describe("UnoCSS 插件", () => {
 
       const config = container.get("unocssConfig") as { presets?: string[] };
       expect(config?.presets).toContain("@unocss/preset-wind");
+    });
+
+    /**
+     * 对应 README：preset-wind4 / presetDaisy 用法，presets 传预设实例（对象）而非字符串
+     */
+    it("应该使用预设实例（如 presetWind4/presetDaisy）时正确注册并能编译", async () => {
+      const mockPreset = { name: "mock-preset-wind4-daisy-style" };
+      const plugin = unocssPlugin({
+        output: defaultOutput,
+        cssEntry: "./nonexistent.css",
+        content: [] as string[],
+        presets: [mockPreset],
+        icons: false,
+      });
+      plugin.onInit?.(container);
+
+      const config = container.get("unocssConfig") as {
+        presets?: unknown[];
+      };
+      expect(config?.presets).toBeDefined();
+      expect(Array.isArray(config.presets)).toBe(true);
+      expect(config.presets).toHaveLength(1);
+      expect((config.presets?.[0] as { name: string } | undefined)?.name).toBe(
+        "mock-preset-wind4-daisy-style",
+      );
+
+      const compiler = container.get("unocssCompiler") as UnoCompiler;
+      expect(compiler).toBeDefined();
+      const result = await compiler.compile();
+      expect(typeof result.css).toBe("string");
+      expect(result.css.length).toBeGreaterThanOrEqual(0);
     });
   });
 
@@ -271,5 +312,26 @@ describe("UnoCompiler", () => {
     expect(result.needsRebuild).toBe(true);
     // UnoCSS 会生成 preflights 基础样式
     expect(result.css).toContain("layer: preflights");
+  });
+
+  /**
+   * 单独测试：presets 为预设实例（对象）时编译器能成功编译（对应 README presetWind4/presetDaisy 用法）
+   */
+  it("应该接受预设实例（对象）并成功编译", async () => {
+    const mockPreset = { name: "custom-preset-instance" };
+    const compiler = new UnoCompiler({
+      cssEntry: "./nonexistent.css",
+      content: [],
+      dev: false,
+      presets: [mockPreset],
+      icons: false,
+    });
+
+    const result = await compiler.compile();
+
+    expect(result).toBeDefined();
+    expect(typeof result.css).toBe("string");
+    // 仅用 mock 预设时可能无 preflights，至少不抛错且返回结果
+    expect(result.filename).toBeDefined();
   });
 });

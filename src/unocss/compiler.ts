@@ -19,6 +19,11 @@ import {
 } from "@dreamer/runtime-adapter";
 
 /**
+ * 预设项：模块名字符串或已实例化的 UnoCSS 预设对象
+ */
+export type UnoPresetItem = string | Record<string, unknown>;
+
+/**
  * UnoCSS 编译选项
  */
 export interface UnoCompileOptions {
@@ -30,8 +35,8 @@ export interface UnoCompileOptions {
   config?: string;
   /** 是否为开发模式 */
   dev?: boolean;
-  /** 预设列表 */
-  presets?: string[];
+  /** 预设列表（字符串或预设实例） */
+  presets?: UnoPresetItem[];
   /** 是否启用图标系统 */
   icons?: boolean;
   /** 图标预设 */
@@ -85,22 +90,28 @@ export class UnoCompiler {
 
   /**
    * 初始化 UnoCSS 生成器（使用静态导入的 @unocss/core 与预设）
+   * presets 支持字符串（仅解析内置 wind3/wind）或预设实例（如 presetWind4()、presetDaisy()）
    */
   private async initGenerator(): Promise<void> {
     if (this.generator) return;
 
     try {
-      // 创建预设数组
+      // 解析预设：字符串仅解析已知内置项，其余使用用户传入的预设实例
       // deno-lint-ignore no-explicit-any
       const presets: any[] = [];
 
-      // 添加 Wind3 预设（TailwindCSS/Windi 兼容，presetWind 已弃用）
-      if (
-        this.options.presets?.includes("@unocss/preset-wind3") ||
-        this.options.presets?.includes("@unocss/preset-wind") ||
-        this.options.presets?.length === 0 ||
-        !this.options.presets
-      ) {
+      for (const item of this.options.presets ?? []) {
+        if (typeof item === "object" && item !== null) {
+          presets.push(item);
+        } else if (
+          item === "@unocss/preset-wind3" || item === "@unocss/preset-wind"
+        ) {
+          presets.push(presetWind3());
+        }
+      }
+
+      // 未提供任何预设或未解析出预设时，默认使用 Wind3（TailwindCSS/Windi 兼容）
+      if (presets.length === 0) {
         presets.push(presetWind3());
       }
 

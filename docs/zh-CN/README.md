@@ -592,11 +592,12 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.0.8] - 2026-02-25
+### [1.0.9] - 2026-03-12
 
-- **新增**：所有插件从主入口 `@dreamer/plugins` 统一再导出（compression、cors、
-  ratelimit、security、auth、static、social 及其选项类型）。
-- **变更**：PostCSS 固定为 8.5.6，与 @tailwindcss/postcss 类型兼容。
+- **新增**：UnoCSS `presets` 支持预设实例（如 presetWind4、presetDaisy）；导出
+  `UnoCSSPresetItem`；README 与测试覆盖预设实例用法。
+- **变更**：UnoCSS 编译器仅解析已知预设字符串；自定义预设（wind4、daisy）须
+  以实例传入。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

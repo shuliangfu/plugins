@@ -28,6 +28,12 @@ import type { ServiceContainer } from "@dreamer/service";
 import { UnoCompiler } from "./compiler.ts";
 
 /**
+ * UnoCSS 预设：可为模块名（字符串）或已实例化的预设对象。
+ * 使用 preset-wind4、unocss-preset-daisy 等时，请在 main.ts 中 import 后传入实例。
+ */
+export type UnoCSSPresetItem = string | Record<string, unknown>;
+
+/**
  * UnoCSS 插件配置选项
  */
 export interface UnoCSSPluginOptions {
@@ -41,8 +47,12 @@ export interface UnoCSSPluginOptions {
   cssEntry?: string;
   /** 静态资源 URL 路径前缀（默认："/assets"），仅用于生产模式 link href */
   assetsPath?: string;
-  /** 预设列表（默认：["@unocss/preset-wind"] 用于 TailwindCSS 兼容） */
-  presets?: string[];
+  /**
+   * 预设列表。可为模块名字符串（如 "@unocss/preset-wind3"）或已实例化的预设对象。
+   * 使用 @unocss/preset-wind4、unocss-preset-daisy 等时，请在 main.ts 中 import 并传入实例，例如：
+   * presets: [presetWind4(), presetDaisy()]
+   */
+  presets?: UnoCSSPresetItem[];
   /** 是否启用图标系统（默认：true） */
   icons?: boolean;
   /** 图标预设（默认：["@unocss/preset-icons"]） */
@@ -73,11 +83,14 @@ export interface UnoCSSPluginOptions {
  *   content: ["./src/.../*.{ts,tsx}"],
  * });
  *
- * // 高级用法（使用配置文件）
- * const plugin = unocssPlugin({
+ * // 使用 preset-wind4 + unocss-preset-daisy：在 main.ts 中 import 并传入实例
+ * import presetWind4 from "@unocss/preset-wind4";
+ * import presetDaisy from "unocss-preset-daisy";
+ * unocssPlugin({
  *   output: "dist/client/assets",
- *   config: "./uno.config.ts",
- *   content: ["./src/.../*.{ts,tsx}"],
+ *   cssEntry: "assets/uno.css",
+ *   content: ["./src/** /*.{ts,tsx}"],
+ *   presets: [presetWind4(), presetDaisy()],
  * });
  *
  * await pluginManager.use(plugin);
@@ -174,6 +187,16 @@ export function unocssPlugin(options: UnoCSSPluginOptions): Plugin {
         }
         if (unocss.presets && !Array.isArray(unocss.presets)) {
           return false;
+        }
+        // presets 每项须为 string 或 object（预设实例）
+        if (Array.isArray(unocss.presets)) {
+          for (const p of unocss.presets) {
+            if (
+              typeof p !== "string" && (typeof p !== "object" || p === null)
+            ) {
+              return false;
+            }
+          }
         }
       }
       return true;
