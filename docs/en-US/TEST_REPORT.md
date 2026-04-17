@@ -9,7 +9,7 @@
 | Test library version | @dreamer/test@1.0.0-beta.40    |
 | Runtime adapter      | @dreamer/runtime-adapter@1.0.0 |
 | Test framework       | Deno Test                      |
-| Test date            | 2026-02-01                     |
+| Test date            | 2026-04-17                     |
 | Test environment     | Deno 2.5+, macOS/Linux         |
 
 ---
@@ -20,31 +20,41 @@
 
 | Metric         | Result |
 | -------------- | ------ |
-| Total tests    | 322    |
-| Passed         | 322    |
+| Total tests    | 364    |
+| Passed         | 364    |
 | Failed         | 0      |
 | Pass rate      | 100%   |
-| Execution time | ~2s    |
+| Execution time | ~4s    |
 
 ### Test File Statistics
 
-| Test file           | Count | Status        |
-| ------------------- | ----- | ------------- |
-| analytics.test.ts   | 24    | ✅ All passed |
-| auth.test.ts        | 20    | ✅ All passed |
-| compression.test.ts | 21    | ✅ All passed |
-| cors.test.ts        | 20    | ✅ All passed |
-| i18n.test.ts        | 27    | ✅ All passed |
-| mod.test.ts         | 36    | ✅ All passed |
-| pwa.test.ts         | 18    | ✅ All passed |
-| ratelimit.test.ts   | 22    | ✅ All passed |
-| security.test.ts    | 16    | ✅ All passed |
-| seo.test.ts         | 23    | ✅ All passed |
-| social.test.ts      | 23    | ✅ All passed |
-| static.test.ts      | 17    | ✅ All passed |
-| tailwindcss.test.ts | 14    | ✅ All passed |
-| theme.test.ts       | 24    | ✅ All passed |
-| unocss.test.ts      | 17    | ✅ All passed |
+| Test file                           | `it(...)` cases | Status        |
+| ----------------------------------- | --------------- | ------------- |
+| analytics.test.ts                   | 24              | ✅ All passed |
+| auth.test.ts                        | 20              | ✅ All passed |
+| compression.test.ts                 | 21              | ✅ All passed |
+| cors.test.ts                        | 20              | ✅ All passed |
+| i18n.test.ts                        | 27              | ✅ All passed |
+| mod.test.ts                         | 36              | ✅ All passed |
+| pwa.test.ts                         | 18              | ✅ All passed |
+| queue.test.ts                       | 6               | ✅ All passed |
+| ratelimit.test.ts                   | 22              | ✅ All passed |
+| scheduled.test.ts                   | 16              | ✅ All passed |
+| security.test.ts                    | 16              | ✅ All passed |
+| seo.test.ts                         | 23              | ✅ All passed |
+| social.test.ts                      | 23              | ✅ All passed |
+| static.test.ts                      | 17              | ✅ All passed |
+| tailwindcss-compile.test.ts         | 0               | —             |
+| tailwindcss.test.ts                 | 14              | ✅ All passed |
+| theme.test.ts                       | 24              | ✅ All passed |
+| unocss-compile.test.ts              | 0               | —             |
+| unocss.test.ts                      | 20              | ✅ All passed |
+| **Subtotal (`it` cases)**           | **347**         |               |
+| **Full suite (`deno test tests/`)** | **364**         | ✅ All passed |
+
+The full-suite count (364) is the authoritative total from a single
+`deno test --allow-all tests/` run; it includes runner-level steps in addition
+to the 347 `it` cases listed above.
 
 ---
 

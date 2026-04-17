@@ -1,13 +1,13 @@
 # @dreamer/plugins
 
 > Official plugin collection for Deno and Bun: CSS utilities, i18n, SEO, PWA,
-> auth, and more
+> auth, scheduled tasks (Cron), and more
 
 English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-364%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.1-38bdf8)](https://tailwindcss.com)
 [![UnoCSS](https://img.shields.io/badge/UnoCSS-v66+-333)](https://unocss.dev)
 
@@ -99,6 +99,8 @@ bunx jsr add @dreamer/plugins
 - **Compression**: gzip, deflate
 - **Static**: Multi-dir, MIME, ETag, cache, security
 - **Social**: Share links and OAuth
+- **Scheduled**: Cron jobs (`onStart` / `onStop`), dedicated `@dreamer/logger`
+  output
 
 ---
 
@@ -110,6 +112,9 @@ bunx jsr add @dreamer/plugins
 - **PWA**: Installable progressive web apps
 - **Security**: Headers, CORS, rate limiting
 - **Auth**: JWT, Bearer Token, Basic Auth
+- **Scheduled tasks**: Run scripts or commands on a cron schedule (separate log
+  file)
+- **Queue**: `@dreamer/queue` server (`QueueManager`) with configurable logging
 
 ---
 
@@ -493,6 +498,117 @@ const twitterUrl = socialService.getShareUrl("twitter", {
 const githubAuthUrl = socialService.getOAuthUrl("github");
 ```
 
+### Scheduled tasks (Cron) plugin
+
+Registers jobs when the app runs **`onStart`** (after the server is ready) and
+stops them on **`onStop`**. Uses `@dreamer/runtime-adapter` **`cron()`**
+(node-cron–compatible expressions: 5 fields from minute, or 6 from second).
+
+**Import** (subpath recommended; `scheduledPlugin` is also re-exported from
+`@dreamer/plugins`):
+
+```typescript
+import { type LoggerConfig, scheduledPlugin } from "@dreamer/plugins/scheduled";
+```
+
+**Signature**: **`scheduledPlugin(tasks, logger?)`** — first argument is the
+task array; second is the same **`LoggerConfig`** shape as **`logger`** in
+[APP_CONFIG.md](../dweb/docs/en-US/APP_CONFIG.md) (optional; omit for default
+console-only behavior).
+
+**Task shape**: each entry must have exactly one of **`command`** (argv array,
+first element is the executable) or **`script`** (path resolved with optional
+`cwd`; run via current runtime `execPath()`, default `deno run -A`). **`cron`**
+is required. Invalid `tasks` throw when **`scheduledPlugin(...)`** is called.
+
+**Logging**: always **`@dreamer/logger`**. If the container already has an app
+**`Logger`**, the second argument is merged via **`child()`** so scheduled logs
+can use a dedicated file, separate from the main app log.
+
+**Example**:
+
+```typescript
+import { scheduledPlugin } from "@dreamer/plugins/scheduled";
+
+scheduledPlugin(
+  [
+    {
+      name: "daily",
+      cron: "0 0 * * *",
+      command: ["deno", "run", "-A", "./scripts/daily.ts"],
+    },
+    {
+      cron: "0/30 * * * * *",
+      script: "./scripts/tick.ts",
+      cwd: ".",
+    },
+  ],
+  {
+    level: "info",
+    format: "text",
+    output: {
+      console: false,
+      file: {
+        path: "./logs/scheduled.log",
+        rotate: true,
+        strategy: "size",
+        maxSize: 10 * 1024 * 1024,
+        maxFiles: 5,
+      },
+    },
+  },
+);
+```
+
+### Queue plugin (`@dreamer/queue`)
+
+Registers a **`QueueManager`** on **`onStart`** (same pattern as scheduled
+tasks: optional second argument **`LoggerConfig`** for file output, rotation,
+etc.). You supply a **`QueueAdapter`** (e.g. `MemoryQueueAdapter`,
+Redis/RabbitMQ adapters from `@dreamer/queue`) and optional **`queues`** with
+**`process`** handlers.
+
+**Import**:
+
+```typescript
+import {
+  type LoggerConfig,
+  queuePlugin,
+  type QueuePluginOptions,
+} from "@dreamer/plugins/queue";
+```
+
+**Signature**: **`queuePlugin(options, logger?)`**
+
+**Example**:
+
+```typescript
+import { MemoryQueueAdapter } from "@dreamer/queue";
+import { queuePlugin } from "@dreamer/plugins/queue";
+
+queuePlugin(
+  {
+    manager: { adapter: new MemoryQueueAdapter(), autoRecover: false },
+    queues: [
+      {
+        name: "notifications",
+        options: { concurrency: 2 },
+        process: async (job) => {
+          console.log(job.data);
+        },
+      },
+    ],
+  },
+  {
+    level: "info",
+    output: {
+      console: false,
+      file: { path: "./logs/queue.log", rotate: true },
+    },
+  },
+);
+```
+
 ---
 
 ### Build System Integration
@@ -515,22 +631,24 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ### Plugin List
 
-| Plugin              | Import                         | Description            |
-| ------------------- | ------------------------------ | ---------------------- |
-| `tailwindPlugin`    | `@dreamer/plugins/tailwindcss` | TailwindCSS v4         |
-| `unocssPlugin`      | `@dreamer/plugins/unocss`      | UnoCSS                 |
-| `i18nPlugin`        | `@dreamer/plugins/i18n`        | i18n (incl. global $t) |
-| `seoPlugin`         | `@dreamer/plugins/seo`         | SEO                    |
-| `pwaPlugin`         | `@dreamer/plugins/pwa`         | PWA                    |
-| `analyticsPlugin`   | `@dreamer/plugins/analytics`   | Analytics              |
-| `themePlugin`       | `@dreamer/plugins/theme`       | Theme                  |
-| `authPlugin`        | `@dreamer/plugins/auth`        | Auth                   |
-| `securityPlugin`    | `@dreamer/plugins/security`    | Security headers       |
-| `corsPlugin`        | `@dreamer/plugins/cors`        | CORS                   |
-| `rateLimitPlugin`   | `@dreamer/plugins/ratelimit`   | Rate limit             |
-| `staticPlugin`      | `@dreamer/plugins/static`      | Static files           |
-| `compressionPlugin` | `@dreamer/plugins/compression` | Compression            |
-| `socialPlugin`      | `@dreamer/plugins/social`      | Social share/OAuth     |
+| Plugin              | Import                         | Description                     |
+| ------------------- | ------------------------------ | ------------------------------- |
+| `tailwindPlugin`    | `@dreamer/plugins/tailwindcss` | TailwindCSS v4                  |
+| `unocssPlugin`      | `@dreamer/plugins/unocss`      | UnoCSS                          |
+| `i18nPlugin`        | `@dreamer/plugins/i18n`        | i18n (incl. global $t)          |
+| `seoPlugin`         | `@dreamer/plugins/seo`         | SEO                             |
+| `pwaPlugin`         | `@dreamer/plugins/pwa`         | PWA                             |
+| `analyticsPlugin`   | `@dreamer/plugins/analytics`   | Analytics                       |
+| `themePlugin`       | `@dreamer/plugins/theme`       | Theme                           |
+| `authPlugin`        | `@dreamer/plugins/auth`        | Auth                            |
+| `securityPlugin`    | `@dreamer/plugins/security`    | Security headers                |
+| `corsPlugin`        | `@dreamer/plugins/cors`        | CORS                            |
+| `rateLimitPlugin`   | `@dreamer/plugins/ratelimit`   | Rate limit                      |
+| `staticPlugin`      | `@dreamer/plugins/static`      | Static files                    |
+| `compressionPlugin` | `@dreamer/plugins/compression` | Compression                     |
+| `socialPlugin`      | `@dreamer/plugins/social`      | Social share/OAuth              |
+| `scheduledPlugin`   | `@dreamer/plugins/scheduled`   | Cron / scheduled tasks          |
+| `queuePlugin`       | `@dreamer/plugins/queue`       | Queue server (`@dreamer/queue`) |
 
 ### Standalone Client Libraries
 
@@ -548,25 +666,27 @@ All plugins implement these hooks (as needed):
 | Hook              | Description                                 |
 | ----------------- | ------------------------------------------- |
 | `onInit`          | Register services                           |
+| `onStart`         | After server listen (e.g. scheduled tasks)  |
 | `onRequest`       | Before request (locale, auth, CSS compile)  |
 | `onResponse`      | After response (meta, compression, headers) |
+| `onStop`          | Graceful shutdown                           |
 | `onBuildComplete` | After build (e.g. Sitemap)                  |
 
 ---
 
 ## 📊 Test Report
 
-[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-364%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 ### Unit Tests
 
 | Metric      | Value      |
 | ----------- | ---------- |
-| Total tests | 322        |
-| Passed      | 322        |
+| Total tests | 364        |
+| Passed      | 364        |
 | Failed      | 0          |
 | Pass rate   | 100%       |
-| Test date   | 2026-02-01 |
+| Test date   | 2026-04-17 |
 
 ### CSS Compiler Tests
 
@@ -606,13 +726,12 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.0.9] - 2026-03-12
+### [1.1.0] - 2026-04-17
 
-- **Added**: UnoCSS `presets` accept preset instances (e.g. presetWind4,
-  presetDaisy); export `UnoCSSPresetItem`; README and tests for preset
-  instances.
-- **Changed**: UnoCSS compiler resolves only known preset strings; custom
-  presets (wind4, daisy) must be passed as instances.
+- **Added**: `queuePlugin` (`@dreamer/plugins/queue`) for `@dreamer/queue`
+  `QueueManager`, optional `LoggerConfig` second argument; shared
+  `buildPluginTaskLogger`; `./queue` in `package.json` exports.
+- **Changed**: Scheduled plugin uses the shared logger helper (same behavior).
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 

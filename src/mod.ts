@@ -68,3 +68,18 @@ export {
   socialPlugin,
   type SocialPluginOptions,
 } from "./social/mod.ts";
+
+// 计划任务（Cron）
+export {
+  scheduledPlugin,
+  type ScheduledTaskCommandEntry,
+  type ScheduledTaskEntry,
+  type ScheduledTaskScriptEntry,
+} from "./scheduled/mod.ts";
+
+// 队列（@dreamer/queue）
+export {
+  queuePlugin,
+  type QueuePluginOptions,
+  type QueuePluginQueueEntry,
+} from "./queue/mod.ts";

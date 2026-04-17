@@ -3,11 +3,11 @@
 > 📖 [English](../../README.md) | 中文
 
 > 一个兼容 Deno 和 Bun 的官方插件集合，提供 CSS
-> 原子化、国际化、SEO、PWA、认证等开箱即用的 Web 应用功能插件
+> 原子化、国际化、SEO、PWA、认证、计划任务（Cron）等开箱即用的 Web 应用功能插件
 
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
-[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-364%20passed-brightgreen)](./TEST_REPORT.md)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.1-38bdf8)](https://tailwindcss.com)
 [![UnoCSS](https://img.shields.io/badge/UnoCSS-v66+-333)](https://unocss.dev)
 
@@ -103,6 +103,9 @@ bunx jsr add @dreamer/plugins
 - **Static**：静态文件服务（多目录配置、MIME
   类型、ETag、环境缓存控制、安全防护）
 - **Social**：社交分享和 OAuth 登录
+- **Scheduled**：计划任务（Cron，`onStart` / `onStop`），独立 `@dreamer/logger`
+  输出
+- **Queue**：`@dreamer/queue` 队列服务端（`QueueManager`），可配置日志
 
 ---
 
@@ -114,6 +117,8 @@ bunx jsr add @dreamer/plugins
 - **PWA 应用**：构建可安装的渐进式 Web 应用
 - **安全防护**：添加安全头、CORS、速率限制
 - **用户认证**：JWT、Bearer Token、Basic Auth 认证
+- **计划任务**：按 Cron 表达式定时执行命令或脚本（独立日志文件）
+- **任务队列**：集成 `@dreamer/queue`，后台消费任务（独立日志文件）
 
 ---
 
@@ -479,6 +484,116 @@ const twitterUrl = socialService.getShareUrl("twitter", {
 const githubAuthUrl = socialService.getOAuthUrl("github");
 ```
 
+### 计划任务（Cron）插件
+
+在应用触发 **`onStart`**（服务已开始监听）时注册 Cron，在 **`onStop`**
+时关闭定时器。底层使用 `@dreamer/runtime-adapter` 的 **`cron()`**，表达式与
+node-cron 一致（**5 段从分** 或 **6 段从秒**）。
+
+**子路径导入**（也可从包根 `@dreamer/plugins` 再导出项中引入
+`scheduledPlugin`）：
+
+```typescript
+import { type LoggerConfig, scheduledPlugin } from "@dreamer/plugins/scheduled";
+```
+
+**签名**：**`scheduledPlugin(tasks, logger?)`** —— 第一参为任务数组，第二参为与
+[APP_CONFIG.md](../../../dweb/docs/zh-CN/APP_CONFIG.md) 中 **`logger`** 同形的
+**`LoggerConfig`**（可选；缺省则仅控制台等默认行为）。
+
+**单条任务**：**`command`**（argv，首项为可执行文件）与 **`script`**
+（相对路径脚本，可选 `cwd`；由当前运行时 `execPath()` 执行，默认 `deno run -A`）
+**二选一**；**`cron`** 必填。非法 **`tasks`** 在调用 **`scheduledPlugin(...)`**
+时即抛错。
+
+**日志**：统一 **`@dreamer/logger`**。若容器内已有应用
+**`Logger`**，第二参会通过 **`child()`**
+合并，计划任务写入独立文件，与主应用日志分流。
+
+**示例**：
+
+```typescript
+import { scheduledPlugin } from "@dreamer/plugins/scheduled";
+
+scheduledPlugin(
+  [
+    {
+      name: "daily",
+      cron: "0 0 * * *",
+      command: ["deno", "run", "-A", "./scripts/daily.ts"],
+    },
+    {
+      cron: "0/30 * * * * *",
+      script: "./scripts/tick.ts",
+      cwd: ".",
+    },
+  ],
+  {
+    level: "info",
+    format: "text",
+    output: {
+      console: false,
+      file: {
+        path: "./logs/scheduled.log",
+        rotate: true,
+        strategy: "size",
+        maxSize: 10 * 1024 * 1024,
+        maxFiles: 5,
+      },
+    },
+  },
+);
+```
+
+### 队列插件（`@dreamer/queue`）
+
+在 **`onStart`** 中创建 **`QueueManager`**
+并注册到服务容器（与计划任务相同：可选第二参
+**`LoggerConfig`**，支持独立文件、轮转等）。**`manager.adapter`** 必填（如
+**`MemoryQueueAdapter`**、Redis 等适配器）；**`queues`** 中可声明 **`process`**
+订阅消费。
+
+**子路径导入**：
+
+```typescript
+import {
+  type LoggerConfig,
+  queuePlugin,
+  type QueuePluginOptions,
+} from "@dreamer/plugins/queue";
+```
+
+**签名**：**`queuePlugin(options, logger?)`**
+
+**示例**：
+
+```typescript
+import { MemoryQueueAdapter } from "@dreamer/queue";
+import { queuePlugin } from "@dreamer/plugins/queue";
+
+queuePlugin(
+  {
+    manager: { adapter: new MemoryQueueAdapter(), autoRecover: false },
+    queues: [
+      {
+        name: "notifications",
+        options: { concurrency: 2 },
+        process: async (job) => {
+          console.log(job.data);
+        },
+      },
+    ],
+  },
+  {
+    level: "info",
+    output: {
+      console: false,
+      file: { path: "./logs/queue.log", rotate: true },
+    },
+  },
+);
+```
+
 ---
 
 ### 构建系统集成
@@ -516,6 +631,8 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 | `staticPlugin`      | `@dreamer/plugins/static`      | 静态文件                |
 | `compressionPlugin` | `@dreamer/plugins/compression` | 响应压缩                |
 | `socialPlugin`      | `@dreamer/plugins/social`      | 社交分享/OAuth          |
+| `scheduledPlugin`   | `@dreamer/plugins/scheduled`   | 计划任务 / Cron         |
+| `queuePlugin`       | `@dreamer/plugins/queue`       | 队列（@dreamer/queue）  |
 
 ### 独立客户端包
 
@@ -533,25 +650,27 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 | 钩子              | 说明                                         |
 | ----------------- | -------------------------------------------- |
 | `onInit`          | 初始化时注册服务                             |
+| `onStart`         | 服务监听就绪后（如注册计划任务）             |
 | `onRequest`       | 请求处理前（如语言检测、认证、CSS 编译）     |
 | `onResponse`      | 响应处理后（如注入 meta 标签、压缩、安全头） |
+| `onStop`          | 应用优雅停止                                 |
 | `onBuildComplete` | 构建完成后（如生成 Sitemap）                 |
 
 ---
 
 ## 📊 测试报告
 
-[![Tests](https://img.shields.io/badge/tests-322%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-364%20passed-brightgreen)](./TEST_REPORT.md)
 
 ### 单元测试
 
 | 指标     | 值         |
 | -------- | ---------- |
-| 总测试数 | 322        |
-| 通过     | 322        |
+| 总测试数 | 364        |
+| 通过     | 364        |
 | 失败     | 0          |
 | 通过率   | 100%       |
-| 测试时间 | 2026-02-02 |
+| 测试时间 | 2026-04-17 |
 
 ### CSS 编译器实际测试
 
@@ -592,12 +711,12 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.0.9] - 2026-03-12
+### [1.1.0] - 2026-04-17
 
-- **新增**：UnoCSS `presets` 支持预设实例（如 presetWind4、presetDaisy）；导出
-  `UnoCSSPresetItem`；README 与测试覆盖预设实例用法。
-- **变更**：UnoCSS 编译器仅解析已知预设字符串；自定义预设（wind4、daisy）须
-  以实例传入。
+- **新增**：`queuePlugin`（`@dreamer/plugins/queue`）集成
+  `@dreamer/queue`；第二参可配置 `LoggerConfig`；共用
+  `buildPluginTaskLogger`；`package.json` 增加 `./queue` 导出。
+- **变更**：计划任务插件改用共用 Logger 构建逻辑（行为不变）。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.0] - 2026-04-17
+
+### Added
+
+- **Queue plugin** (`@dreamer/plugins/queue`): `queuePlugin(options, logger?)`
+  integrates `@dreamer/queue` `QueueManager` on `onStart`, registers the manager
+  to the service container (`queueManager` or `queueManager:{name}`), creates
+  queues with optional `process` handlers, and closes the manager on `onStop`.
+  Second argument matches `APP_CONFIG.logger` (`LoggerConfig`) for dedicated log
+  files and rotation, same pattern as `scheduledPlugin`.
+- **`plugins/src/internal/plugin-logger.ts`**: shared `buildPluginTaskLogger`
+  for scheduled and queue plugins (child logger merge or standalone
+  `createLogger`).
+- **`package.json` exports**: added `./queue` subpath for npm consumers.
+
+### Changed
+
+- **Scheduled plugin**: refactored to use shared plugin logger helper (behavior
+  unchanged).
+
+---
+
 ## [1.0.9] - 2026-03-12
 
 ### Added

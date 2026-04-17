@@ -7,6 +7,26 @@
 
 ---
 
+## [1.1.0] - 2026-04-17
+
+### 新增
+
+- **队列插件**（`@dreamer/plugins/queue`）：`queuePlugin(options, logger?)` 在
+  `onStart` 集成 `@dreamer/queue` 的 `QueueManager`
+  并注册到服务容器（`queueManager` 或
+  `queueManager:{name}`），按配置创建队列及可选 `process` 消费，在 `onStop` 关闭
+  管理器。第二参与 `APP_CONFIG.logger`
+  同形（`LoggerConfig`），支持独立日志文件与 轮转，与 `scheduledPlugin` 一致。
+- **`plugins/src/internal/plugin-logger.ts`**：抽取 `buildPluginTaskLogger`，供
+  计划任务与队列插件共用（`child()` 合并或独立 `createLogger`）。
+- **`package.json` exports**：为 npm 使用者增加 `./queue` 子路径导出。
+
+### 变更
+
+- **计划任务插件**：改为使用共用 Logger 构建逻辑（对外行为不变）。
+
+---
+
 ## [1.0.9] - 2026-03-12
 
 ### 新增

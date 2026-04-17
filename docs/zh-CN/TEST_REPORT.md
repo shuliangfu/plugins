@@ -9,7 +9,7 @@
 | 测试库版本   | @dreamer/test@1.0.0-beta.40    |
 | 运行时适配器 | @dreamer/runtime-adapter@1.0.0 |
 | 测试框架     | Deno Test                      |
-| 测试日期     | 2026-02-01                     |
+| 测试日期     | 2026-04-17                     |
 | 测试环境     | Deno 2.5+，macOS/Linux         |
 
 ---
@@ -20,31 +20,40 @@
 
 | 指标     | 结果 |
 | -------- | ---- |
-| 总测试数 | 322  |
-| 通过     | 322  |
+| 总测试数 | 364  |
+| 通过     | 364  |
 | 失败     | 0    |
 | 通过率   | 100% |
-| 执行时间 | ~2s  |
+| 执行时间 | ~4s  |
 
 ### 测试文件统计
 
-| 测试文件            | 数量 | 状态        |
-| ------------------- | ---- | ----------- |
-| analytics.test.ts   | 24   | ✅ 全部通过 |
-| auth.test.ts        | 20   | ✅ 全部通过 |
-| compression.test.ts | 21   | ✅ 全部通过 |
-| cors.test.ts        | 20   | ✅ 全部通过 |
-| i18n.test.ts        | 27   | ✅ 全部通过 |
-| mod.test.ts         | 36   | ✅ 全部通过 |
-| pwa.test.ts         | 18   | ✅ 全部通过 |
-| ratelimit.test.ts   | 22   | ✅ 全部通过 |
-| security.test.ts    | 16   | ✅ 全部通过 |
-| seo.test.ts         | 23   | ✅ 全部通过 |
-| social.test.ts      | 23   | ✅ 全部通过 |
-| static.test.ts      | 17   | ✅ 全部通过 |
-| tailwindcss.test.ts | 14   | ✅ 全部通过 |
-| theme.test.ts       | 24   | ✅ 全部通过 |
-| unocss.test.ts      | 17   | ✅ 全部通过 |
+| 测试文件                           | `it(...)` 用例数 | 状态        |
+| ---------------------------------- | ---------------- | ----------- |
+| analytics.test.ts                  | 24               | ✅ 全部通过 |
+| auth.test.ts                       | 20               | ✅ 全部通过 |
+| compression.test.ts                | 21               | ✅ 全部通过 |
+| cors.test.ts                       | 20               | ✅ 全部通过 |
+| i18n.test.ts                       | 27               | ✅ 全部通过 |
+| mod.test.ts                        | 36               | ✅ 全部通过 |
+| pwa.test.ts                        | 18               | ✅ 全部通过 |
+| queue.test.ts                      | 6                | ✅ 全部通过 |
+| ratelimit.test.ts                  | 22               | ✅ 全部通过 |
+| scheduled.test.ts                  | 16               | ✅ 全部通过 |
+| security.test.ts                   | 16               | ✅ 全部通过 |
+| seo.test.ts                        | 23               | ✅ 全部通过 |
+| social.test.ts                     | 23               | ✅ 全部通过 |
+| static.test.ts                     | 17               | ✅ 全部通过 |
+| tailwindcss-compile.test.ts        | 0                | —           |
+| tailwindcss.test.ts                | 14               | ✅ 全部通过 |
+| theme.test.ts                      | 24               | ✅ 全部通过 |
+| unocss-compile.test.ts             | 0                | —           |
+| unocss.test.ts                     | 20               | ✅ 全部通过 |
+| **小计（`it` 用例）**              | **347**          |             |
+| **整包单次（`deno test tests/`）** | **364**          | ✅ 全部通过 |
+
+整包单次运行 **364** 为权威通过数（`deno test --allow-all tests/`）；除上表
+**347** 条 `it` 用例外，另含测试运行器级步骤。
 
 ---
 

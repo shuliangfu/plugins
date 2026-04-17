@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/plugins",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Official plugin collection for dweb (tailwindcss, static, auth, etc.).",
   "type": "module",
   "exports": {
@@ -18,7 +18,9 @@
     "./security": "./src/security/mod.ts",
     "./auth": "./src/auth/mod.ts",
     "./static": "./src/static/mod.ts",
-    "./social": "./src/social/mod.ts"
+    "./social": "./src/social/mod.ts",
+    "./scheduled": "./src/scheduled/mod.ts",
+    "./queue": "./src/queue/mod.ts"
   },
   "scripts": {
     "test": "bun test tests/"
@@ -26,6 +28,7 @@
   "dependencies": {
     "@dreamer/auth": "npm:@jsr/dreamer__auth@^1.0.0",
     "@dreamer/i18n": "npm:@jsr/dreamer__i18n@^1.0.1",
+    "@dreamer/logger": "npm:@jsr/dreamer__logger@^1.0.3",
     "@dreamer/plugin": "npm:@jsr/dreamer__plugin@^1.0.2",
     "@dreamer/runtime-adapter": "npm:@jsr/dreamer__runtime-adapter@^1.0.15",
     "@dreamer/service": "npm:@jsr/dreamer__service@^1.0.2",
