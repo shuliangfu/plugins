@@ -7,6 +7,19 @@
 
 ---
 
+## [1.1.1] - 2026-04-21
+
+### 变更
+
+- **JSR 依赖**：`@dreamer/theme` 升至稳定版 `^1.0.1`，`@dreamer/auth` 升至
+  `^1.0.1`，开发依赖 `@dreamer/test` 升至 `^1.1.8`。
+- **`package.json`**：`@dreamer/runtime-adapter` 对齐至 `^1.0.18`，`postcss`
+  对齐至 `8.5.10`。
+- **`deno.json` imports**：PostCSS `^8.5.10`；Tailwind CSS /
+  `@tailwindcss/postcss` `^4.1.18`；UnoCSS 相关包使用 `^66.0.0` 语义范围。
+
+---
+
 ## [1.1.0] - 2026-04-17
 
 ### 新增

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.1] - 2026-04-21
+
+### Changed
+
+- **JSR dependencies**: bump `@dreamer/theme` to stable `^1.0.1`,
+  `@dreamer/auth` to `^1.0.1`, and `@dreamer/test` (dev) to `^1.1.8`.
+- **`package.json`**: align `@dreamer/runtime-adapter` to `^1.0.18` and
+  `postcss` to `8.5.10`.
+- **`deno.json` imports**: PostCSS `^8.5.10`; Tailwind CSS /
+  `@tailwindcss/postcss` `^4.1.18`; UnoCSS packages use caret semver ranges
+  (`^66.0.0`).
+
+---
+
 ## [1.1.0] - 2026-04-17
 
 ### Added

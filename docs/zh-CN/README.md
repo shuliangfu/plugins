@@ -711,12 +711,11 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.1.0] - 2026-04-17
+### [1.1.1] - 2026-04-21
 
-- **新增**：`queuePlugin`（`@dreamer/plugins/queue`）集成
-  `@dreamer/queue`；第二参可配置 `LoggerConfig`；共用
-  `buildPluginTaskLogger`；`package.json` 增加 `./queue` 导出。
-- **变更**：计划任务插件改用共用 Logger 构建逻辑（行为不变）。
+- **变更**：对齐 JSR 依赖（`@dreamer/theme` `^1.0.1`、`@dreamer/auth`
+  `^1.0.1`、开发依赖 `@dreamer/test` `^1.1.8`）、npm 侧 runtime-adapter /
+  postcss，以及 `deno.json` 中 Tailwind / PostCSS / UnoCSS 的版本范围。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

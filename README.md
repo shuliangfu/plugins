@@ -726,12 +726,11 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.1.0] - 2026-04-17
+### [1.1.1] - 2026-04-21
 
-- **Added**: `queuePlugin` (`@dreamer/plugins/queue`) for `@dreamer/queue`
-  `QueueManager`, optional `LoggerConfig` second argument; shared
-  `buildPluginTaskLogger`; `./queue` in `package.json` exports.
-- **Changed**: Scheduled plugin uses the shared logger helper (same behavior).
+- **Changed**: Aligned JSR deps (`@dreamer/theme` `^1.0.1`, `@dreamer/auth`
+  `^1.0.1`, `@dreamer/test` `^1.1.8` dev), runtime-adapter / postcss in npm
+  manifests, and Tailwind / PostCSS / UnoCSS import ranges in `deno.json`.
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 
