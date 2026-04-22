@@ -93,7 +93,8 @@ bunx jsr add @dreamer/plugins
 
 - **Security**：安全头注入（CSP、HSTS、X-Frame-Options 等）
 - **CORS**：跨域资源共享配置
-- **RateLimit**：请求速率限制
+- **RateLimit**：按 IP 窗口限流，支持 **`skip`** 排除路径、可选 **`include`**
+  仅对白名单路径限流、可选 **`pluginName`** 多实例并存
 
 ### 其他插件
 
@@ -443,12 +444,20 @@ const cors = corsPlugin({
   maxAge: 86400,
 });
 
-// 速率限制
+// 速率限制（默认键：从 X-Forwarded-For / X-Real-Ip 取 IP，否则为 "unknown"）
 const rateLimit = rateLimitPlugin({
   max: 100,
   windowMs: 60 * 1000, // 1 分钟
-  skipPaths: ["/health"],
-  keyGenerator: (req) => req.headers.get("x-forwarded-for") || "unknown",
+  skip: ["/health", "/api/health"],
+});
+
+// 同一应用注册多个实例须设置不同 pluginName，否则深度合并会覆盖同名插件。
+// include：仅匹配的路径计入本插件配额（v1.1.2+）。
+const loginRateLimit = rateLimitPlugin({
+  pluginName: "my-app-login-ratelimit",
+  max: 40,
+  windowMs: 15 * 60 * 1000,
+  include: ["/api/auth/login"],
 });
 ```
 
@@ -711,11 +720,14 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.1.1] - 2026-04-21
+### [1.1.2] - 2026-04-22
 
-- **变更**：对齐 JSR 依赖（`@dreamer/theme` `^1.0.1`、`@dreamer/auth`
-  `^1.0.1`、开发依赖 `@dreamer/test` `^1.1.8`）、npm 侧 runtime-adapter /
-  postcss，以及 `deno.json` 中 Tailwind / PostCSS / UnoCSS 的版本范围。
+- **新增** —
+  **限流**（`@dreamer/plugins/ratelimit`）：**`include`**（路径白名单）、
+  **`pluginName`**（多实例与 `AppConfig.plugins` 合并）。
+- **变更** — `validateConfig` 的配置参数类型。
+- **修复** — README 示例：**`skip`**（非 `skipPaths`）、**`keyGenerator`** 接收
+  **`RequestContext`**。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

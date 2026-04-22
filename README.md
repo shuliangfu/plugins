@@ -90,7 +90,8 @@ bunx jsr add @dreamer/plugins
 
 - **Security**: CSP, HSTS, X-Frame-Options, etc.
 - **CORS**: Cross-origin config
-- **RateLimit**: Request rate limiting
+- **RateLimit**: Per-IP windows, **`skip`** paths, optional **`include`**
+  whitelist-only paths, optional **`pluginName`** for multiple instances
 
 ### Other Plugins
 
@@ -457,12 +458,20 @@ const cors = corsPlugin({
   maxAge: 86400,
 });
 
-// Rate limit
+// Rate limit (default key: IP from X-Forwarded-For / X-Real-Ip, else "unknown")
 const rateLimit = rateLimitPlugin({
   max: 100,
   windowMs: 60 * 1000, // 1 minute
-  skipPaths: ["/health"],
-  keyGenerator: (req) => req.headers.get("x-forwarded-for") || "unknown",
+  skip: ["/health", "/api/health"],
+});
+
+// Multiple instances must use distinct pluginName, or deepMergeConfig replaces
+// same-named plugins. Optional include = only those paths count (v1.1.2+).
+const loginRateLimit = rateLimitPlugin({
+  pluginName: "my-app-login-ratelimit",
+  max: 40,
+  windowMs: 15 * 60 * 1000,
+  include: ["/api/auth/login"],
 });
 ```
 
@@ -726,11 +735,13 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.1.1] - 2026-04-21
+### [1.1.2] - 2026-04-22
 
-- **Changed**: Aligned JSR deps (`@dreamer/theme` `^1.0.1`, `@dreamer/auth`
-  `^1.0.1`, `@dreamer/test` `^1.1.8` dev), runtime-adapter / postcss in npm
-  manifests, and Tailwind / PostCSS / UnoCSS import ranges in `deno.json`.
+- **Added** — **Rate limit** (`@dreamer/plugins/ratelimit`): **`include`** (path
+  whitelist), **`pluginName`** (multiple instances with `AppConfig.plugins`).
+- **Changed** — `validateConfig` config typing.
+- **Fixed** — README examples: **`skip`** (not `skipPaths`), **`keyGenerator`**
+  receives **`RequestContext`**.
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 

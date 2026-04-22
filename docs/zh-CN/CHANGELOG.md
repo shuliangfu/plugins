@@ -7,6 +7,29 @@
 
 ---
 
+## [1.1.2] - 2026-04-22
+
+### 新增
+
+- **`@dreamer/plugins/ratelimit`**：选项 **`include`** — 路径前缀或正则白名单，
+  **仅**匹配的路径计入限流（不匹配的路径不计次、不限流）。
+- **`@dreamer/plugins/ratelimit`**：选项 **`pluginName`** — 覆盖插件默认 `name`
+  （`@dreamer/plugins-ratelimit`），同一应用注册多个限流实例时与 dweb
+  **`AppConfig.plugins`** 深度合并互不覆盖。
+
+### 变更
+
+- **`@dreamer/plugins/ratelimit`**：`validateConfig` 的配置参数类型为
+  `Record<string, unknown>`。
+
+### 修复
+
+- **文档**：修正 README 示例（使用 **`skip`** 而非 `skipPaths`；
+  **`keyGenerator`** 接收 **`RequestContext`**）；补充 **`include`**、
+  **`pluginName`** 说明。
+
+---
+
 ## [1.1.1] - 2026-04-21
 
 ### 变更

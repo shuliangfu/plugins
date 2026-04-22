@@ -5,10 +5,11 @@
  *
  * 提供 API 速率限制功能，支持：
  * - 固定窗口限流
- * - 滑动窗口限流
- * - IP 基础限流
- * - 自定义标识符
- * - 可配置响应
+ * - IP 基础限流（默认 `RequestContext`：`X-Forwarded-For` / `X-Real-Ip`）
+ * - **`skip`** 排除路径 · **`include`** 路径白名单（仅匹配路径限流）
+ * - **`pluginName`**（多实例并存，避免配置合并同名覆盖）
+ * - 自定义 **`keyGenerator(ctx)`**
+ * - 可配置超限响应与 `X-RateLimit-*` 头
  *
  * 设计原则：
  * - 插件只响应事件钩子（onInit、onRequest、onResponse 等）
@@ -23,6 +24,11 @@ import { $tr } from "../i18n.ts";
  * 速率限制插件配置选项
  */
 export interface RateLimitPluginOptions {
+  /**
+   * 插件在配置合并时的唯一名称；未设置时为 `@dreamer/plugins-ratelimit`。
+   * 同一应用注册多个限流实例时必须设为不同值，否则 `deepMergeConfig` 会覆盖前者。
+   */
+  pluginName?: string;
   /** 时间窗口内允许的最大请求数（默认 100） */
   max?: number;
   /** 时间窗口大小（毫秒，默认 60000 = 1 分钟） */
@@ -33,6 +39,11 @@ export interface RateLimitPluginOptions {
   skipSuccessfulRequests?: boolean;
   /** 是否跳过失败的请求（默认 false） */
   skipFailedRequests?: boolean;
+  /**
+   * **仅**对这些路径启用限流（字符串前缀或正则）；未设置或空数组表示「除 skip 外全部」。
+   * 不匹配的路径直接放行且**不计数**。
+   */
+  include?: string[] | RegExp[];
   /** 跳过限流的路径（正则表达式或字符串数组） */
   skip?: string[] | RegExp[];
   /** 超出限制时的状态码（默认 429） */
@@ -186,6 +197,32 @@ function shouldSkip(
 }
 
 /**
+ * 路径是否命中「仅限流这些路径」白名单
+ *
+ * @param path - 请求路径
+ * @param include - 路径前缀或正则列表
+ * @returns 是否应纳入限流统计
+ */
+function matchesIncludePatterns(
+  path: string | undefined,
+  include: string[] | RegExp[],
+): boolean {
+  if (!path || include.length === 0) return false;
+
+  for (const pattern of include) {
+    if (typeof pattern === "string") {
+      if (path === pattern || path.startsWith(pattern)) {
+        return true;
+      }
+    } else if (pattern instanceof RegExp && pattern.test(path)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * 创建速率限制插件
  *
  * @param options - 插件配置选项
@@ -210,17 +247,27 @@ function shouldSkip(
  *   skip: ["/api/health", /^\/public\//],
  * });
  *
+ * // 仅对白名单路径限流；多实例须设置不同 pluginName
+ * const loginOnly = rateLimitPlugin({
+ *   pluginName: "app-login-ratelimit",
+ *   include: ["/api/auth/login"],
+ *   max: 40,
+ *   windowMs: 15 * 60 * 1000,
+ * });
+ *
  * await pluginManager.use(plugin);
  * ```
  */
 export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
   // 解构配置选项，设置默认值
   const {
+    pluginName,
     max = 100,
     windowMs = 60000,
     keyGenerator = defaultKeyGenerator,
     skipSuccessfulRequests = false,
     skipFailedRequests = false,
+    include,
     skip = [],
     statusCode = 429,
     message = "请求过于频繁，请稍后再试",
@@ -228,6 +275,12 @@ export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
     headerPrefix = "X-RateLimit",
     debug = false,
   } = options;
+
+  /** 是否启用路径白名单（仅匹配路径才计数） */
+  const includePatterns: string[] | RegExp[] = include ?? [];
+  const useIncludeFilter = includePatterns.length > 0;
+
+  const resolvedPluginName = pluginName?.trim() || "@dreamer/plugins-ratelimit";
 
   // 创建存储实例
   const store = new RateLimitStore(windowMs);
@@ -237,16 +290,18 @@ export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
   let _cleanupInterval: number | undefined;
 
   return {
-    name: "@dreamer/plugins-ratelimit",
+    name: resolvedPluginName,
     version: "1.0.0",
 
     // 插件配置
     config: {
       rateLimit: {
+        pluginName: resolvedPluginName,
         max,
         windowMs,
         skipSuccessfulRequests,
         skipFailedRequests,
+        include: includePatterns,
         skip,
         statusCode,
         message,
@@ -259,7 +314,7 @@ export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
     /**
      * 配置验证
      */
-    validateConfig: (config) => {
+    validateConfig: (config: Record<string, unknown>) => {
       if (config.rateLimit && typeof config.rateLimit === "object") {
         const rl = config.rateLimit as Record<string, unknown>;
         // 验证 max
@@ -352,6 +407,14 @@ export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
      * 检查速率限制
      */
     onRequest(ctx: RequestContext, container: ServiceContainer) {
+      // 白名单：仅对匹配路径限流（不匹配则不计数、不拦截）
+      if (
+        useIncludeFilter &&
+        !matchesIncludePatterns(ctx.path, includePatterns)
+      ) {
+        return;
+      }
+
       // 检查是否应该跳过
       if (shouldSkip(ctx.path, skip)) return;
 

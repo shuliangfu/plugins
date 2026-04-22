@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.2] - 2026-04-22
+
+### Added
+
+- **`@dreamer/plugins/ratelimit`**: **`include`** option — path prefix / regex
+  whitelist; only matching paths are counted and limited (non-matching paths do
+  not consume the quota).
+- **`@dreamer/plugins/ratelimit`**: **`pluginName`** option — overrides the
+  default plugin `name` (`@dreamer/plugins-ratelimit`) so multiple
+  `rateLimitPlugin()` instances stay distinct when `AppConfig.plugins` is
+  deep-merged.
+
+### Changed
+
+- **`@dreamer/plugins/ratelimit`**: `validateConfig` callback types the config
+  parameter as `Record<string, unknown>`.
+
+### Fixed
+
+- **Documentation**: Corrected README examples (`skip` not `skipPaths`;
+  `keyGenerator` receives `RequestContext`). Documented **`include`** and
+  **`pluginName`**.
+
+---
+
 ## [1.1.1] - 2026-04-21
 
 ### Changed
