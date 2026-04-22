@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.4] - 2026-04-22
+
+### Changed
+
+- **Runtime environment**: TailwindCSS, UnoCSS, **static**, and **analytics**
+  plugins now treat **development mode** only when **`RUNTIME_ENV === "dev"`**
+  (aligned with @dreamer/dweb); they **no longer** read `DENO_ENV`, `BUN_ENV`,
+  or `NODE_ENV`.
+- **`src/internal/runtime-env.ts`**: Added **`isRuntimeEnvDev()`** shared
+  helper.
+
+### Tests
+
+- **`tailwindcss.test.ts`**, **`unocss.test.ts`**, **`analytics.test.ts`**:
+  switched fixtures to **`RUNTIME_ENV`** (`start` replaces former production env
+  hints).
+
+---
+
 ## [1.1.3] - 2026-04-22
 
 ### Added

@@ -7,7 +7,7 @@
 
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
-[![Tests](https://img.shields.io/badge/tests-364%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-365%20passed-brightgreen)](./TEST_REPORT.md)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.1-38bdf8)](https://tailwindcss.com)
 [![UnoCSS](https://img.shields.io/badge/UnoCSS-v66+-333)](https://unocss.dev)
 
@@ -676,14 +676,14 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📊 测试报告
 
-[![Tests](https://img.shields.io/badge/tests-364%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-365%20passed-brightgreen)](./TEST_REPORT.md)
 
 ### 单元测试
 
 | 指标     | 值         |
 | -------- | ---------- |
-| 总测试数 | 364        |
-| 通过     | 364        |
+| 总测试数 | 365        |
+| 通过     | 365        |
 | 失败     | 0          |
 | 通过率   | 100%       |
 | 测试时间 | 2026-04-17 |
@@ -727,12 +727,11 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.1.3] - 2026-04-22
+### [1.1.4] - 2026-04-22
 
-- **新增** — **`rateLimitContainerKeys()`**，用于解析容器内
-  **`rateLimitConfig:<name>`** / **`rateLimitService:<name>`** 键。
-- **修复** — 多个 **`rateLimitPlugin`** 实例按 **`pluginName`**
-  分别注册，**`onInit`** 不再因重复注册失败。
+- **变更** — TailwindCSS / UnoCSS / static / analytics 仅以 **`RUNTIME_ENV`**
+  判断开发态（与 dweb 对齐）；新增 **`internal/runtime-env.ts`** 辅助函数
+  **`isRuntimeEnvDev()`**。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

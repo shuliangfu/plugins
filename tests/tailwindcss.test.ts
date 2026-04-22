@@ -117,8 +117,8 @@ describe("TailwindCSS 插件", () => {
   describe("onRequest 钩子", () => {
     it("应该在开发模式下编译 CSS", async () => {
       // 模拟开发环境
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "dev");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "dev");
 
       try {
         const plugin = tailwindPlugin({ output: defaultOutput });
@@ -138,9 +138,9 @@ describe("TailwindCSS 插件", () => {
         // 由于文件不存在，CSS 将为空
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
@@ -171,8 +171,8 @@ describe("TailwindCSS 插件", () => {
 
     it("应该在生产模式下注入 link 标签", async () => {
       // 设置生产环境
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = tailwindPlugin({ output: defaultOutput });
@@ -197,9 +197,9 @@ describe("TailwindCSS 插件", () => {
         );
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });

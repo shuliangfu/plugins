@@ -21,13 +21,13 @@ import {
   cwd,
   type DirEntry,
   type FileInfo,
-  getEnv,
   join,
   readdir,
   readFile,
   stat,
 } from "@dreamer/runtime-adapter";
 import type { ServiceContainer } from "@dreamer/service";
+import { isRuntimeEnvDev } from "../internal/runtime-env.ts";
 import { $tr } from "../i18n.ts";
 
 /**
@@ -259,13 +259,10 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
 
   /**
    * 获取当前环境的缓存控制头
-   * 支持 DENO_ENV 和 BUN_ENV 环境变量，默认为 "dev"
-   * 开发环境（env === "dev"）默认禁用缓存，生产环境使用配置的缓存策略
+   * 与 dweb 一致：仅 `RUNTIME_ENV=dev` 时视为开发态并默认禁用强缓存
    */
   const getCacheControl = (): string | false => {
-    const env = getEnv("DENO_ENV") || getEnv("BUN_ENV") || "dev";
-    const isDev = env === "dev";
-    return isDev ? devCacheControl : cacheControl;
+    return isRuntimeEnvDev() ? devCacheControl : cacheControl;
   };
 
   return {

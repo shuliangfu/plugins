@@ -18,13 +18,13 @@ import type { Plugin, RequestContext } from "@dreamer/plugin";
 import {
   basename,
   cwd,
-  getEnv,
   join,
   mkdir,
   readdir,
   writeTextFile,
 } from "@dreamer/runtime-adapter";
 import type { ServiceContainer } from "@dreamer/service";
+import { isRuntimeEnvDev } from "../internal/runtime-env.ts";
 import { TailwindCompiler } from "./compiler.ts";
 
 /**
@@ -177,10 +177,8 @@ export function tailwindPlugin(options: TailwindPluginOptions): Plugin {
      * 注册 TailwindCSS 服务到容器
      */
     onInit(container: ServiceContainer) {
-      // 判断是否为开发模式
-      const isDev =
-        (getEnv("DENO_ENV") || getEnv("BUN_ENV") || getEnv("NODE_ENV") ||
-          "dev") === "dev";
+      // 判断是否为开发模式（与 dweb App 的 RUNTIME_ENV=dev 一致）
+      const isDev = isRuntimeEnvDev();
 
       // 注册 TailwindCSS 配置服务（含 assetsPath，供 dweb 生成 client 时计算 HMR CSS URL）
       container.registerSingleton("tailwindConfig", () => ({
@@ -242,9 +240,7 @@ export function tailwindPlugin(options: TailwindPluginOptions): Plugin {
      * 否则在请求时编译 CSS 并存入上下文供 onResponse 注入。
      */
     async onRequest(ctx: RequestContext, container: ServiceContainer) {
-      const isDev =
-        (getEnv("DENO_ENV") || getEnv("BUN_ENV") || getEnv("NODE_ENV") ||
-          "dev") === "dev";
+      const isDev = isRuntimeEnvDev();
 
       if (!isDev || !compiler) return;
 
@@ -305,9 +301,7 @@ export function tailwindPlugin(options: TailwindPluginOptions): Plugin {
      * 注入 CSS 标签
      */
     async onResponse(ctx: RequestContext, container: ServiceContainer) {
-      const isDev =
-        (getEnv("DENO_ENV") || getEnv("BUN_ENV") || getEnv("NODE_ENV") ||
-          "dev") === "dev";
+      const isDev = isRuntimeEnvDev();
 
       // 只在 HTML 响应中注入 CSS
       const contentType = ctx.response?.headers.get("content-type");

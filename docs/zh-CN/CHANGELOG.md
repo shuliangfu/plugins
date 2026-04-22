@@ -7,6 +7,22 @@
 
 ---
 
+## [1.1.4] - 2026-04-22
+
+### 变更
+
+- **运行环境**：TailwindCSS、UnoCSS、**static**、**analytics** 插件改为仅当
+  **`RUNTIME_ENV=dev`** 时视为开发态（与 @dreamer/dweb 一致），**不再**读取
+  `DENO_ENV`、`BUN_ENV`、`NODE_ENV`。
+- **`src/internal/runtime-env.ts`**：新增共享辅助函数 **`isRuntimeEnvDev()`**。
+
+### 测试
+
+- **`tailwindcss.test.ts`**、**`unocss.test.ts`**、**`analytics.test.ts`**：场景变量改为
+  **`RUNTIME_ENV`**（生产类场景使用 **`start`**）。
+
+---
+
 ## [1.1.3] - 2026-04-22
 
 ### 新增

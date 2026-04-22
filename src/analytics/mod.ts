@@ -15,8 +15,8 @@
  */
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
-import { getEnv } from "@dreamer/runtime-adapter";
 import type { ServiceContainer } from "@dreamer/service";
+import { isRuntimeEnvDev } from "../internal/runtime-env.ts";
 
 /**
  * Analytics 插件配置选项
@@ -220,9 +220,7 @@ export function analyticsPlugin(
      */
     onRequest(ctx: RequestContext) {
       // 检查是否在开发环境且禁用了分析
-      const isDev =
-        (getEnv("DENO_ENV") || getEnv("BUN_ENV") || getEnv("NODE_ENV") ||
-          "dev") === "dev";
+      const isDev = isRuntimeEnvDev();
       if (disableInDev && isDev) {
         return;
       }
@@ -239,9 +237,7 @@ export function analyticsPlugin(
      */
     async onResponse(ctx: RequestContext, container: ServiceContainer) {
       // 检查是否在开发环境且禁用了分析
-      const isDev =
-        (getEnv("DENO_ENV") || getEnv("BUN_ENV") || getEnv("NODE_ENV") ||
-          "dev") === "dev";
+      const isDev = isRuntimeEnvDev();
       if (disableInDev && isDev) {
         return;
       }

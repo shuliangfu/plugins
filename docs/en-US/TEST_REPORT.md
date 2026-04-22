@@ -9,7 +9,7 @@
 | Test library version | @dreamer/test@1.0.0-beta.40    |
 | Runtime adapter      | @dreamer/runtime-adapter@1.0.0 |
 | Test framework       | Deno Test                      |
-| Test date            | 2026-04-17                     |
+| Test date            | 2026-04-22                     |
 | Test environment     | Deno 2.5+, macOS/Linux         |
 
 ---
@@ -20,11 +20,11 @@
 
 | Metric         | Result |
 | -------------- | ------ |
-| Total tests    | 364    |
-| Passed         | 364    |
+| Total tests    | 365    |
+| Passed         | 365    |
 | Failed         | 0      |
 | Pass rate      | 100%   |
-| Execution time | ~4s    |
+| Execution time | ~6s    |
 
 ### Test File Statistics
 
@@ -50,9 +50,9 @@
 | unocss-compile.test.ts              | 0               | —             |
 | unocss.test.ts                      | 20              | ✅ All passed |
 | **Subtotal (`it` cases)**           | **347**         |               |
-| **Full suite (`deno test tests/`)** | **364**         | ✅ All passed |
+| **Full suite (`deno test tests/`)** | **365**         | ✅ All passed |
 
-The full-suite count (364) is the authoritative total from a single
+The full-suite count (365) is the authoritative total from a single
 `deno test --allow-all tests/` run; it includes runner-level steps in addition
 to the 347 `it` cases listed above.
 

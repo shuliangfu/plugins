@@ -218,8 +218,8 @@ describe("Analytics 分析统计插件", () => {
 
   describe("onRequest 钩子", () => {
     it("应该在开发环境且 disableInDev 时跳过", () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "dev");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "dev");
 
       try {
         const plugin = analyticsPlugin({
@@ -243,16 +243,16 @@ describe("Analytics 分析统计插件", () => {
           .toBeUndefined();
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
 
     it("应该在生产环境记录请求开始时间", () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = analyticsPlugin({
@@ -278,16 +278,16 @@ describe("Analytics 分析统计插件", () => {
         );
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
 
     it("禁用性能追踪时不应该记录开始时间", () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = analyticsPlugin({ trackPerformance: false });
@@ -307,9 +307,9 @@ describe("Analytics 分析统计插件", () => {
           .toBeUndefined();
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
@@ -317,8 +317,8 @@ describe("Analytics 分析统计插件", () => {
 
   describe("onResponse 钩子", () => {
     it("应该在开发环境且 disableInDev 时跳过", async () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "dev");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "dev");
 
       try {
         const plugin = analyticsPlugin({ disableInDev: true, ga4Id: "G-TEST" });
@@ -342,16 +342,16 @@ describe("Analytics 分析统计插件", () => {
         expect(body).not.toContain("gtag");
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
 
     it("应该跳过非 HTML 响应", async () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = analyticsPlugin({ ga4Id: "G-TEST" });
@@ -374,16 +374,16 @@ describe("Analytics 分析统计插件", () => {
         expect(body).toBe('{"data": "test"}');
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
 
     it("应该注入 Google Analytics 4 脚本", async () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = analyticsPlugin({ ga4Id: "G-TESTID123" });
@@ -408,16 +408,16 @@ describe("Analytics 分析统计插件", () => {
         expect(body).toContain("gtag('config'");
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
 
     it("应该注入 Universal Analytics 脚本", async () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = analyticsPlugin({ gaId: "UA-12345678-1" });
@@ -442,16 +442,16 @@ describe("Analytics 分析统计插件", () => {
         expect(body).toContain("ga('send', 'pageview')");
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
 
     it("应该注入 Plausible Analytics 脚本", async () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = analyticsPlugin({
@@ -477,16 +477,16 @@ describe("Analytics 分析统计插件", () => {
         expect(body).toContain('data-domain="example.com"');
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
 
     it("应该同时注入多个分析服务脚本", async () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = analyticsPlugin({
@@ -515,16 +515,16 @@ describe("Analytics 分析统计插件", () => {
         expect(body).toContain("plausible.io");
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });
 
     it("没有配置分析服务时不应该注入脚本", async () => {
-      const originalEnv = getEnv("DENO_ENV");
-      setEnv("DENO_ENV", "production");
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
 
       try {
         const plugin = analyticsPlugin({});
@@ -548,9 +548,9 @@ describe("Analytics 分析统计插件", () => {
         expect(body).toBe("<html><head></head><body></body></html>");
       } finally {
         if (originalEnv) {
-          setEnv("DENO_ENV", originalEnv);
+          setEnv("RUNTIME_ENV", originalEnv);
         } else {
-          deleteEnv("DENO_ENV");
+          deleteEnv("RUNTIME_ENV");
         }
       }
     });

@@ -7,7 +7,7 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-364%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-365%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.1-38bdf8)](https://tailwindcss.com)
 [![UnoCSS](https://img.shields.io/badge/UnoCSS-v66+-333)](https://unocss.dev)
 
@@ -692,14 +692,14 @@ All plugins implement these hooks (as needed):
 
 ## 📊 Test Report
 
-[![Tests](https://img.shields.io/badge/tests-364%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-365%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 ### Unit Tests
 
 | Metric      | Value      |
 | ----------- | ---------- |
-| Total tests | 364        |
-| Passed      | 364        |
+| Total tests | 365        |
+| Passed      | 365        |
 | Failed      | 0          |
 | Pass rate   | 100%       |
 | Test date   | 2026-04-17 |
@@ -742,12 +742,11 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.1.3] - 2026-04-22
+### [1.1.4] - 2026-04-22
 
-- **Added** — **`rateLimitContainerKeys()`** for `ServiceContainer` lookup keys
-  (`rateLimitConfig:<name>` / `rateLimitService:<name>`).
-- **Fixed** — Multiple **`rateLimitPlugin`** instances: **`onInit`** registers
-  unique keys per **`pluginName`** (no duplicate singleton errors).
+- **Changed** — CSS / static / analytics plugins use **`RUNTIME_ENV`** only for
+  dev detection (aligned with dweb); **`isRuntimeEnvDev()`** in
+  `internal/runtime-env.ts`.
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 
