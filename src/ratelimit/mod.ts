@@ -21,6 +21,23 @@ import type { ServiceContainer } from "@dreamer/service";
 import { $tr } from "../i18n.ts";
 
 /**
+ * 根据解析后的插件 `name` 生成服务容器中的注册键（与 {@link rateLimitPlugin} 内一致）。
+ * 未传或空串时与默认插件名 **`@dreamer/plugins-ratelimit`** 对齐。
+ *
+ * @param pluginName - 与 `rateLimitPlugin({ pluginName })` 解析后相同；省略则为默认名
+ */
+export function rateLimitContainerKeys(pluginName?: string): {
+  configKey: string;
+  serviceKey: string;
+} {
+  const n = pluginName?.trim() || "@dreamer/plugins-ratelimit";
+  return {
+    configKey: `rateLimitConfig:${n}`,
+    serviceKey: `rateLimitService:${n}`,
+  };
+}
+
+/**
  * 速率限制插件配置选项
  */
 export interface RateLimitPluginOptions {
@@ -282,6 +299,10 @@ export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
 
   const resolvedPluginName = pluginName?.trim() || "@dreamer/plugins-ratelimit";
 
+  /** 每实例唯一，避免多个限流插件重复 `registerSingleton("rateLimitConfig")` 抛错 */
+  const { configKey: containerConfigKey, serviceKey: containerServiceKey } =
+    rateLimitContainerKeys(resolvedPluginName);
+
   // 创建存储实例
   const store = new RateLimitStore(windowMs);
 
@@ -340,8 +361,8 @@ export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
      * 注册限流服务到容器
      */
     onInit(container: ServiceContainer) {
-      // 注册限流配置服务
-      container.registerSingleton("rateLimitConfig", () => ({
+      // 注册限流配置服务（键含插件名，支持同进程多实例）
+      container.registerSingleton(containerConfigKey, () => ({
         max,
         windowMs,
         skipSuccessfulRequests,
@@ -355,7 +376,7 @@ export function rateLimitPlugin(options: RateLimitPluginOptions = {}): Plugin {
       }));
 
       // 注册限流服务
-      container.registerSingleton("rateLimitService", () => ({
+      container.registerSingleton(containerServiceKey, () => ({
         /**
          * 检查是否超出限制
          * @param key - 标识符

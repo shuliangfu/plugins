@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.3] - 2026-04-22
+
+### Added
+
+- **`rateLimitContainerKeys(pluginName?)`**: exported from `@dreamer/plugins`
+  and `@dreamer/plugins/ratelimit`; returns **`configKey`** and **`serviceKey`**
+  for `ServiceContainer` lookups (`rateLimitConfig:<name>`,
+  `rateLimitService:<name>`).
+
+### Fixed
+
+- **`@dreamer/plugins/ratelimit`**: multiple active instances no longer fail
+  **`onInit`** — each instance registers unique singleton keys derived from the
+  resolved plugin name (previously every instance used **`rateLimitConfig`** /
+  **`rateLimitService`**, triggering duplicate registration errors).
+
+### Changed
+
+- **Tests**: `ratelimit.test.ts` resolves services via
+  **`rateLimitContainerKeys()`**; added **`onInit`** coverage for two distinct
+  **`pluginName`** values.
+
+---
+
 ## [1.1.2] - 2026-04-22
 
 ### Added

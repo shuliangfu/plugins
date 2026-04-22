@@ -435,7 +435,12 @@ const plugin = staticPlugin({
 ### Security Plugins
 
 ```typescript
-import { corsPlugin, rateLimitPlugin, securityPlugin } from "@dreamer/plugins";
+import {
+  corsPlugin,
+  rateLimitContainerKeys,
+  rateLimitPlugin,
+  securityPlugin,
+} from "@dreamer/plugins";
 
 // Security headers
 const security = securityPlugin({
@@ -473,6 +478,8 @@ const loginRateLimit = rateLimitPlugin({
   windowMs: 15 * 60 * 1000,
   include: ["/api/auth/login"],
 });
+
+// Runtime lookups: container.get(rateLimitContainerKeys("my-app-login-ratelimit").serviceKey)
 ```
 
 ### Social Share Plugin
@@ -735,13 +742,12 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.1.2] - 2026-04-22
+### [1.1.3] - 2026-04-22
 
-- **Added** — **Rate limit** (`@dreamer/plugins/ratelimit`): **`include`** (path
-  whitelist), **`pluginName`** (multiple instances with `AppConfig.plugins`).
-- **Changed** — `validateConfig` config typing.
-- **Fixed** — README examples: **`skip`** (not `skipPaths`), **`keyGenerator`**
-  receives **`RequestContext`**.
+- **Added** — **`rateLimitContainerKeys()`** for `ServiceContainer` lookup keys
+  (`rateLimitConfig:<name>` / `rateLimitService:<name>`).
+- **Fixed** — Multiple **`rateLimitPlugin`** instances: **`onInit`** registers
+  unique keys per **`pluginName`** (no duplicate singleton errors).
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 

@@ -43,6 +43,7 @@ export {
 } from "./compression/mod.ts";
 export { corsPlugin, type CorsPluginOptions } from "./cors/mod.ts";
 export {
+  rateLimitContainerKeys,
   rateLimitPlugin,
   type RateLimitPluginOptions,
 } from "./ratelimit/mod.ts";

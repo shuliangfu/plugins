@@ -7,9 +7,13 @@
 import { ServiceContainer } from "@dreamer/service";
 import { beforeEach, describe, expect, it } from "@dreamer/test";
 import {
+  rateLimitContainerKeys,
   rateLimitPlugin,
   type RateLimitPluginOptions,
 } from "../src/ratelimit/mod.ts";
+
+/** 默认插件实例在容器中的注册键（与未传 pluginName 时一致） */
+const DEFAULT_RL_KEYS = rateLimitContainerKeys();
 
 describe("速率限制插件", () => {
   let container: ServiceContainer;
@@ -87,7 +91,7 @@ describe("速率限制插件", () => {
 
       plugin.onInit?.(container);
 
-      const config = container.get("rateLimitConfig");
+      const config = container.get(DEFAULT_RL_KEYS.configKey);
       expect(config).toBeDefined();
       expect((config as { max: number }).max).toBe(200);
     });
@@ -97,8 +101,21 @@ describe("速率限制插件", () => {
 
       plugin.onInit?.(container);
 
-      const service = container.get("rateLimitService");
+      const service = container.get(DEFAULT_RL_KEYS.serviceKey);
       expect(service).toBeDefined();
+    });
+
+    it("不同 pluginName 的多实例 onInit 互不冲突", () => {
+      const keysA = rateLimitContainerKeys("multi-test-a");
+      const keysB = rateLimitContainerKeys("multi-test-b");
+      const p1 = rateLimitPlugin({ pluginName: "multi-test-a", max: 10 });
+      const p2 = rateLimitPlugin({ pluginName: "multi-test-b", max: 20 });
+      p1.onInit?.(container);
+      p2.onInit?.(container);
+      expect(container.has(keysA.configKey)).toBe(true);
+      expect(container.has(keysA.serviceKey)).toBe(true);
+      expect(container.has(keysB.configKey)).toBe(true);
+      expect(container.has(keysB.serviceKey)).toBe(true);
     });
 
     it("rateLimitService 应该提供正确的方法", () => {
@@ -109,7 +126,7 @@ describe("速率限制插件", () => {
         isLimited: (key: string) => boolean;
         getRemaining: (key: string) => number;
         getResetTime: (key: string) => number;
-      }>("rateLimitService");
+      }>(DEFAULT_RL_KEYS.serviceKey);
 
       expect(service?.isLimited).toBeDefined();
       expect(service?.getRemaining).toBeDefined();
@@ -138,7 +155,7 @@ describe("速率限制插件", () => {
       const service = container.get<{
         isLimited: (key: string) => boolean;
         getRemaining: (key: string) => number;
-      }>("rateLimitService");
+      }>(DEFAULT_RL_KEYS.serviceKey);
 
       // 初始状态不应该被限制
       expect(service?.isLimited("test-key")).toBe(false);
@@ -151,7 +168,7 @@ describe("速率限制插件", () => {
 
       const service = container.get<{
         getResetTime: (key: string) => number;
-      }>("rateLimitService");
+      }>(DEFAULT_RL_KEYS.serviceKey);
 
       const resetTime = service?.getResetTime("test-key");
       const now = Date.now();

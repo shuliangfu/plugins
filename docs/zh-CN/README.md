@@ -421,7 +421,12 @@ const plugin = staticPlugin({
 ### 安全插件
 
 ```typescript
-import { corsPlugin, rateLimitPlugin, securityPlugin } from "@dreamer/plugins";
+import {
+  corsPlugin,
+  rateLimitContainerKeys,
+  rateLimitPlugin,
+  securityPlugin,
+} from "@dreamer/plugins";
 
 // 安全头
 const security = securityPlugin({
@@ -459,6 +464,8 @@ const loginRateLimit = rateLimitPlugin({
   windowMs: 15 * 60 * 1000,
   include: ["/api/auth/login"],
 });
+
+// 运行时读取：container.get(rateLimitContainerKeys("my-app-login-ratelimit").serviceKey)
 ```
 
 ### 社交分享插件
@@ -720,14 +727,12 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.1.2] - 2026-04-22
+### [1.1.3] - 2026-04-22
 
-- **新增** —
-  **限流**（`@dreamer/plugins/ratelimit`）：**`include`**（路径白名单）、
-  **`pluginName`**（多实例与 `AppConfig.plugins` 合并）。
-- **变更** — `validateConfig` 的配置参数类型。
-- **修复** — README 示例：**`skip`**（非 `skipPaths`）、**`keyGenerator`** 接收
-  **`RequestContext`**。
+- **新增** — **`rateLimitContainerKeys()`**，用于解析容器内
+  **`rateLimitConfig:<name>`** / **`rateLimitService:<name>`** 键。
+- **修复** — 多个 **`rateLimitPlugin`** 实例按 **`pluginName`**
+  分别注册，**`onInit`** 不再因重复注册失败。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

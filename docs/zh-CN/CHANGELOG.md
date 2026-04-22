@@ -7,6 +7,28 @@
 
 ---
 
+## [1.1.3] - 2026-04-22
+
+### 新增
+
+- **`rateLimitContainerKeys(pluginName?)`**：从 `@dreamer/plugins` 与
+  `@dreamer/plugins/ratelimit` 导出；返回 **`configKey`** /
+  **`serviceKey`**，对应 容器内
+  **`rateLimitConfig:<name>`**、**`rateLimitService:<name>`**。
+
+### 修复
+
+- **`@dreamer/plugins/ratelimit`**：多个限流实例 **`onInit`** 不再失败 ——
+  每个实例按 解析后的插件名单独注册容器键（此前均占用 **`rateLimitConfig`** /
+  **`rateLimitService`**，触发重复注册错误）。
+
+### 变更
+
+- **测试**：`ratelimit.test.ts` 通过 **`rateLimitContainerKeys()`**
+  解析服务；新增两个不同 **`pluginName`** 时 **`onInit`** 用例。
+
+---
+
 ## [1.1.2] - 2026-04-22
 
 ### 新增
