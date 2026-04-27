@@ -165,14 +165,14 @@ describe("计划任务插件（scheduled）", () => {
     it("有任务时 onStart 应注册 Cron 并记录日志；onStop 应可重复调用（duck logger）", async () => {
       const infos: string[] = [];
       const container = new ServiceContainer();
-      /** 非 @dreamer/logger 实例时走兼容分支 */
+      /** 非 @dreamer/logger 实例时走兼容分支；注册成功日志为 debug */
       container.registerSingleton("logger", () => ({
-        info: (...args: unknown[]) => {
+        info: () => {},
+        debug: (...args: unknown[]) => {
           infos.push(args.map(String).join(" "));
         },
         warn: () => {},
         error: () => {},
-        debug: () => {},
       }));
 
       const plugin = scheduledPlugin([
@@ -191,7 +191,7 @@ describe("计划任务插件（scheduled）", () => {
     it("容器内为 @dreamer/logger 时应用 child；onStop 应关闭子 Logger", async () => {
       const container = new ServiceContainer();
       const appLog = createLogger({
-        level: "info",
+        level: "debug",
         format: "text",
         output: { console: false },
       });

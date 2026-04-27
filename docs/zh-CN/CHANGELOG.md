@@ -7,6 +7,23 @@
 
 ---
 
+## [1.1.5] - 2026-04-27
+
+### 变更
+
+- **i18n 插件**（`./i18n`）：初始化时「已支持语言」等输出改为
+  **`debug`**，避免默认 **info** 下刷屏。
+- **scheduled 插件**（`./scheduled`）：注册完 Cron 后的
+  `registered N cron job(s)` 改为 **`debug`**（对无 `debug` 的 duck logger
+  用可选调用）。
+- **queue 插件**（`./queue`）：`onStart` 时「queue manager started」改为
+  **`debug`**。
+
+### 测试
+
+- **`scheduled.test.ts`**：调整 mock 与子 Logger 的 `level`，以在 **debug**
+  下断言 上述注册消息。
+
 ## [1.1.4] - 2026-04-22
 
 ### 变更

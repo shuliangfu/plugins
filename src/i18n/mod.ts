@@ -239,12 +239,12 @@ export function i18nPlugin(options: I18nPluginOptions = {}): Plugin {
         () => i18nInstance!,
       );
 
-      // 输出日志（logger 可能不存在）
+      // 初始化完成说明：默认用 debug，避免在 info 层刷屏；logger 可能不存在
       const logger = container.has("logger")
-        ? container.get<{ info: (msg: string) => void }>("logger")
+        ? container.get<{ debug: (message: string) => void }>("logger")
         : null;
       if (logger) {
-        logger.info(`i18n 插件已初始化，支持语言: ${locales.join(", ")}`);
+        logger.debug(`i18n 插件已初始化，支持语言: ${locales.join(", ")}`);
       }
     },
 

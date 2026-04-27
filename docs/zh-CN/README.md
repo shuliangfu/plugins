@@ -727,11 +727,11 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ## 📜 变更日志
 
-### [1.1.4] - 2026-04-22
+### [1.1.5] - 2026-04-27
 
-- **变更** — TailwindCSS / UnoCSS / static / analytics 仅以 **`RUNTIME_ENV`**
-  判断开发态（与 dweb 对齐）；新增 **`internal/runtime-env.ts`** 辅助函数
-  **`isRuntimeEnvDev()`**。
+- **变更** — **i18n** / **scheduled** / **queue**
+  插件：启动类诊断输出（初始化语言、 Cron 注册数、queue manager 启动）改为
+  **`debug`**，不再默认在 **info** 刷屏。
 
 完整版本历史详见 [CHANGELOG.md](./CHANGELOG.md)。
 

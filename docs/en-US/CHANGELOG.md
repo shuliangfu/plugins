@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.5] - 2026-04-27
+
+### Changed
+
+- **i18n plugin** (`./i18n`): on-init “supported locales” line now uses
+  **`debug`** instead of **`info`**, so default info-level output is not noisy.
+- **scheduled plugin** (`./scheduled`): the “registered N cron job(s)” line
+  after wiring cron tasks is now **`debug`** (with optional `debug?` for duck
+  loggers without `debug`).
+- **queue plugin** (`./queue`): the “queue manager started” line on plugin
+  `onStart` is now **`debug`**.
+
+### Tests
+
+- **`scheduled.test.ts`**: mock logger and child logger `level` updated so tests
+  still assert the registration message at **`debug`**.
+
 ## [1.1.4] - 2026-04-22
 
 ### Changed

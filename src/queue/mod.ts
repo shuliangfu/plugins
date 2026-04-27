@@ -200,7 +200,8 @@ export function queuePlugin(
         }
       }
 
-      log.info("queue manager started", {
+      /** 启动完成系诊断信息，用 debug 避免默认 info 刷屏 */
+      log.debug?.("queue manager started", {
         managerName: mgrName,
         queueCount: queueEntries.length,
       });

@@ -742,11 +742,11 @@ See [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md) for details.
 
 ## 📜 Changelog
 
-### [1.1.4] - 2026-04-22
+### [1.1.5] - 2026-04-27
 
-- **Changed** — CSS / static / analytics plugins use **`RUNTIME_ENV`** only for
-  dev detection (aligned with dweb); **`isRuntimeEnvDev()`** in
-  `internal/runtime-env.ts`.
+- **Changed** — **i18n** / **scheduled** / **queue** plugins: startup diagnostic
+  lines (init locales, “registered N cron job(s)”, “queue manager started”) now
+  at **`debug`** instead of **`info`**.
 
 See [CHANGELOG.md](./docs/en-US/CHANGELOG.md) for full version history.
 

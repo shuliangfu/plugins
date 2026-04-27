@@ -187,7 +187,8 @@ function registerCronJobs(
     handles.push(handle);
   }
 
-  logger.info(`registered ${handles.length} cron job(s)`);
+  /** 注册完成系诊断信息，用 debug 避免默认 info 刷屏 */
+  logger.debug?.(`registered ${handles.length} cron job(s)`);
 
   return () => {
     for (const h of handles) {
