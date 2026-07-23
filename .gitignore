@@ -7,7 +7,9 @@ deno.lock
 
 # 依赖
 node_modules
+node_modules/.deno
 bun.lock
+package-lock.json
 
 # 构建输出
 dist/

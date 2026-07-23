@@ -4,17 +4,32 @@
 
 ## Test Overview
 
-| Item                 | Info                           |
-| -------------------- | ------------------------------ |
-| Test library version | @dreamer/test@1.0.0-beta.40    |
-| Runtime adapter      | @dreamer/runtime-adapter@1.0.0 |
-| Test framework       | Deno Test                      |
-| Test date            | 2026-04-22                     |
-| Test environment     | Deno 2.5+, macOS/Linux         |
+| Item                 | Info                              |
+| -------------------- | --------------------------------- |
+| Package version      | `@dreamer/plugins@1.2.0`          |
+| Test library version | @dreamer/test@^1.2.3              |
+| Runtime adapter      | @dreamer/runtime-adapter@^1.2.2   |
+| Test framework       | Deno Test / Bun test / node:test  |
+| Test date            | 2026-07-23                        |
+| Test environment     | Deno 2.9+, Bun 1.3+, Node.js 22+  |
 
 ---
 
 ## Test Results
+
+### Cross-Runtime CI Results (Node.js 22+ Compatibility)
+
+CI runs 19 test files on 3 runtimes × 3 OSes (9 jobs), no Chromium, no
+Playwright, no external services:
+
+| Runtime | OS | Result | Notes |
+| ------- | -- | ------ | ----- |
+| **Deno 2.9** | Linux / macOS / Windows | ✅ 365 passed, 0 failed | `deno test -A --minimum-dependency-age=0 --no-check tests/` |
+| **Bun** | Linux / macOS / Windows | ✅ 348 passed, 0 failed | `bun test tests/` (19 files) |
+| **Node.js 22** | Linux / macOS / Windows | ✅ 19/19 files passed | `node --import tsx --test-force-exit test-node.mjs` (main-process, no fork/IPC) |
+
+> Deno 365 vs Bun 348: the difference is nested step counting (Deno counts
+> nested `describe` steps separately); 0 failures on all runtimes.
 
 ### Overall Statistics
 
@@ -24,7 +39,7 @@
 | Passed         | 365    |
 | Failed         | 0      |
 | Pass rate      | 100%   |
-| Execution time | ~6s    |
+| Execution time | ~1s    |
 
 ### Test File Statistics
 

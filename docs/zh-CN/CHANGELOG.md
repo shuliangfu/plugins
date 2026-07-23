@@ -7,6 +7,47 @@
 
 ---
 
+## [1.2.0] - 2026-07-23
+
+### 新增
+
+- **Node.js 22+ 兼容**：完整插件集合（tailwindcss、unocss、i18n、seo、pwa、
+  analytics、theme、compression、cors、ratelimit、security、auth、static、
+  social、scheduled、queue）现可在 Node.js 22+ 上运行。源码无 `Deno.*` API、
+  无 `IS_NODE` 分支——所有运行时差异经 `@dreamer/runtime-adapter` 抽象（`cron()`
+  辅助函数使用 `node-cron` npm 包，三端通用）。
+
+### 变更
+
+- 升级 `@dreamer/runtime-adapter` 至 ^1.2.2（IS_NODE 支持）。
+- 升级 `@dreamer/i18n` ^1.1.2，`@dreamer/auth`/`logger`/`plugin`/`queue`/
+  `service`/`theme` ^1.1.0，`@dreamer/test` ^1.2.3。
+- 同步 `package.json` 的 npm 依赖版本与 `deno.json` 对齐（关键：`nodeModulesDir:
+  "auto"` 时 Deno 用 deno.json 的 `jsr:` 解析、Bun 用 package.json 的 `npm:`
+  解析，版本不一致会导致运行时差异）。补上此前缺失的 `@dreamer/queue` 依赖
+  （deno.json imports 中有但 package.json 中遗漏）。
+
+### 修复
+
+- **`tests/i18n.test.ts` mock logger 回归**（v1.1.5 引入）：v1.1.5 将 i18n
+  初始化日志从 `info` 改为 `debug` 并更新了 `scheduled.test.ts`，但漏改
+  `i18n.test.ts`（其 mock 仍只提供 `info`）→ `TypeError: logger.debug is not a
+  function`。已将 mock 改为提供 `debug`。此前因包无 CI 从未暴露。
+
+### 基础设施
+
+- 9-job CI 矩阵：3 Deno v2.9 + 3 Bun + 3 Node 22（Linux/macOS/Windows），无
+  Chromium、无 Playwright、无外部服务。
+- `tsconfig.json`（Bundler 模式，Preact JSX 与 deno.json 一致）。
+- `test-node.mjs`——Node 测试运行器，主进程内执行（不带 `--test` 标志→无 fork/IPC，
+  避免 logger 输出污染 stdout TAP 通道）。
+- `deno.json` `minimumDependencyAge: "0"`（全局生效所有 Deno 命令含 pre-commit
+  hook 的 `deno check`）。
+- `package.json` `engines.node >= 22` + `test:node` 脚本；`.gitignore` 忽略
+  `package-lock.json`。
+
+---
+
 ## [1.1.5] - 2026-04-27
 
 ### 变更

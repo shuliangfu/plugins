@@ -4,17 +4,32 @@
 
 ## 测试概览
 
-| 项目         | 说明                           |
-| ------------ | ------------------------------ |
-| 测试库版本   | @dreamer/test@1.0.0-beta.40    |
-| 运行时适配器 | @dreamer/runtime-adapter@1.0.0 |
-| 测试框架     | Deno Test                      |
-| 测试日期     | 2026-04-22                     |
-| 测试环境     | Deno 2.5+，macOS/Linux         |
+| 项目         | 说明                              |
+| ------------ | --------------------------------- |
+| 包版本       | `@dreamer/plugins@1.2.0`          |
+| 测试库版本   | @dreamer/test@^1.2.3              |
+| 运行时适配器 | @dreamer/runtime-adapter@^1.2.2   |
+| 测试框架     | Deno Test / Bun test / node:test  |
+| 测试日期     | 2026-07-23                        |
+| 测试环境     | Deno 2.9+、Bun 1.3+、Node.js 22+  |
 
 ---
 
 ## 测试结果
+
+### 跨运行时 CI 结果（Node.js 22+ 兼容）
+
+CI 在 3 运行时 × 3 操作系统（9 jobs）上运行 19 个测试文件，无 Chromium、无
+Playwright、无外部服务：
+
+| 运行时 | 操作系统 | 结果 | 说明 |
+| ------ | -------- | ---- | ---- |
+| **Deno 2.9** | Linux / macOS / Windows | ✅ 365 通过，0 失败 | `deno test -A --minimum-dependency-age=0 --no-check tests/` |
+| **Bun** | Linux / macOS / Windows | ✅ 348 通过，0 失败 | `bun test tests/`（19 文件） |
+| **Node.js 22** | Linux / macOS / Windows | ✅ 19/19 文件通过 | `node --import tsx --test-force-exit test-node.mjs`（主进程，无 fork/IPC） |
+
+> Deno 365 vs Bun 348：差异为嵌套步骤计数（Deno 单独计数嵌套 `describe` 步骤）；
+> 三端 0 失败。
 
 ### 总体统计
 
@@ -24,7 +39,7 @@
 | 通过     | 365  |
 | 失败     | 0    |
 | 通过率   | 100% |
-| 执行时间 | ~6s  |
+| 执行时间 | ~1s  |
 
 ### 测试文件统计
 

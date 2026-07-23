@@ -165,8 +165,10 @@ describe("i18n 国际化插件", () => {
 
     it("应该在有 logger 时输出日志", () => {
       const logMessages: string[] = [];
+      // 【Why】src/i18n/mod.ts onInit 故意用 logger.debug（避免在 info 层刷屏），
+      // 故 mock 须提供 debug 才能捕获日志输出。
       container.registerSingleton("logger", () => ({
-        info: (msg: string) => logMessages.push(msg),
+        debug: (msg: string) => logMessages.push(msg),
       }));
 
       const plugin = i18nPlugin();

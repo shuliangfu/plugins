@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.0] - 2026-07-23
+
+### Added
+
+- **Node.js 22+ compatibility**: the full plugin collection (tailwindcss,
+  unocss, i18n, seo, pwa, analytics, theme, compression, cors, ratelimit,
+  security, auth, static, social, scheduled, queue) now runs on Node.js 22+.
+  Source has zero `Deno.*` API and zero `IS_NODE` branches — all runtime
+  differences are abstracted through `@dreamer/runtime-adapter` (the `cron()`
+  helper uses the `node-cron` npm package, which works on all three runtimes).
+
+### Changed
+
+- Upgraded `@dreamer/runtime-adapter` to ^1.2.2 (IS_NODE support).
+- Upgraded `@dreamer/i18n` ^1.1.2, `@dreamer/auth`/`logger`/`plugin`/`queue`/
+  `service`/`theme` ^1.1.0, `@dreamer/test` ^1.2.3.
+- Synced `package.json` npm dependency versions with `deno.json` (critical:
+  `nodeModulesDir: "auto"` makes Deno resolve `jsr:` from deno.json while Bun
+  resolves `npm:` from package.json — divergence causes runtime-specific
+  failures). Added the previously-missing `@dreamer/queue` dependency to
+  package.json (it was in deno.json imports but absent from package.json).
+
+### Fixed
+
+- **`tests/i18n.test.ts` mock logger regression** (introduced in v1.1.5): the
+  v1.1.5 change moved the i18n on-init log line from `info` to `debug` and
+  updated `scheduled.test.ts`, but missed `i18n.test.ts` whose mock still
+  provided only `info` → `TypeError: logger.debug is not a function`. Fixed the
+  mock to provide `debug`. This was never caught because the package had no CI.
+
+### Infrastructure
+
+- 9-job CI matrix: 3 Deno v2.9 + 3 Bun + 3 Node 22 (Linux/macOS/Windows), no
+  Chromium, no Playwright, no external services.
+- `tsconfig.json` (Bundler mode, Preact JSX to match deno.json).
+- `test-node.mjs` — Node test runner, main-process execution (no `--test` flag
+  → no fork/IPC, avoids logger output polluting the stdout TAP channel).
+- `minimumDependencyAge: "0"` in deno.json (applies globally to all Deno
+  commands including the pre-commit hook's `deno check`).
+- `package.json` `engines.node >= 22` + `test:node` script; `.gitignore` ignores
+  `package-lock.json`.
+
+---
+
 ## [1.1.5] - 2026-04-27
 
 ### Changed

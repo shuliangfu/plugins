@@ -1,7 +1,7 @@
 # @dreamer/plugins
 
-> Official plugin collection for Deno and Bun: CSS utilities, i18n, SEO, PWA,
-> auth, scheduled tasks (Cron), and more
+> Official plugin collection for Deno, Bun, and Node.js 22+: CSS utilities,
+> i18n, SEO, PWA, auth, scheduled tasks (Cron), and more
 
 English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
@@ -34,15 +34,22 @@ deno add jsr:@dreamer/plugins
 bunx jsr add @dreamer/plugins
 ```
 
+### Node.js 22+
+
+```bash
+npx jsr add @dreamer/plugins
+```
+
 ---
 
 ## 🌍 Environment Compatibility
 
 | Environment      | Version           | Status                                        |
 | ---------------- | ----------------- | --------------------------------------------- |
-| **Deno**         | 2.5+              | ✅ Full support                               |
-| **Bun**          | 1.0+              | ✅ Full support                               |
-| **Server**       | -                 | ✅ Deno/Bun compatible                        |
+| **Deno**         | 2.9+              | ✅ Full support                               |
+| **Bun**          | 1.3+              | ✅ Full support                               |
+| **Node.js**      | 22+               | ✅ Full support                               |
+| **Server**       | -                 | ✅ Deno/Bun/Node.js compatible                |
 | **Client**       | -                 | ✅ Theme: @dreamer/theme, i18n: @dreamer/i18n |
 | **Dependencies** | `@dreamer/plugin` | 📦 Required                                   |
 
@@ -702,7 +709,7 @@ All plugins implement these hooks (as needed):
 | Passed      | 365        |
 | Failed      | 0          |
 | Pass rate   | 100%       |
-| Test date   | 2026-04-17 |
+| Test date   | 2026-07-23 |
 
 ### CSS Compiler Tests
 

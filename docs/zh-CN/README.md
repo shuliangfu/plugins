@@ -2,7 +2,7 @@
 
 > 📖 [English](../../README.md) | 中文
 
-> 一个兼容 Deno 和 Bun 的官方插件集合，提供 CSS
+> 一个兼容 Deno、Bun 和 Node.js 22+ 的官方插件集合，提供 CSS
 > 原子化、国际化、SEO、PWA、认证、计划任务（Cron）等开箱即用的 Web 应用功能插件
 
 [![JSR](https://jsr.io/badges/@dreamer/plugins)](https://jsr.io/@dreamer/plugins)
@@ -34,15 +34,22 @@ deno add jsr:@dreamer/plugins
 bunx jsr add @dreamer/plugins
 ```
 
+### Node.js 22+
+
+```bash
+npx jsr add @dreamer/plugins
+```
+
 ---
 
 ## 🌍 环境兼容性
 
 | 环境       | 版本要求          | 状态                                                             |
 | ---------- | ----------------- | ---------------------------------------------------------------- |
-| **Deno**   | 2.5+              | ✅ 完全支持                                                      |
-| **Bun**    | 1.0+              | ✅ 完全支持                                                      |
-| **服务端** | -                 | ✅ 支持（兼容 Deno 和 Bun 运行时）                               |
+| **Deno**   | 2.9+              | ✅ 完全支持                                                      |
+| **Bun**    | 1.3+              | ✅ 完全支持                                                      |
+| **Node.js** | 22+              | ✅ 完全支持                                                      |
+| **服务端** | -                 | ✅ 支持（兼容 Deno、Bun、Node.js 运行时）                        |
 | **客户端** | -                 | ✅ 支持（主题使用 `@dreamer/theme`，国际化使用 `@dreamer/i18n`） |
 | **依赖**   | `@dreamer/plugin` | 📦 插件管理系统（必须）                                          |
 
@@ -686,7 +693,7 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 | 通过     | 365        |
 | 失败     | 0          |
 | 通过率   | 100%       |
-| 测试时间 | 2026-04-17 |
+| 测试时间 | 2026-07-23 |
 
 ### CSS 编译器实际测试
 
