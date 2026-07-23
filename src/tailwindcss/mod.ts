@@ -124,17 +124,28 @@ export function tailwindPlugin(options: TailwindPluginOptions): Plugin {
   async function findCssFile(assetsDir: string): Promise<string | null> {
     try {
       const entries = await readdir(assetsDir);
+      let plainName: string | null = null;
       for (const entry of entries) {
-        // 匹配 {cssEntryBasename}.*.css 或 {cssEntryBasename}.css
-        // 例如：tailwind.a1b2c3.css 或 main.a1b2c3.css
         if (
-          entry.isFile &&
-          entry.name.startsWith(cssEntryBasename) &&
-          entry.name.endsWith(".css")
+          !entry.isFile ||
+          !entry.name.startsWith(cssEntryBasename) ||
+          !entry.name.endsWith(".css")
         ) {
+          continue;
+        }
+        // 优先带 hash 的文件（tailwind.xxxxx.css），避免误选未编译的 tailwind.css
+        const hashSuffix = entry.name.slice(
+          cssEntryBasename.length,
+          -".css".length,
+        );
+        if (hashSuffix.startsWith(".") && hashSuffix.length > 1) {
           return entry.name;
         }
+        if (entry.name === `${cssEntryBasename}.css`) {
+          plainName = entry.name;
+        }
       }
+      return plainName;
     } catch {
       // 目录不存在或无法读取，忽略
     }
