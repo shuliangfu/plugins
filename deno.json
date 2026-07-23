@@ -27,7 +27,12 @@
       ".github/",
       "*.test.ts",
       "TEST_REPORT.md",
-      "logs/"
+      "logs/",
+      "test-node.mjs",
+      "tsconfig.json",
+      "package.json",
+      "package-lock.json",
+      ".npmrc"
     ]
   },
   "imports": {
