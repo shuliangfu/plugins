@@ -116,14 +116,24 @@ function generateAntiFlashScript(options: {
 
   return `<script>
 (function() {
-  // 获取存储的主题
+  // Cookie is the source of truth (same as SSR and storageType: "cookie").
+  // localStorage is only a fallback so a stale value cannot override the cookie.
   function getStoredTheme() {
+    try {
+      var prefix = '${cookieName}=';
+      var parts = document.cookie.split('; ');
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].indexOf(prefix) === 0) {
+          var fromCookie = decodeURIComponent(parts[i].slice(prefix.length));
+          if (fromCookie === 'light' || fromCookie === 'dark' || fromCookie === 'system') return fromCookie;
+        }
+      }
+    } catch(e) {}
     try {
       var stored = localStorage.getItem('${cookieName}');
       if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
     } catch(e) {}
-    var match = document.cookie.match(/(^| )${cookieName}=([^;]+)/);
-    return match ? match[2] : null;
+    return null;
   }
 
   // 获取系统偏好
@@ -239,6 +249,20 @@ function generateAntiFlashScript(options: {
  * });
  * ```
  */
+/**
+ * dweb 的 ctx.cookies 是 `Record<string, string>`，没有 `.get()`。
+ * 测试和部分适配层会提供 `.get()`，两种都要认。
+ */
+function readRequestCookie(cookies: unknown, name: string): string | undefined {
+  if (!cookies || typeof cookies !== "object") return undefined;
+  const bag = cookies as {
+    get?: (key: string) => unknown;
+    [key: string]: unknown;
+  };
+  const raw = typeof bag.get === "function" ? bag.get(name) : bag[name];
+  return typeof raw === "string" ? raw : undefined;
+}
+
 export function themePlugin(options: ThemePluginOptions = {}): Plugin {
   // 解构配置，设置默认值
   const {
@@ -399,10 +423,7 @@ export function themePlugin(options: ThemePluginOptions = {}): Plugin {
      */
     onRequest(ctx: RequestContext, _container: ServiceContainer) {
       // 从 Cookie 读取主题偏好
-      const cookies = ctx.cookies as
-        | { get?: (name: string) => string | undefined }
-        | undefined;
-      const savedTheme = cookies?.get?.(cookieName);
+      const savedTheme = readRequestCookie(ctx.cookies, cookieName);
 
       if (savedTheme) {
         if (savedTheme === "system") {

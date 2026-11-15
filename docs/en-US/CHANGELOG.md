@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **theme plugin**: read the theme cookie from dweb's `ctx.cookies`
+  (`Record<string, string>`). The hook previously called a missing
+  `cookies.get()`, so SSR always fell back to the default mode. The anti-flash
+  script now reads the cookie first and only falls back to localStorage, so a
+  stale localStorage value can no longer add `class="dark"` on refresh before
+  the cookie's light mode removes it.
+
+### Changed
+
+- Upgraded `@dreamer/test` to ^1.2.4, `postcss` to ^8.5.33, `tailwindcss` /
+  `@tailwindcss/postcss` to ^4.3.5, `@unocss/*` to ^66.13.0, and `tsx` to
+  ^4.23.15. npm versions in `package.json` are aligned with `deno.json`.
+
 ## [1.2.0] - 2026-07-23
 
 ### Added
@@ -42,8 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - 9-job CI matrix: 3 Deno v2.9 + 3 Bun + 3 Node 22 (Linux/macOS/Windows), no
   Chromium, no Playwright, no external services.
 - `tsconfig.json` (Bundler mode, Preact JSX to match deno.json).
-- `test-node.mjs` — Node test runner, main-process execution (no `--test` flag
-  → no fork/IPC, avoids logger output polluting the stdout TAP channel).
+- `test-node.mjs` — Node test runner, main-process execution (no `--test` flag →
+  no fork/IPC, avoids logger output polluting the stdout TAP channel).
 - `minimumDependencyAge: "0"` in deno.json (applies globally to all Deno
   commands including the pre-commit hook's `deno check`).
 - `package.json` `engines.node >= 22` + `test:node` script; `.gitignore` ignores

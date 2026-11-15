@@ -197,6 +197,28 @@ describe("主题插件", () => {
       expect((ctx as unknown as { themeMode: string }).themeMode).toBe("dark");
     });
 
+    it("应该从 dweb 的 Record cookies 读取主题", async () => {
+      const plugin = themePlugin({ cookieName: "senvis-theme" });
+      await plugin.onInit?.(container);
+
+      const ctx = {
+        request: new Request("http://localhost/"),
+        path: "/",
+        method: "GET",
+        url: new URL("http://localhost/"),
+        headers: new Headers(),
+        cookies: { "senvis-theme": "light" },
+      };
+
+      await plugin.onRequest?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onRequest>>[0],
+        container,
+      );
+
+      expect((ctx as unknown as { theme: string }).theme).toBe("light");
+      expect((ctx as unknown as { themeMode: string }).themeMode).toBe("light");
+    });
+
     it("应该处理 system 模式", async () => {
       const plugin = themePlugin({ cookieName: "theme" });
       await plugin.onInit?.(container);
@@ -298,6 +320,10 @@ describe("主题插件", () => {
       const body = await ctx.response?.text();
       expect(body).toContain("<script>");
       expect(body).toContain("$theme");
+      const cookieIdx = body!.indexOf("document.cookie.split");
+      const lsIdx = body!.indexOf("localStorage.getItem");
+      expect(cookieIdx).toBeGreaterThan(-1);
+      expect(lsIdx).toBeGreaterThan(cookieIdx);
     });
 
     it("应该为 class 策略添加 dark class", async () => {

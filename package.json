@@ -36,16 +36,16 @@
     "@dreamer/runtime-adapter": "npm:@jsr/dreamer__runtime-adapter@^1.2.2",
     "@dreamer/service": "npm:@jsr/dreamer__service@^1.1.0",
     "@dreamer/theme": "npm:@jsr/dreamer__theme@^1.1.0",
-    "@tailwindcss/postcss": "4.1.18",
-    "@unocss/core": "66.0.0",
-    "@unocss/preset-icons": "66.0.0",
-    "@unocss/preset-wind3": "66.0.0",
-    "postcss": "8.5.10",
-    "tailwindcss": "4.1.18"
+    "@tailwindcss/postcss": "4.3.5",
+    "@unocss/core": "66.13.0",
+    "@unocss/preset-icons": "66.13.0",
+    "@unocss/preset-wind3": "66.13.0",
+    "postcss": "8.5.33",
+    "tailwindcss": "4.3.5"
   },
   "devDependencies": {
-    "@dreamer/test": "npm:@jsr/dreamer__test@^1.2.3",
-    "tsx": "^4.19.0"
+    "@dreamer/test": "npm:@jsr/dreamer__test@^1.2.4",
+    "tsx": "^4.23.15"
   },
   "engines": {
     "node": ">=22",
