@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-15
+
 ### Fixed
 
 - **theme plugin**: read the theme cookie from dweb's `ctx.cookies`
