@@ -30,7 +30,7 @@
   "dependencies": {
     "@dreamer/auth": "npm:@jsr/dreamer__auth@^1.1.0",
     "@dreamer/i18n": "npm:@jsr/dreamer__i18n@^1.1.2",
-    "@dreamer/logger": "npm:@jsr/dreamer__logger@^1.1.0",
+    "@dreamer/logger": "npm:@jsr/dreamer__logger@^1.1.1",
     "@dreamer/plugin": "npm:@jsr/dreamer__plugin@^1.1.0",
     "@dreamer/queue": "npm:@jsr/dreamer__queue@^1.1.0",
     "@dreamer/runtime-adapter": "npm:@jsr/dreamer__runtime-adapter@^1.2.2",
