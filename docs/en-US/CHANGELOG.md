@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-11-16
+
+### Changed
+
+- **theme plugin**: minify the inline anti-flash script when `RUNTIME_ENV` is
+  not `dev` (comments and unnecessary whitespace are stripped). Dev keeps the
+  readable source.
+- Upgraded `@dreamer/logger` to ^1.1.1.
+
 ## [1.2.1] - 2026-11-15
 
 ### Fixed
