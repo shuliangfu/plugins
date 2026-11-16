@@ -114,6 +114,7 @@ npx jsr add @dreamer/plugins
 - **Scheduled**：计划任务（Cron，`onStart` / `onStop`），独立 `@dreamer/logger`
   输出
 - **Queue**：`@dreamer/queue` 队列服务端（`QueueManager`），可配置日志
+- **RBAC**：角色 / 权限 / 路由管理，统一 `checkRoute`，可嵌入的 DataPanel 列表页
 
 ---
 
@@ -619,6 +620,36 @@ queuePlugin(
 
 ---
 
+### 权限管理插件（RBAC）
+
+注册后即可对页面和 API 做统一鉴权。四个管理页是 DataPanel
+列表块，由宿主后台嵌入布局；管理员账号仍由宿主提供。
+
+```typescript
+import { rbacPlugin, RolesPage } from "@dreamer/plugins/rbac";
+
+app.registerPlugin(rbacPlugin({
+  database: {
+    adapter: "mongodb",
+    connection: { host: "127.0.0.1", port: 27017, database: "app" },
+  },
+  getUser: (ctx) => getSessionAdmin(ctx),
+  allowActions: ["/login", "/api/auth/login", "/assets/*"],
+  seed: { assignUserId: "admin-id" },
+  hooks: { listUsers: () => listAdmins() },
+}));
+
+// 宿主路由里嵌入列表页，例如 src/backend/routes/rbac/roles/index.tsx
+export default RolesPage;
+```
+
+侧栏请用宿主自己的菜单数据，交给 `getRbacService(container).filterMenus(access, menus)`
+按当前用户过滤：无权限的叶子会去掉，子项都不可见时父级也不显示。可传入已嵌套的
+`children`，或带 `parentKey` 的扁平列表。权限信息用 `GET /api/rbac/access`，
+也可用 `can(access, path)`。
+
+---
+
 ### 构建系统集成
 
 CSS 插件在构建时会生成带 hash 的文件名，构建系统可从编译器获取编译结果：
@@ -656,6 +687,7 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 | `socialPlugin`      | `@dreamer/plugins/social`      | 社交分享/OAuth          |
 | `scheduledPlugin`   | `@dreamer/plugins/scheduled`   | 计划任务 / Cron         |
 | `queuePlugin`       | `@dreamer/plugins/queue`       | 队列（@dreamer/queue）  |
+| `rbacPlugin`        | `@dreamer/plugins/rbac`        | 权限管理（RBAC）        |
 
 ### 独立客户端包
 

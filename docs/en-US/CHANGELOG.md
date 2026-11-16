@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **RBAC plugin** (`@dreamer/plugins/rbac`): configurable stores (MongoDB,
+  MySQL, PostgreSQL, SQLite, or memory) and a shared `checkRoute` for pages and
+  APIs. Ships four embeddable DataPanel pages (roles, permissions, assignments,
+  routes), plus current-access (`/access`) and menu filtering (`filterMenus` /
+  `/menus`). Host apps still own admin accounts.
+
+### Fixed
+
+- **RBAC**: role, permission, and assignment `view` responses now return
+  `{ ok, data }` so DataPanel detail modals can read the row (they previously
+  used `item`, which made the modal flash and then go empty). View payloads now
+  include the child catalog so the transfer does not stay on "Loading".
+- **RBAC**: the routes page is again an add field plus a left/right transfer
+  (available / managed), matching the previous senvis page. Scanned backend
+  routes stay on the left until moved to the right, which is what gets saved.
+
 ## [1.2.2] - 2026-11-16
 
 ### Changed

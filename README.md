@@ -107,6 +107,7 @@ npx jsr add @dreamer/plugins
 - **Compression**: gzip, deflate
 - **Static**: Multi-dir, MIME, ETag, cache, security
 - **Social**: Share links and OAuth
+- **RBAC**: Route checks, roles, permissions, and embeddable admin panels
 - **Scheduled**: Cron jobs (`onStart` / `onStop`), dedicated `@dreamer/logger`
   output
 
@@ -123,6 +124,7 @@ npx jsr add @dreamer/plugins
 - **Scheduled tasks**: Run scripts or commands on a cron schedule (separate log
   file)
 - **Queue**: `@dreamer/queue` server (`QueueManager`) with configurable logging
+- **RBAC**: Role / permission / route checks with embeddable DataPanel pages
 
 ---
 
@@ -634,6 +636,38 @@ queuePlugin(
 
 ---
 
+### RBAC plugin
+
+Registers shared `checkRoute` for pages and APIs. The four admin screens are
+DataPanel lists for the host layout to embed. Admin accounts stay in the host
+app.
+
+```typescript
+import { rbacPlugin, RolesPage } from "@dreamer/plugins/rbac";
+
+app.registerPlugin(rbacPlugin({
+  database: {
+    adapter: "mongodb",
+    connection: { host: "127.0.0.1", port: 27017, database: "app" },
+  },
+  getUser: (ctx) => getSessionAdmin(ctx),
+  allowActions: ["/login", "/api/auth/login", "/assets/*"],
+  seed: { assignUserId: "admin-id" },
+  hooks: { listUsers: () => listAdmins() },
+}));
+
+// Embed a list page in the host router, e.g. src/backend/routes/rbac/roles/index.tsx
+export default RolesPage;
+```
+
+Pass the host sidebar to `getRbacService(container).filterMenus(access, menus)`.
+Leaves without access are dropped, and a parent is hidden when no child remains.
+Menus may be a nested `children` tree or a flat list with `parentKey`. Use
+`GET /api/rbac/access` for the current user's permissions, or call
+`can(access, path)`.
+
+---
+
 ### Build System Integration
 
 CSS plugins generate hashed filenames at build time. Build system can get
@@ -672,6 +706,7 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 | `socialPlugin`      | `@dreamer/plugins/social`      | Social share/OAuth              |
 | `scheduledPlugin`   | `@dreamer/plugins/scheduled`   | Cron / scheduled tasks          |
 | `queuePlugin`       | `@dreamer/plugins/queue`       | Queue server (`@dreamer/queue`) |
+| `rbacPlugin`        | `@dreamer/plugins/rbac`        | Role / permission management    |
 
 ### Standalone Client Libraries
 

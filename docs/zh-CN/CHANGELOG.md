@@ -9,6 +9,18 @@
 
 ## [Unreleased]
 
+### 新增
+
+- **RBAC 插件**（`@dreamer/plugins/rbac`）：可配置存储（MongoDB、MySQL、
+  PostgreSQL、SQLite 或内存），页面和 API 走统一 `checkRoute`；提供角色、权限、
+  分配、路由四张 DataPanel 列表页，以及当前权限查询（`/access`）和菜单过滤
+  （`filterMenus` / `/menus`）。有页面权限即可调用对应管理 API；删除角色或权限会清掉引用。管理员账号仍由宿主负责。
+
+### 修复
+
+- **RBAC**：角色／权限／分配的 `view` 接口改为返回 `{ ok, data }`，对齐 DataPanel 详情所需格式（此前用 `item`，弹窗会先闪后空）。详情会带上子项目录，穿梭框不再一直停在「加载中」。
+- **RBAC**：路由列表改回「新增 + 左右穿梭框」（待添加／已管理），与原先 senvis 页面一致。扫描到的后台路由只出现在左侧，添加到右侧后才写入数据库。
+
 ## [1.2.2] - 2026-11-16
 
 ### 变更
