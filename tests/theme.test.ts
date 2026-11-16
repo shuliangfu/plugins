@@ -4,6 +4,7 @@
  * 测试主题插件的所有功能
  */
 
+import { deleteEnv, getEnv, setEnv } from "@dreamer/runtime-adapter";
 import { ServiceContainer } from "@dreamer/service";
 import { afterEach, beforeEach, describe, expect, it } from "@dreamer/test";
 import { themePlugin, type ThemePluginOptions } from "../src/theme/mod.ts";
@@ -324,6 +325,73 @@ describe("主题插件", () => {
       const lsIdx = body!.indexOf("localStorage.getItem");
       expect(cookieIdx).toBeGreaterThan(-1);
       expect(lsIdx).toBeGreaterThan(cookieIdx);
+    });
+
+    async function injectScriptBody(): Promise<string> {
+      const plugin = themePlugin({ injectScript: true });
+      await plugin.onInit?.(container);
+
+      const html = `<html><head></head><body>Test</body></html>`;
+      const ctx = {
+        request: new Request("http://localhost/"),
+        path: "/",
+        method: "GET",
+        url: new URL("http://localhost/"),
+        headers: new Headers(),
+        response: new Response(html, {
+          headers: { "Content-Type": "text/html" },
+        }),
+      };
+
+      await plugin.onResponse?.(
+        ctx as unknown as Parameters<NonNullable<typeof plugin.onResponse>>[0],
+        container,
+      );
+
+      return await ctx.response!.text();
+    }
+
+    function scriptBody(html: string): string {
+      const start = html.indexOf("<script>");
+      const end = html.indexOf("</script>");
+      if (start < 0 || end < 0) {
+        throw new Error("theme script not injected");
+      }
+      return html.slice(start + "<script>".length, end);
+    }
+
+    it("生产环境应压缩防闪烁脚本", async () => {
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "start");
+      try {
+        const js = scriptBody(await injectScriptBody());
+        expect(js).toContain("function getStoredTheme(){");
+        expect(js).toContain("window.$theme");
+        expect(js).not.toContain("//");
+        expect(js).not.toMatch(/\n\s+/);
+      } finally {
+        if (originalEnv) {
+          setEnv("RUNTIME_ENV", originalEnv);
+        } else {
+          deleteEnv("RUNTIME_ENV");
+        }
+      }
+    });
+
+    it("开发环境应保留防闪烁脚本原文", async () => {
+      const originalEnv = getEnv("RUNTIME_ENV");
+      setEnv("RUNTIME_ENV", "dev");
+      try {
+        const js = scriptBody(await injectScriptBody());
+        expect(js).toContain("// Cookie is the source of truth");
+        expect(js).toContain("function getStoredTheme()");
+      } finally {
+        if (originalEnv) {
+          setEnv("RUNTIME_ENV", originalEnv);
+        } else {
+          deleteEnv("RUNTIME_ENV");
+        }
+      }
     });
 
     it("应该为 class 策略添加 dark class", async () => {

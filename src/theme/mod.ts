@@ -15,6 +15,7 @@ import {
   type Theme,
   type ThemeMode,
 } from "@dreamer/theme";
+import { isRuntimeEnvDev } from "../internal/runtime-env.ts";
 
 // 重新导出 @dreamer/theme 的类型和函数
 export type { DarkModeStrategy, ThemeMode, ThemeOptions } from "@dreamer/theme";
@@ -226,6 +227,77 @@ function generateAntiFlashScript(options: {
   }
 })();
 </script>`;
+}
+
+/** Identifier / keyword character; used so `var theme` does not become `vartheme`. */
+function isJsIdentChar(ch: string): boolean {
+  return /[A-Za-z0-9_$]/.test(ch);
+}
+
+/**
+ * Strip comments and unnecessary whitespace from the generated anti-flash script.
+ * That script has no regexp literals, so `/` is only a comment or inside a string.
+ */
+function minifyJs(js: string): string {
+  let out = "";
+  const n = js.length;
+  let i = 0;
+  let quote: "'" | '"' | "`" | null = null;
+  let escaped = false;
+  while (i < n) {
+    const c = js[i]!;
+    if (quote) {
+      out += c;
+      if (escaped) escaped = false;
+      else if (c === "\\") escaped = true;
+      else if (c === quote) quote = null;
+      i++;
+      continue;
+    }
+    if (c === "'" || c === '"' || c === "`") {
+      quote = c;
+      out += c;
+      i++;
+      continue;
+    }
+    if (c === "/" && js[i + 1] === "/") {
+      i += 2;
+      while (i < n && js[i] !== "\n") i++;
+      continue;
+    }
+    if (c === "/" && js[i + 1] === "*") {
+      i += 2;
+      while (i + 1 < n && !(js[i] === "*" && js[i + 1] === "/")) i++;
+      i += 2;
+      continue;
+    }
+    if (c === " " || c === "\t" || c === "\n" || c === "\r") {
+      while (
+        i < n &&
+        (js[i] === " " || js[i] === "\t" || js[i] === "\n" || js[i] === "\r")
+      ) i++;
+      const prev = out.at(-1) ?? "";
+      const next = js[i] ?? "";
+      if (isJsIdentChar(prev) && isJsIdentChar(next)) out += " ";
+      continue;
+    }
+    out += c;
+    i++;
+  }
+  return out.trim();
+}
+
+function buildAntiFlashScript(
+  options: Parameters<typeof generateAntiFlashScript>[0],
+): string {
+  const raw = generateAntiFlashScript(options);
+  if (isRuntimeEnvDev()) return raw;
+  const open = "<script>";
+  const close = "</script>";
+  const start = raw.indexOf(open);
+  const end = raw.lastIndexOf(close);
+  if (start !== 0 || end < 0) return raw;
+  return `${open}${minifyJs(raw.slice(open.length, end))}${close}`;
 }
 
 /**
@@ -462,7 +534,7 @@ export function themePlugin(options: ThemePluginOptions = {}): Plugin {
 
         // 注入防闪烁脚本
         if (injectScript) {
-          const script = generateAntiFlashScript({
+          const script = buildAntiFlashScript({
             cookieName,
             cookieExpireDays,
             strategy,
