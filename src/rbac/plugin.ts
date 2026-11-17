@@ -1,6 +1,6 @@
 /**
- * RBAC plugin: route checks and JSON API.
- * Admin pages are DataPanel components; embed them in the host layout.
+ * RBAC plugin: route checks, JSON API, and auto-mounted admin pages.
+ * Pages register at `{basePath}/roles|permissions|assign|routes` via onRoute.
  */
 import { getDatabase, isDatabaseInitialized } from "@dreamer/database";
 import type { Plugin, RequestContext, RouteDefinition } from "@dreamer/plugin";
@@ -26,6 +26,67 @@ export {
 
 const PLUGIN_NAME = "@dreamer/plugins-rbac";
 const PLUGIN_VERSION = "1.0.0";
+
+const ADMIN_PAGE_SLUGS = [
+  "roles",
+  "permissions",
+  "assign",
+  "routes",
+] as const;
+
+/** Resolve a sibling module to an absolute path (or URL) for dweb page registration. */
+export function resolvePluginModulePath(relativeFromPlugin: string): string {
+  const url = new URL(relativeFromPlugin, import.meta.url);
+  if (url.protocol !== "file:") return url.href;
+  let path = decodeURIComponent(url.pathname);
+  if (path.match(/^\/[A-Za-z]:/)) path = path.slice(1);
+  return path;
+}
+
+function adminPageStubHandler(): Response {
+  return new Response(null);
+}
+
+function adminPageDefinitions(basePath: string): RouteDefinition[] {
+  const base = normalizePath(basePath);
+  return ADMIN_PAGE_SLUGS.map((slug) => {
+    const path = `${base}/${slug}`;
+    const component = path.replace(/^\//, "");
+    return {
+      path,
+      method: "GET",
+      // File-route pages are loaded by dweb via meta.fullPath; handler is
+      // required by @dreamer/plugin RouteDefinition and is not used.
+      handler: adminPageStubHandler,
+      meta: {
+        plugin: PLUGIN_NAME,
+        type: "page",
+        component,
+        file: `${component}.tsx`,
+        fullPath: resolvePluginModulePath(`./pages/entries/${slug}.tsx`),
+        clientFullPath: resolvePluginModulePath(`./pages/${slug}.tsx`),
+      },
+    };
+  });
+}
+
+function menuPageDefinition(options: RbacPluginOptions): RouteDefinition[] {
+  const path = options.menus?.pagePath ?? "/developer/menus";
+  const component = path.replace(/^\//, "");
+  return [{
+    path,
+    method: "GET",
+    handler: adminPageStubHandler,
+    meta: {
+      plugin: PLUGIN_NAME,
+      type: "page",
+      component,
+      file: `${component}.tsx`,
+      fullPath: resolvePluginModulePath("./pages/entries/menus.tsx"),
+      clientFullPath: resolvePluginModulePath("./pages/menus.tsx"),
+    },
+  }];
+}
 
 function canInitNow(options: RbacPluginOptions): boolean {
   if (options.store || options.database || options.adapter) return true;
@@ -54,7 +115,7 @@ export function rbacPlugin(options: RbacPluginOptions): Plugin {
     if (initPromise) return initPromise;
     initPromise = (async () => {
       resolved = await resolveRbacStore(options);
-      const service = new RbacService(resolved.store, options);
+      const service = new RbacService(resolved.store, options, resolved.menus);
       service.container = target;
       service.apiMode = resolveApiMode(options, target);
       await service.seed();
@@ -119,17 +180,31 @@ export function rbacPlugin(options: RbacPluginOptions): Plugin {
     },
     onRoute(routes: RouteDefinition[], _container: ServiceContainer) {
       const api = options.apiBasePath ?? "/api/rbac";
-      const extra: RouteDefinition = {
-        path: `${api}/*`,
-        method: "*",
-        handler: () => new Response(null),
-        meta: { plugin: PLUGIN_NAME, type: "api" },
-      };
+      const basePath = options.basePath ?? "/rbac";
+      const extras: RouteDefinition[] = [
+        {
+          path: `${api}/*`,
+          method: "*",
+          handler: () => new Response(null),
+          meta: { plugin: PLUGIN_NAME, type: "api" },
+        },
+        ...adminPageDefinitions(basePath),
+        ...menuPageDefinition(options),
+      ];
       const have = new Set(
-        routes.map((route) => `${route.method}:${route.path}`),
+        routes.map((route) => `${route.method ?? "GET"}:${route.path}`),
       );
-      if (have.has(`${extra.method}:${extra.path}`)) return routes;
-      return [...routes, extra];
+      const added: RouteDefinition[] = [];
+      for (const extra of extras) {
+        const key = `${extra.method ?? "GET"}:${extra.path}`;
+        const pathTaken = routes.some((route) => route.path === extra.path) ||
+          have.has(key);
+        if (pathTaken) continue;
+        have.add(key);
+        added.push(extra);
+      }
+      if (added.length === 0) return routes;
+      return [...routes, ...added];
     },
     async onStop(container: ServiceContainer) {
       await resolved?.close?.();

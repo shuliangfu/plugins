@@ -10,6 +10,9 @@ import {
   parseRoutePatterns,
 } from "./route-pattern.ts";
 import type { ServiceContainer } from "@dreamer/service";
+import type { MenuStore } from "../menus/types.ts";
+import { MenuManager } from "../menus/service.ts";
+import { MemoryMenuStore } from "../menus/store.ts";
 import type {
   CheckDecision,
   MenuItem,
@@ -77,12 +80,17 @@ export class RbacService {
   readonly sessionAllowActions: string[];
   readonly developerPrefix: string[];
   readonly options: RbacPluginOptions;
+  readonly menu: MenuManager;
   apiMode: RbacApiMode;
   /** App service container, set during plugin boot. */
   container?: ServiceContainer;
   #cache = new Map<string, { at: number; access: RbacAccess }>();
 
-  constructor(store: RbacStore, options: RbacPluginOptions) {
+  constructor(
+    store: RbacStore,
+    options: RbacPluginOptions,
+    menuStore: MenuStore = new MemoryMenuStore(),
+  ) {
     this.store = store;
     this.options = options;
     this.basePath = normalizePath(options.basePath ?? "/rbac");
@@ -103,6 +111,24 @@ export class RbacService {
       options.developerPrefix ?? ["/developer/*", "/api/developer/*"],
     );
     this.apiMode = options.apiMode === "restful" ? "restful" : "action";
+    this.menu = new MenuManager(menuStore, {
+      seed: options.menus?.seed,
+      structureSyncKeys: options.menus?.structureSyncKeys,
+      retiredKeys: options.menus?.retiredKeys,
+      pagePath: options.menus?.pagePath,
+      requireDeveloper: options.menus?.requireDeveloper,
+      getLocale: options.hooks?.getLocale,
+      prepareMenuItem: options.hooks?.prepareMenuItem,
+    }, this);
+  }
+
+  /** Stored menus, prepared by the host hook, then filtered by access. */
+  loadMenusForAccess(
+    access: RbacAccess,
+    locale?: string,
+    prepare?: Parameters<MenuManager["loadForAccess"]>[2],
+  ): Promise<MenuItem[]> {
+    return this.menu.loadForAccess(access, locale, prepare);
   }
 
   invalidate(userId?: string): void {
@@ -673,21 +699,7 @@ export class RbacService {
   }
 }
 
-export function canManageFromAccess(
-  access: Pick<RbacAccess, "routeAllows" | "routeExcludes">,
-  basePath = "/rbac",
-  apiBasePath = "/api/rbac",
-): boolean {
-  return allowRouteByPatterns(
-        `${basePath}/_`,
-        access.routeAllows,
-        access.routeExcludes,
-      ) === "allow" || allowRouteByPatterns(
-        `${apiBasePath}/_`,
-        access.routeAllows,
-        access.routeExcludes,
-      ) === "allow";
-}
+export { canManageFromAccess } from "./route-pattern.ts";
 
 function unique(ids: string[]): string[] {
   return [...new Set(ids.filter(Boolean))];

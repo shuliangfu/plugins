@@ -173,3 +173,20 @@ export function buildRouteTransferLists(
   available.sort((a, b) => compareRoutePaths(a.key, b.key));
   return { available, managed };
 }
+
+/** Infer write access from assigned route patterns. Safe for client bundles. */
+export function canManageFromAccess(
+  access: { routeAllows?: string[]; routeExcludes?: string[] },
+  basePath = "/rbac",
+  apiBasePath = "/api/rbac",
+): boolean {
+  return allowRouteByPatterns(
+        `${basePath}/_`,
+        access.routeAllows ?? [],
+        access.routeExcludes ?? [],
+      ) === "allow" || allowRouteByPatterns(
+        `${apiBasePath}/_`,
+        access.routeAllows ?? [],
+        access.routeExcludes ?? [],
+      ) === "allow";
+}

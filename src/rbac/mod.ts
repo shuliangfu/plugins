@@ -4,7 +4,10 @@
  * RBAC plugin for dweb: route checks, role/permission/route admin,
  * and stores for MongoDB, MySQL, PostgreSQL, SQLite, or memory.
  *
- * Admin pages are DataPanel components. Embed them in the host layout:
+ * Admin pages at `{basePath}/roles|permissions|assign|routes` are registered
+ * automatically (default basePath `/rbac`). Menu management is auto-mounted at
+ * `/developer/menus` (configurable) with CRUD under the plugin API base. The host layout still wraps them.
+ * Page components remain exportable if a host wants to embed them by hand:
  *
  * ```ts
  * import { RolesPage } from "@dreamer/plugins/rbac";
@@ -64,6 +67,7 @@ export { resolveApiMode } from "./api-mode.ts";
 export {
   AssignPage,
   listPanelProps,
+  MenusPage,
   PermissionsPage,
   type RbacListPageData,
   type RbacPanelProps,
@@ -120,3 +124,39 @@ export type {
   Role,
   ScannedRoute,
 } from "./types.ts";
+
+export { loadMenus } from "./menus/page-load.ts";
+export {
+  allMenuRows,
+  MenuManager,
+  parseMenuListQuery,
+  pickLocalized,
+} from "./menus/service.ts";
+export { DEFAULT_MENU_COLLECTION, MemoryMenuStore } from "./menus/store.ts";
+export type {
+  MenuFail,
+  MenuListQuery,
+  MenuOk,
+  MenuRecord,
+  MenuRow,
+  MenuStore,
+  SeedMenu,
+} from "./menus/types.ts";
+
+import type { ServiceContainer } from "@dreamer/service";
+import type { MenuItem, RbacAccess } from "./types.ts";
+import { getRbacService } from "./service/runtime.ts";
+import type { MenuManager } from "./menus/service.ts";
+import type { MenuRecord } from "./menus/types.ts";
+
+/** Load stored menus, apply an optional host prepare hook, and filter by access. */
+export function loadMenusForAccess(
+  container: ServiceContainer,
+  access: RbacAccess,
+  locale?: string,
+  prepare?: Parameters<MenuManager["loadForAccess"]>[2],
+): Promise<MenuItem[]> {
+  return getRbacService(container).loadMenusForAccess(access, locale, prepare);
+}
+
+export type { MenuRecord as RbacMenuRecord };

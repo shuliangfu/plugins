@@ -142,6 +142,8 @@ export interface RbacAccount {
   disabled?: boolean;
 }
 
+export type { MenuRecord, SeedMenu } from "./menus/types.ts";
+
 export interface RbacHooks {
   isDeveloper?: (user: RbacUser) => boolean;
   authorize?: (
@@ -152,6 +154,18 @@ export interface RbacHooks {
   listUsers?: () => Promise<RbacListUser[]>;
   /** Look up a host user by id (status, developer flag). */
   loadAccount?: (userId: string) => Promise<RbacAccount | null>;
+  /** Locale for menu titles on list pages and APIs. */
+  getLocale?: (
+    ctx: RequestContext | Record<string, unknown>,
+  ) => string | Promise<string>;
+  /**
+   * Map a stored menu into a MenuItem (localized title, data-scope `show`).
+   * Do not put host-specific data-scope rules in the generic plugin.
+   */
+  prepareMenuItem?: (
+    item: import("./menus/types.ts").MenuRecord,
+    ctx: { locale?: string; access: RbacAccess },
+  ) => MenuItem | Promise<MenuItem>;
 }
 
 export type RbacApiMode = "action" | "restful";
@@ -198,6 +212,23 @@ export interface RbacPluginOptions {
     assignUserId?: string;
   };
   hooks?: RbacHooks;
+  /** Optional custom menu store (otherwise resolved with the RBAC database). */
+  menuStore?: import("./menus/types.ts").MenuStore;
+  /**
+   * Sidebar menu management. Collection defaults to `menus` so existing
+   * host data (e.g. senvis) keeps working. Seed is not applied on boot;
+   * call `service.menu.seed()` (console command) instead.
+   */
+  menus?: {
+    collection?: string;
+    seed?: readonly import("./menus/types.ts").SeedMenu[];
+    structureSyncKeys?: readonly string[];
+    retiredKeys?: readonly string[];
+    /** Auto-mounted admin page path (default `/developer/menus`). */
+    pagePath?: string;
+    /** Menu CRUD API requires isDeveloper (default true). */
+    requireDeveloper?: boolean;
+  };
   permissions?: Array<{
     name: string;
     description?: string;

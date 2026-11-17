@@ -1174,4 +1174,47 @@ describe("RBAC 插件", () => {
     expect((await denied!.json()).error).toBe("forbidden");
     expect(await gated.onRequest?.(ctx("/lock"), next)).toBeUndefined();
   });
+
+  it("onRoute 自动挂载四个管理页，并保留 API 占位路由", async () => {
+    const plugin = rbacPlugin({
+      store,
+      getUser: () => admin,
+    });
+    const routes = await plugin.onRoute?.([], new ServiceContainer()) ?? [];
+    const paths = routes.map((route) => route.path);
+    expect(paths).toContain("/api/rbac/*");
+    expect(paths).toContain("/rbac/roles");
+    expect(paths).toContain("/rbac/permissions");
+    expect(paths).toContain("/rbac/assign");
+    expect(paths).toContain("/rbac/routes");
+    for (const slug of ["roles", "permissions", "assign", "routes"]) {
+      const page = routes.find((route) => route.path === `/rbac/${slug}`);
+      expect(page?.meta?.type).toBe("page");
+      expect(page?.meta?.component).toBe(`rbac/${slug}`);
+      expect(String(page?.meta?.fullPath ?? "")).toContain(
+        `/pages/entries/${slug}.tsx`,
+      );
+    }
+  });
+
+  it("onRoute 在宿主已有同路径页面时不重复挂载", async () => {
+    const plugin = rbacPlugin({
+      store,
+      getUser: () => admin,
+    });
+    const routes = await plugin.onRoute?.([
+      {
+        path: "/rbac/roles",
+        method: "GET",
+        handler: () => new Response(null),
+        meta: { file: "rbac/roles/index.tsx" },
+      },
+    ], new ServiceContainer()) ?? [];
+    const rolePages = routes.filter((route) => route.path === "/rbac/roles");
+    expect(rolePages).toHaveLength(1);
+    expect(rolePages[0]?.meta?.file).toBe("rbac/roles/index.tsx");
+    expect(routes.some((route) => route.path === "/rbac/permissions")).toBe(
+      true,
+    );
+  });
 });

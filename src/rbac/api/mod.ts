@@ -11,6 +11,7 @@ import {
 import { RbacFieldError, type RbacService } from "../service/service.ts";
 import { collectScannedRoutes } from "../service/route-scan.ts";
 import type { Permission, Role } from "../types.ts";
+import { handleMenuApi } from "../menus/api.ts";
 
 export async function handleRbacApi(
   ctx: RequestContext,
@@ -307,6 +308,9 @@ export async function handleRbacApi(
       return json({ ok: true, ...(await listRouteTransfer(service)) });
     }
 
+    const menuRes = await handleMenuApi(ctx, service, rel, method);
+    if (menuRes) return menuRes;
+
     if (method === "GET" && (rel === "/access" || rel === "/me")) {
       const user = await service.options.getUser(ctx);
       if (!user) return json({ ok: false, error: "unauthorized" }, 401);
@@ -348,6 +352,7 @@ const PLUGIN_API_SECTIONS = new Set([
   "permissions",
   "assign",
   "routes",
+  "menus",
   "access",
   "me",
 ]);

@@ -2,7 +2,7 @@
  * Infer write access from GET /access when the host does not pass canManage.
  */
 import { createSignal, onMount } from "@dreamer/view";
-import { canManageFromAccess } from "../service/service.ts";
+import { canManageFromAccess } from "../service/route-pattern.ts";
 import { resolveRbacApi } from "./api-path.ts";
 import type { RbacPanelProps } from "./types.ts";
 

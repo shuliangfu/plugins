@@ -7,5 +7,6 @@ export { default as AssignPage } from "./assign.tsx";
 export { default as PermissionsPage } from "./permissions.tsx";
 export { default as RolesPage } from "./roles.tsx";
 export { default as RoutesPage } from "./routes.tsx";
+export { default as MenusPage } from "./menus.tsx";
 export type { RbacPanelProps, RoutesPageData } from "./types.ts";
 export { listPanelProps, type RbacListPageData } from "./list-props.ts";
