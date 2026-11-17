@@ -62,7 +62,7 @@ export async function requireMenuDeveloper(
   service: RbacService,
 ): Promise<Response | undefined> {
   if (!service.menu.requireDeveloper) return;
-  const user = await service.options.getUser(ctx);
+  const user = await service.getUser(ctx);
   if (!user) {
     return json({ ok: false, error: "unauthorized" }, 401);
   }

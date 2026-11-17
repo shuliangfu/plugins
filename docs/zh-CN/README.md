@@ -626,8 +626,9 @@ queuePlugin(
 ### 权限管理插件（RBAC）
 
 注册后即可对页面和 API 做统一鉴权。插件会自动挂载四个管理页：
-`{basePath}/roles`、`/permissions`、`/assign`、`/routes`（默认前缀 `/rbac`），
-以及菜单页 `menus.pagePath`（默认 `/developer/menus`）。宿主若已有相同路径，则不重复挂载。管理员账号仍由宿主提供。
+`{basePath}/roles`、`/permissions`、`/assign`、`/routes`、`/menus`（默认前缀
+`/rbac`，菜单页即为 `/rbac/menus`）。也可通过 `menus.pagePath`
+覆盖菜单页路径。宿主若已有相同路径，则不重复挂载。管理员账号仍由宿主提供。
 
 ```typescript
 import { rbacPlugin } from "@dreamer/plugins/rbac";
@@ -637,10 +638,12 @@ app.registerPlugin(rbacPlugin({
     adapter: "mongodb",
     connection: { host: "127.0.0.1", port: 27017, database: "app" },
   },
-  getUser: (ctx) => getSessionAdmin(ctx),
   allowActions: ["/login", "/api/auth/login", "/assets/*"],
   seed: { assignUserId: "admin-id" },
-  hooks: { listUsers: () => listAdmins() },
+  hooks: {
+    getUser: (ctx) => getSessionAdmin(ctx),
+    listUsers: () => listAdmins(),
+  },
   menus: {
     seed: menuSeed,
     structureSyncKeys: ["dashboard"],
@@ -648,7 +651,8 @@ app.registerPlugin(rbacPlugin({
 }));
 ```
 
-侧栏请用宿主自己的菜单数据，交给 `getRbacService(container).filterMenus(access, menus)`
+侧栏请用宿主自己的菜单数据，交给
+`getRbacService(container).filterMenus(access, menus)`
 按当前用户过滤：无权限的叶子会去掉，子项都不可见时父级也不显示。可传入已嵌套的
 `children`，或带 `parentKey` 的扁平列表。菜单种子不会在启动时写入，需要时再调用
 `getRbacService(container).menu.seed()` 插入或同步。权限信息用
@@ -656,7 +660,9 @@ app.registerPlugin(rbacPlugin({
 
 ### 宿主服务插件（Services）
 
-把宿主业务服务按名字注册为容器单例，传入明确的 name → factory 映射即可。不会扫描目录，也不会接管其他插件已经注册的服务（例如 `rbacPlugin` 的 `RbacService`）。
+把宿主业务服务按名字注册为容器单例，传入明确的 name → factory
+映射即可。不会扫描目录，也不会接管其他插件已经注册的服务（例如 `rbacPlugin` 的
+`RbacService`）。
 
 ```typescript
 import { servicesPlugin } from "@dreamer/plugins/services";

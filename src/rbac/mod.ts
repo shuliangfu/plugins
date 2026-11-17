@@ -4,9 +4,9 @@
  * RBAC plugin for dweb: route checks, role/permission/route admin,
  * and stores for MongoDB, MySQL, PostgreSQL, SQLite, or memory.
  *
- * Admin pages at `{basePath}/roles|permissions|assign|routes` are registered
- * automatically (default basePath `/rbac`). Menu management is auto-mounted at
- * `/developer/menus` (configurable) with CRUD under the plugin API base. The host layout still wraps them.
+ * Admin pages at `{basePath}/roles|permissions|assign|routes|menus` are registered
+ * automatically (default basePath `/rbac`, so menus default to `/rbac/menus`).
+ * Override with `menus.pagePath`. CRUD is under the plugin API base. The host layout still wraps them.
  *
  * @example
  * ```ts
@@ -17,9 +17,9 @@
  *     adapter: "mongodb",
  *     connection: { host: "127.0.0.1", port: 27017, database: "app" },
  *   },
- *   getUser: (ctx) => getSessionAdmin(ctx),
  *   allowActions: ["/login", "/api/auth/login", "/assets/*"],
  *   seed: { assignUserId: "admin-id" },
+ *   hooks: { getUser: (ctx) => getSessionAdmin(ctx) },
  * }));
  * ```
  */

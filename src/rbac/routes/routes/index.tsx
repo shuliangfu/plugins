@@ -4,13 +4,13 @@
  */
 import { createSignal, type JSXRenderable } from "@dreamer/view";
 import { Button, DataView, Input, message, Transfer } from "@dreamer/ui-view";
-import { normalizeRoutePattern } from "../service/route-pattern.ts";
-import { resolveRbacApi } from "./api-path.ts";
-import type { RbacPanelProps, RoutesPageData } from "./types.ts";
-import { useCanManage } from "./use-can-manage.ts";
+import { normalizeRoutePattern } from "../../service/route-pattern.ts";
+import { resolveRbacApi } from "../api-path.ts";
+import type { RbacPanelProps, RoutesPageData } from "../types.ts";
+import { useCanManage } from "../use-can-manage.ts";
 import type { ServiceContainer } from "@dreamer/service";
-import { getRbacService } from "../service/runtime.ts";
-import { listRouteTransfer } from "../api/mod.ts";
+import { getRbacService } from "../../service/runtime.ts";
+import { listRouteTransfer } from "../../api/mod.ts";
 
 type RouteOption = { key: string; title: string; source?: string };
 

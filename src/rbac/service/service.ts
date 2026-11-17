@@ -9,6 +9,11 @@ import {
   normalizeScannedRoutes,
   parseRoutePatterns,
 } from "./route-pattern.ts";
+import {
+  resolveMenusPagePath,
+  resolveRbacGetUser,
+} from "../resolve-options.ts";
+import type { RequestContext } from "@dreamer/plugin";
 import type { ServiceContainer } from "@dreamer/service";
 import type { MenuStore } from "../menus/types.ts";
 import { MenuManager } from "../menus/service.ts";
@@ -107,19 +112,26 @@ export class RbacService {
     this.sessionAllowActions = parseRoutePatterns(
       options.sessionAllowActions ?? [],
     );
-    this.developerPrefix = parseRoutePatterns(
-      options.developerPrefix ?? ["/developer/*", "/api/developer/*"],
-    );
+    this.developerPrefix = parseRoutePatterns([
+      ...(options.developerPrefix ?? ["/developer/*", "/api/developer/*"]),
+      ...(options.menus?.requireDeveloper === false
+        ? []
+        : [resolveMenusPagePath(options)]),
+    ]);
     this.apiMode = options.apiMode === "restful" ? "restful" : "action";
     this.menu = new MenuManager(menuStore, {
       seed: options.menus?.seed,
       structureSyncKeys: options.menus?.structureSyncKeys,
       retiredKeys: options.menus?.retiredKeys,
-      pagePath: options.menus?.pagePath,
+      pagePath: resolveMenusPagePath(options),
       requireDeveloper: options.menus?.requireDeveloper,
       getLocale: options.hooks?.getLocale,
       prepareMenuItem: options.hooks?.prepareMenuItem,
     }, this);
+  }
+
+  getUser(ctx: RequestContext): Promise<RbacUser | null> {
+    return Promise.resolve(resolveRbacGetUser(this.options)(ctx));
   }
 
   /** Stored menus, prepared by the host hook, then filtered by access. */

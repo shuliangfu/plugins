@@ -107,7 +107,8 @@ npx jsr add @dreamer/plugins
 - **Compression**: gzip, deflate
 - **Static**: Multi-dir, MIME, ETag, cache, security
 - **Social**: Share links and OAuth
-- **RBAC**: Route checks, roles, permissions, auto-mounted admin pages, and menu management
+- **RBAC**: Route checks, roles, permissions, auto-mounted admin pages, and menu
+  management
 - **Services**: Register host business services as container singletons
 - **Scheduled**: Cron jobs (`onStart` / `onStop`), dedicated `@dreamer/logger`
   output
@@ -125,7 +126,8 @@ npx jsr add @dreamer/plugins
 - **Scheduled tasks**: Run scripts or commands on a cron schedule (separate log
   file)
 - **Queue**: `@dreamer/queue` server (`QueueManager`) with configurable logging
-- **RBAC**: Role / permission / route checks, auto-mounted admin pages, and menu management
+- **RBAC**: Role / permission / route checks, auto-mounted admin pages, and menu
+  management
 - **Services**: Host business services as container singletons
 
 ---
@@ -641,10 +643,10 @@ queuePlugin(
 ### RBAC plugin
 
 Registers shared `checkRoute` for pages and APIs. The plugin auto-mounts four
-admin pages at `{basePath}/roles`, `/permissions`, `/assign`, and `/routes`
-(default base `/rbac`), plus a menus page at `menus.pagePath` (default
-`/developer/menus`). If the host already has the same path, that page is left
-as-is. Admin accounts stay in the host app.
+admin pages at `{basePath}/roles`, `/permissions`, `/assign`, `/routes`, and
+`/menus` (default base `/rbac`, so the menus page is `/rbac/menus`). Set
+`menus.pagePath` to override the menus page. If the host already has the same
+path, that page is left as-is. Admin accounts stay in the host app.
 
 ```typescript
 import { rbacPlugin } from "@dreamer/plugins/rbac";
@@ -654,10 +656,12 @@ app.registerPlugin(rbacPlugin({
     adapter: "mongodb",
     connection: { host: "127.0.0.1", port: 27017, database: "app" },
   },
-  getUser: (ctx) => getSessionAdmin(ctx),
   allowActions: ["/login", "/api/auth/login", "/assets/*"],
   seed: { assignUserId: "admin-id" },
-  hooks: { listUsers: () => listAdmins() },
+  hooks: {
+    getUser: (ctx) => getSessionAdmin(ctx),
+    listUsers: () => listAdmins(),
+  },
   menus: {
     seed: menuSeed,
     structureSyncKeys: ["dashboard"],
@@ -710,26 +714,26 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 
 ### Plugin List
 
-| Plugin              | Import                         | Description                     |
-| ------------------- | ------------------------------ | ------------------------------- |
-| `tailwindPlugin`    | `@dreamer/plugins/tailwindcss` | TailwindCSS v4                  |
-| `unocssPlugin`      | `@dreamer/plugins/unocss`      | UnoCSS                          |
-| `i18nPlugin`        | `@dreamer/plugins/i18n`        | i18n (incl. global $t)          |
-| `seoPlugin`         | `@dreamer/plugins/seo`         | SEO                             |
-| `pwaPlugin`         | `@dreamer/plugins/pwa`         | PWA                             |
-| `analyticsPlugin`   | `@dreamer/plugins/analytics`   | Analytics                       |
-| `themePlugin`       | `@dreamer/plugins/theme`       | Theme                           |
-| `authPlugin`        | `@dreamer/plugins/auth`        | Auth                            |
-| `securityPlugin`    | `@dreamer/plugins/security`    | Security headers                |
-| `corsPlugin`        | `@dreamer/plugins/cors`        | CORS                            |
-| `rateLimitPlugin`   | `@dreamer/plugins/ratelimit`   | Rate limit                      |
-| `staticPlugin`      | `@dreamer/plugins/static`      | Static files                    |
-| `compressionPlugin` | `@dreamer/plugins/compression` | Compression                     |
-| `socialPlugin`      | `@dreamer/plugins/social`      | Social share/OAuth              |
-| `scheduledPlugin`   | `@dreamer/plugins/scheduled`   | Cron / scheduled tasks          |
-| `queuePlugin`       | `@dreamer/plugins/queue`       | Queue server (`@dreamer/queue`) |
+| Plugin              | Import                         | Description                         |
+| ------------------- | ------------------------------ | ----------------------------------- |
+| `tailwindPlugin`    | `@dreamer/plugins/tailwindcss` | TailwindCSS v4                      |
+| `unocssPlugin`      | `@dreamer/plugins/unocss`      | UnoCSS                              |
+| `i18nPlugin`        | `@dreamer/plugins/i18n`        | i18n (incl. global $t)              |
+| `seoPlugin`         | `@dreamer/plugins/seo`         | SEO                                 |
+| `pwaPlugin`         | `@dreamer/plugins/pwa`         | PWA                                 |
+| `analyticsPlugin`   | `@dreamer/plugins/analytics`   | Analytics                           |
+| `themePlugin`       | `@dreamer/plugins/theme`       | Theme                               |
+| `authPlugin`        | `@dreamer/plugins/auth`        | Auth                                |
+| `securityPlugin`    | `@dreamer/plugins/security`    | Security headers                    |
+| `corsPlugin`        | `@dreamer/plugins/cors`        | CORS                                |
+| `rateLimitPlugin`   | `@dreamer/plugins/ratelimit`   | Rate limit                          |
+| `staticPlugin`      | `@dreamer/plugins/static`      | Static files                        |
+| `compressionPlugin` | `@dreamer/plugins/compression` | Compression                         |
+| `socialPlugin`      | `@dreamer/plugins/social`      | Social share/OAuth                  |
+| `scheduledPlugin`   | `@dreamer/plugins/scheduled`   | Cron / scheduled tasks              |
+| `queuePlugin`       | `@dreamer/plugins/queue`       | Queue server (`@dreamer/queue`)     |
 | `rbacPlugin`        | `@dreamer/plugins/rbac`        | Role / permission / menu management |
-| `servicesPlugin`    | `@dreamer/plugins/services`    | Host service singletons         |
+| `servicesPlugin`    | `@dreamer/plugins/services`    | Host service singletons             |
 
 ### Standalone Client Libraries
 

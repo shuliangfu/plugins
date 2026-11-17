@@ -312,7 +312,7 @@ export async function handleRbacApi(
     if (menuRes) return menuRes;
 
     if (method === "GET" && (rel === "/access" || rel === "/me")) {
-      const user = await service.options.getUser(ctx);
+      const user = await service.getUser(ctx);
       if (!user) return json({ ok: false, error: "unauthorized" }, 401);
       const access = await service.getAccess(user);
       return json({

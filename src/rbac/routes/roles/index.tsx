@@ -1,6 +1,6 @@
 import type { JSXRenderable } from "@dreamer/view";
 /**
- * 权限列表 DataPanel。插件自动挂载。
+ * 角色列表 DataPanel。插件自动挂载。
  */
 import {
   type Column,
@@ -8,42 +8,47 @@ import {
   Descriptions,
   type Row,
 } from "@dreamer/ui-view";
-import { ChildrenTransfer } from "./children-transfer.tsx";
-import { resolveRbacApi } from "./api-path.ts";
-import type { RbacPanelProps } from "./types.ts";
-import { listPanelProps, type RbacListPageData } from "./list-props.ts";
-import { useCanManage } from "./use-can-manage.ts";
+import { ChildrenTransfer } from "../children-transfer.tsx";
+import { resolveRbacApi } from "../api-path.ts";
+import type { RbacPanelProps } from "../types.ts";
+import { listPanelProps, type RbacListPageData } from "../list-props.ts";
+import { useCanManage } from "../use-can-manage.ts";
 import type { ServiceContainer } from "@dreamer/service";
-import { getRbacService } from "../service/runtime.ts";
+import { getRbacService } from "../../service/runtime.ts";
 import {
   listQueryFrom,
   type ListQuerySource,
   paginateItems,
-} from "../list-query.ts";
+} from "../../list-query.ts";
 
-type PermRow = {
+type RoleRow = {
   id: string;
+  code: string;
   name: string;
   description?: string;
-  source?: string;
+  isSuperAdmin?: boolean;
+  isSystem?: boolean;
+  routeAllows?: string[];
 };
 
-function asPerm(row: unknown): PermRow {
-  return row as PermRow;
+function asRole(row: unknown): RoleRow {
+  return row as RoleRow;
 }
 
-export default function PermissionsPage(
+export default function RolesPage(
   props: RbacPanelProps & { data?: RbacListPageData } = {},
 ): JSXRenderable {
   const canManage = useCanManage(props);
   const columns: Column[] = [
     { type: "selection" },
-    { type: "index" },
-    { prop: "name", label: "名称", align: "left", headerAlign: "center" },
+    { prop: "name", label: "名称" },
+    { prop: "code", label: "标识" },
     {
       prop: "description",
       label: "说明",
-      formatter: (row) => asPerm(row).description || "—",
+      align: "left",
+      headerAlign: "center",
+      formatter: (row) => asRole(row).description || "—",
     },
     {
       type: "actions",
@@ -56,18 +61,25 @@ export default function PermissionsPage(
   ];
   return (
     <DataPanel
-      title="权限列表"
-      panelKey="rbac-permissions"
+      title="角色列表"
+      panelKey="rbac-roles"
       baseRoute={props.baseRoute ?? "/api"}
       apiMode={props.apiMode === "restful" ? "restful" : "action"}
       apiCredentials="same-origin"
       rowKey="id"
       columns={columns}
       search={{
-        props: [{ prop: "q", label: "名称", placeholder: "名称或说明" }],
+        props: [{ prop: "q", label: "名称", placeholder: "名称或标识" }],
       }}
       form={{
         props: [
+          {
+            prop: "code",
+            label: "标识",
+            required: true,
+            createOnly: true,
+            rules: [{ required: true, message: "请填写标识" }],
+          },
           {
             prop: "name",
             label: "名称",
@@ -80,14 +92,14 @@ export default function PermissionsPage(
       {...({ openViewAfterCreate: true } as object)}
       view={{
         modal: { fullscreenable: true },
-        title: (row: Row) => `权限 · ${String(row.name ?? "")}`,
+        title: (row: Row) => `角色 · ${String(row.name ?? "")}`,
         actions: {
           edit: { show: () => canManage.value },
           remove: false,
           close: true,
         },
         render: (ctx: { row: Row }) => {
-          const row = asPerm(ctx.row);
+          const row = asRole(ctx.row);
           return (
             <div class="space-y-4">
               <Descriptions
@@ -96,19 +108,17 @@ export default function PermissionsPage(
                 size="sm"
                 items={[
                   { label: "名称", children: row.name },
+                  { label: "标识", children: row.code },
                   { label: "说明", children: row.description || "—" },
                 ]}
               />
               {row.id
                 ? (
                   <ChildrenTransfer
-                    api={`${
-                      resolveRbacApi(props.baseRoute)
-                    }/permissions/children`}
+                    api={`${resolveRbacApi(props.baseRoute)}/roles/children`}
                     id={row.id}
                     canManage={canManage}
                     catalog={ctx.row}
-                    includeRoles={false}
                   />
                 )
                 : null}
@@ -151,8 +161,8 @@ export async function load(
   ctx: ListQuerySource & { container: ServiceContainer },
 ) {
   return paginateItems(
-    await getRbacService(ctx.container).store.listPermissions(),
+    await getRbacService(ctx.container).store.listRoles(),
     listQueryFrom(ctx),
-    (item) => [item.name, item.description ?? ""],
+    (item) => [item.code, item.name, item.description ?? ""],
   );
 }

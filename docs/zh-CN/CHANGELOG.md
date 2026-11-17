@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+### 变更
+
+- **RBAC**：`getUser` 可写在 `hooks` 下（仍兼容顶层 `getUser`）。
+- **RBAC**：菜单页默认挂载为 `{basePath}/menus`（默认
+  `/rbac/menus`）；`menus.pagePath` 可省略。
+
 ## [1.2.4] - 2026-11-17
 
 ### 变更

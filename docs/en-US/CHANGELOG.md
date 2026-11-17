@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **RBAC**: `getUser` can live under `hooks` (top-level `getUser` still works).
+- **RBAC**: The menus page now defaults to `{basePath}/menus` (`/rbac/menus`);
+  `menus.pagePath` is optional.
+
 ## [1.2.4] - 2026-11-17
 
 ### Changed

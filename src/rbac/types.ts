@@ -144,7 +144,13 @@ export interface RbacAccount {
 
 export type { MenuRecord, SeedMenu } from "./menus/types.ts";
 
+export type RbacGetUser = (
+  ctx: RequestContext,
+) => RbacUser | null | Promise<RbacUser | null>;
+
 export interface RbacHooks {
+  /** Current signed-in user for the request. */
+  getUser?: RbacGetUser;
   isDeveloper?: (user: RbacUser) => boolean;
   authorize?: (
     ctx: RequestContext,
@@ -193,12 +199,13 @@ export interface RbacPluginOptions {
   connectionName?: string;
   /** Table / collection prefix (default `rbac_`). */
   tablePrefix?: string;
-  getUser: (
-    ctx: RequestContext,
-  ) => RbacUser | null | Promise<RbacUser | null>;
+  /** @deprecated Prefer `hooks.getUser`. Kept for existing hosts. */
+  getUser?: RbacGetUser;
   loginPath?: string;
   forbiddenPath?: string;
+  /** Admin page prefix (default `/rbac`). Pages mount at `{basePath}/roles|permissions|assign|routes|menus`. */
   basePath?: string;
+  /** JSON API prefix (default `/api/rbac`). */
   apiBasePath?: string;
   /** Public paths that skip auth (login, assets). loginPath and forbiddenPath are always included. */
   allowActions?: string[];
@@ -224,7 +231,7 @@ export interface RbacPluginOptions {
     seed?: readonly import("./menus/types.ts").SeedMenu[];
     structureSyncKeys?: readonly string[];
     retiredKeys?: readonly string[];
-    /** Auto-mounted admin page path (default `/developer/menus`). */
+    /** Auto-mounted menus page path. Omit to use `{basePath}/menus`. */
     pagePath?: string;
     /** Menu CRUD API requires isDeveloper (default true). */
     requireDeveloper?: boolean;

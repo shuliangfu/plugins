@@ -10,6 +10,7 @@ import { normalizePath } from "./service/route-pattern.ts";
 import { type ResolvedStore, resolveRbacStore } from "./store/resolve-store.ts";
 import { RbacService } from "./service/service.ts";
 import { resolveApiMode } from "./api-mode.ts";
+import { resolveMenusPagePath, resolveRbacGetUser } from "./resolve-options.ts";
 import type { CheckDecision, RbacPluginOptions } from "./types.ts";
 import {
   getRbacServiceOrNull,
@@ -55,7 +56,7 @@ function adminPageDefinitions(basePath: string): RouteDefinition[] {
     return {
       path,
       method: "GET",
-      // File-route pages are loaded by dweb via meta.fullPath; handler is
+      // File-route modules are loaded by dweb via meta.fullPath; handler is
       // required by @dreamer/plugin RouteDefinition and is not used.
       handler: adminPageStubHandler,
       meta: {
@@ -63,14 +64,14 @@ function adminPageDefinitions(basePath: string): RouteDefinition[] {
         type: "page",
         component,
         file: `${component}.tsx`,
-        fullPath: resolvePluginModulePath(`./pages/${slug}.tsx`),
+        fullPath: resolvePluginModulePath(`./routes/${slug}/index.tsx`),
       },
     };
   });
 }
 
 function menuPageDefinition(options: RbacPluginOptions): RouteDefinition[] {
-  const path = options.menus?.pagePath ?? "/developer/menus";
+  const path = resolveMenusPagePath(options);
   const component = path.replace(/^\//, "");
   return [{
     path,
@@ -81,7 +82,7 @@ function menuPageDefinition(options: RbacPluginOptions): RouteDefinition[] {
       type: "page",
       component,
       file: `${component}.tsx`,
-      fullPath: resolvePluginModulePath("./pages/menus.tsx"),
+      fullPath: resolvePluginModulePath("./routes/menus/index.tsx"),
     },
   }];
 }
@@ -158,10 +159,10 @@ export function rbacPlugin(options: RbacPluginOptions): Plugin {
       const path = normalizePath(ctx.path || ctx.url?.pathname || "/");
       let decision = await service.checkRoute(
         path,
-        await options.getUser(ctx),
+        await resolveRbacGetUser(options)(ctx),
       );
       if (options.hooks?.authorize) {
-        const user = await options.getUser(ctx);
+        const user = await resolveRbacGetUser(options)(ctx);
         const access = user ? await service.getAccess(user) : null;
         decision = await options.hooks.authorize(ctx, decision, access);
       }

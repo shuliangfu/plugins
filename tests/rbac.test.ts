@@ -5,6 +5,7 @@ import { ServiceContainer } from "@dreamer/service";
 import type { RequestContext } from "@dreamer/plugin";
 import { beforeEach, describe, expect, it } from "@dreamer/test";
 import {
+  getRbacService,
   MemoryRbacStore,
   rbacPlugin,
   RbacService,
@@ -1187,12 +1188,13 @@ describe("RBAC 插件", () => {
     expect(paths).toContain("/rbac/permissions");
     expect(paths).toContain("/rbac/assign");
     expect(paths).toContain("/rbac/routes");
+    expect(paths).toContain("/rbac/menus");
     for (const slug of ["roles", "permissions", "assign", "routes"]) {
       const page = routes.find((route) => route.path === `/rbac/${slug}`);
       expect(page?.meta?.type).toBe("page");
       expect(page?.meta?.component).toBe(`rbac/${slug}`);
       expect(String(page?.meta?.fullPath ?? "")).toContain(
-        `/pages/${slug}.tsx`,
+        `/routes/${slug}/index.tsx`,
       );
     }
   });
@@ -1216,5 +1218,69 @@ describe("RBAC 插件", () => {
     expect(routes.some((route) => route.path === "/rbac/permissions")).toBe(
       true,
     );
+  });
+
+  it("onRoute 可用 basePath，未配置 pagePath 时菜单页在 {basePath}/menus", async () => {
+    const plugin = rbacPlugin({
+      store,
+      getUser: () => admin,
+      basePath: "/admin",
+    });
+    const routes = await plugin.onRoute?.([], new ServiceContainer()) ?? [];
+    const paths = routes.map((route) => route.path);
+    expect(paths).toContain("/admin/roles");
+    expect(paths).toContain("/admin/menus");
+    expect(paths).not.toContain("/rbac/roles");
+    expect(paths).not.toContain("/rbac/menus");
+  });
+
+  it("menus.pagePath 优先于默认的 {basePath}/menus", async () => {
+    const plugin = rbacPlugin({
+      store,
+      getUser: () => admin,
+      menus: { pagePath: "/developer/menus" },
+    });
+    const routes = await plugin.onRoute?.([], new ServiceContainer()) ?? [];
+    const paths = routes.map((route) => route.path);
+    expect(paths).toContain("/developer/menus");
+    expect(paths).not.toContain("/rbac/menus");
+  });
+
+  it("hooks.getUser 可用于替换顶层 getUser", async () => {
+    const plugin = rbacPlugin({
+      store,
+      hooks: { getUser: () => admin },
+    });
+    const next = new ServiceContainer();
+    await plugin.onInit?.(next);
+    const allowed = await plugin.onRequest?.(
+      ctx("/rbac/roles"),
+      next,
+    );
+    expect(allowed).toBeUndefined();
+  });
+
+  it("未配置开发者时默认菜单页 /rbac/menus 不可访问", async () => {
+    const wide = { id: "u-menus-wide" };
+    await store.saveAssignment({
+      userId: wide.id,
+      roleIds: [],
+      permissionIds: [],
+      routeAllows: ["/*"],
+    });
+    const plugin = rbacPlugin({
+      store,
+      getUser: () => wide,
+    });
+    const next = new ServiceContainer();
+    await plugin.onInit?.(next);
+    const denied = await plugin.onRequest?.(ctx("/rbac/menus"), next);
+    expect(denied?.status).toBe(403);
+    const hidden = await getRbacService(next).menusFor(wide, [
+      { key: "menus", title: "菜单管理", path: "/rbac/menus" },
+      { key: "roles", title: "角色列表", path: "/rbac/roles" },
+    ]);
+    expect(hidden.some((item) => item.path === "/rbac/menus")).toBe(false);
+    expect(hidden.some((item) => item.path === "/rbac/roles")).toBe(true);
   });
 });

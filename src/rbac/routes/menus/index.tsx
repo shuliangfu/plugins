@@ -11,12 +11,12 @@ import {
   Link,
   type Row,
 } from "@dreamer/ui-view";
-import { resolveRbacApi } from "./api-path.ts";
-import type { RbacPanelProps } from "./types.ts";
+import { resolveRbacApi } from "../api-path.ts";
+import type { RbacPanelProps } from "../types.ts";
 import type { ServiceContainer } from "@dreamer/service";
-import { getRbacService } from "../service/runtime.ts";
-import { listQueryFrom, type ListQuerySource } from "../list-query.ts";
-import { parseMenuListQuery } from "../menus/service.ts";
+import { getRbacService } from "../../service/runtime.ts";
+import { listQueryFrom, type ListQuerySource } from "../../list-query.ts";
+import { parseMenuListQuery } from "../../menus/service.ts";
 
 export type MenusPageData = {
   parentKey: string;
@@ -34,8 +34,8 @@ const STATUS = [
 
 function currentPagePath(): string {
   const loc = (globalThis as { location?: { pathname?: string } }).location;
-  const path = loc?.pathname ?? "/developer/menus";
-  return path.replace(/\/+$/, "") || "/developer/menus";
+  const path = loc?.pathname ?? "/rbac/menus";
+  return path.replace(/\/+$/, "") || "/rbac/menus";
 }
 
 function goMenus(parentKey?: string): void {
@@ -45,6 +45,25 @@ function goMenus(parentKey?: string): void {
   if (!g.location?.assign) return;
   const q = parentKey ? `?parentKey=${encodeURIComponent(parentKey)}` : "";
   g.location.assign(`${currentPagePath()}${q}`);
+}
+
+const TOP_HINT_STORAGE_KEY = "rbac-menus-top-hint";
+const TOP_HINT_MESSAGE = "默认只显示顶级菜单，点击标题进入下级。";
+
+function isTopHintDismissed(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(TOP_HINT_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function dismissTopHint(): void {
+  try {
+    globalThis.localStorage?.setItem(TOP_HINT_STORAGE_KEY, "1");
+  } catch {
+    // ignore quota / private-mode failures
+  }
 }
 
 export default function MenusPage(
@@ -159,16 +178,15 @@ export default function MenusPage(
             </Button>
           </div>
         )
-        : (
-          <span
-            class="mb-2 block text-xs text-slate-500 dark:text-slate-400"
-            data-testid="menus-top-hint"
-          >
-            默认只显示顶级菜单，点击标题进入下级。
-          </span>
-        )}
+        : null}
       <DataPanel
         panelKey="menus"
+        alert={parentKey ? false : {
+          message: TOP_HINT_MESSAGE,
+          key: "menus-top-hint",
+          show: () => !isTopHintDismissed(),
+          onClose: dismissTopHint,
+        }}
         data={d.rows ?? []}
         title="菜单列表"
         columns={columns}

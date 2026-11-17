@@ -39,14 +39,14 @@ export function requestContextFrom(request: Request): RequestContext {
   };
 }
 
-/** Login check via `options.getUser`. Route checks stay in the plugin hook. */
+/** Login check via `hooks.getUser`. Route checks stay in the plugin hook. */
 export async function requireUser<T = RbacUser>(
   container: ServiceContainer,
   request: Request,
 ): Promise<RequireUserResult<T>> {
   const service = getRbacServiceOrNull(container);
   if (!service) return { ok: false, status: 401, error: "unauthorized" };
-  const user = await service.options.getUser(requestContextFrom(request));
+  const user = await service.getUser(requestContextFrom(request));
   if (!user) return { ok: false, status: 401, error: "unauthorized" };
   return { ok: true, user: user as T };
 }

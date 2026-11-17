@@ -170,7 +170,7 @@ export class MenuManager {
   }
 
   get pagePath(): string {
-    return this.options.pagePath ?? "/developer/menus";
+    return this.options.pagePath ?? "/rbac/menus";
   }
 
   get requireDeveloper(): boolean {

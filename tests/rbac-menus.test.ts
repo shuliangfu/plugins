@@ -209,17 +209,17 @@ describe("RBAC menus", () => {
     expect(denied!.status).toBe(403);
   });
 
-  it("onRoute mounts the menus page at /developer/menus", async () => {
+  it("onRoute mounts the menus page at /rbac/menus", async () => {
     const plugin = rbacPlugin({
       store: new MemoryRbacStore(),
       getUser: () => ({ id: "u-dev", isDeveloper: true }),
     });
     const routes = await plugin.onRoute?.([], new ServiceContainer()) ?? [];
-    const page = routes.find((route) => route.path === "/developer/menus");
+    const page = routes.find((route) => route.path === "/rbac/menus");
     expect(page?.meta?.type).toBe("page");
-    expect(page?.meta?.component).toBe("developer/menus");
+    expect(page?.meta?.component).toBe("rbac/menus");
     expect(String(page?.meta?.fullPath ?? "")).toContain(
-      "/pages/menus.tsx",
+      "/routes/menus/index.tsx",
     );
   });
 });
