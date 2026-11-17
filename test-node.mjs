@@ -34,7 +34,14 @@ let failed = 0;
 for (const file of files) {
   const result = spawnSync(
     process.execPath,
-    ["--import", "tsx", "--test-force-exit", file],
+    [
+      "--import",
+      new URL("./scripts/map-jsr-dreamer.mjs", import.meta.url).href,
+      "--import",
+      "tsx",
+      "--test-force-exit",
+      file,
+    ],
     {
       stdio: "inherit",
       env: { ...process.env, CI: "true" },

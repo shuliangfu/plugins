@@ -1,13 +1,16 @@
 /**
  * RBAC database store tests (SQLite).
  */
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { ServiceContainer } from "@dreamer/service";
 import { describe, expect, it } from "@dreamer/test";
 import { getRbacService, rbacPlugin } from "../src/rbac/mod.ts";
 
 describe("RBAC SQLite 存储", () => {
   it("重启后仍能读到种子和新建角色", async () => {
-    const dir = await Deno.makeTempDir({ prefix: "rbac-" });
+    const dir = await mkdtemp(join(tmpdir(), "rbac-"));
     const filename = `${dir}/rbac.sqlite`;
     const admin = { id: "u-admin" };
     const options = {
@@ -43,7 +46,7 @@ describe("RBAC SQLite 存储", () => {
       expect((await again.checkRoute("/orders", admin)).ok).toBe(true);
       await second.onStop?.(c2);
     } finally {
-      await Deno.remove(dir, { recursive: true });
+      await rm(dir, { recursive: true, force: true });
     }
   });
 });

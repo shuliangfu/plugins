@@ -58,7 +58,7 @@ jobs:
         run: bun install || true
 
       - name: Test (Bun)
-        run: bun test tests/
+        run: bun test --preload ./scripts/map-jsr-dreamer.mjs tests/
 
   # ───────────────── Node.js 22+ ─────────────────
   test-node:
@@ -78,4 +78,4 @@ jobs:
         run: npm install
 
       - name: Test (Node.js)
-        run: node --import tsx --test-force-exit test-node.mjs
+        run: node --import ./scripts/map-jsr-dreamer.mjs --import tsx --test-force-exit test-node.mjs
