@@ -9,6 +9,17 @@
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-11-17
+
+### 变更
+
+- **RBAC**：自动挂载的管理页增加 `metadata`，用于生成 `<title>` / `<meta>`。
+- **RBAC**：菜单页提示改为用 Alert 的 `closeKey`（cookie）记住关闭状态，
+  不再使用 localStorage。
+- **RBAC**：菜单行内编辑走 `/set-field` 接口。
+- **依赖**：`@dreamer/view` `^3.1.1` → `^3.1.2`；`@dreamer/ui-view` `^1.3.17` →
+  `^1.3.18`。
+
 ## [1.2.5] - 2026-11-17
 
 ### 变更

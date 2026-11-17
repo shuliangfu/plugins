@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-11-17
+
+### Changed
+
+- **RBAC**: auto-mounted admin pages now export `metadata` for `<title>` /
+  `<meta>`.
+- **RBAC**: the menus page tip is remembered with Alert `closeKey` (cookie)
+  instead of localStorage.
+- **RBAC**: menu inline edits go through a `/set-field` action.
+- **Dependencies**: `@dreamer/view` `^3.1.1` → `^3.1.2`; `@dreamer/ui-view`
+  `^1.3.17` → `^1.3.18`.
+
 ## [1.2.5] - 2026-11-17
 
 ### Changed
