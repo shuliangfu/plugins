@@ -156,8 +156,9 @@ export async function loadRolesForAdmin(
   roleIds: string[];
   roles: { id: string; code: string; name: string }[];
 }> {
-  const service = getRbacService(container);
+  const service = getRbacServiceOrNull(container);
   let ids = roleIds?.filter(Boolean) ?? [];
+  if (!service) return { roleIds: ids, roles: [] };
   if (ids.length === 0 && fallbackRole) {
     const role = await service.store.getRoleByCode(fallbackRole);
     if (role) ids = [role.id];

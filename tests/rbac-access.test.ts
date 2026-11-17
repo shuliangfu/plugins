@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@dreamer/test";
 import {
   assertNotRemovingLastSuperAdmin,
+  boundRolesForAdmin,
   getPermissionsPayload,
   invalidatePermissionCache,
   loadRbacUser,
@@ -86,5 +87,11 @@ describe("RBAC access helpers", () => {
       ok: true,
       user: { id: "u-1", isDeveloper: true },
     });
+  });
+
+  it("boundRolesForAdmin does not throw when rbacPlugin is missing", async () => {
+    const container = new ServiceContainer();
+    const bound = await boundRolesForAdmin(container, "u-1");
+    expect(bound).toEqual({ roleIds: [], roles: [] });
   });
 });
