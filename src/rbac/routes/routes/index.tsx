@@ -12,6 +12,12 @@ import type { ServiceContainer } from "@dreamer/service";
 import { getRbacService } from "../../service/runtime.ts";
 import { listRouteTransfer } from "../../api/mod.ts";
 
+/** Route metadata used to generate <title> / <meta>. */
+export const metadata = {
+  title: "路由列表",
+  description: "Route list",
+};
+
 type RouteOption = { key: string; title: string; source?: string };
 
 function parseNewRoutes(text: string): string[] {

@@ -193,6 +193,20 @@ describe("RBAC menus", () => {
     );
     expect((await updated!.json()).ok).toBe(true);
 
+    const patched = await plugin.onRequest?.(
+      ctx("/api/rbac/menus/set-field?id=users.wearing", "POST", {
+        id: "users.wearing",
+        ids: ["users.wearing"],
+        field: "sort",
+        value: 42,
+      }),
+      container,
+    );
+    expect(patched!.status).toBe(200);
+    expect((await patched!.json()).removed).toBe(1);
+    const after = await service.menu.store.getMenuByKey("users.wearing");
+    expect(after?.sort).toBe(42);
+
     const removed = await plugin.onRequest?.(
       ctx("/api/rbac/menus/remove", "POST", { ids: ["users.wearing"] }),
       container,

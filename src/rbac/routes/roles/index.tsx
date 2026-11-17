@@ -21,6 +21,12 @@ import {
   paginateItems,
 } from "../../list-query.ts";
 
+/** Route metadata used to generate <title> / <meta>. */
+export const metadata = {
+  title: "角色列表",
+  description: "Role list",
+};
+
 type RoleRow = {
   id: string;
   code: string;

@@ -17,6 +17,12 @@ import {
 } from "../../list-query.ts";
 import { listAssignmentRows } from "../../api/mod.ts";
 
+/** Route metadata used to generate <title> / <meta>. */
+export const metadata = {
+  title: "权限分配",
+  description: "Permission assignment",
+};
+
 type AssignRow = {
   id: string;
   userId: string;

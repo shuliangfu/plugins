@@ -21,6 +21,12 @@ import {
   paginateItems,
 } from "../../list-query.ts";
 
+/** Route metadata used to generate <title> / <meta>. */
+export const metadata = {
+  title: "权限列表",
+  description: "Permission list",
+};
+
 type PermRow = {
   id: string;
   name: string;

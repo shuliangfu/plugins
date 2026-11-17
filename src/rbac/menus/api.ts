@@ -161,5 +161,54 @@ export async function handleMenuApi(
     }
     return json({ removed, failed });
   }
+  if (method === "POST" && sub === "/set-field") {
+    const body = await readBody(ctx);
+    const field = String(body.field ?? "").trim();
+    const ids = menuIdsFrom(ctx, body);
+    const allowed = new Set([
+      "parentKey",
+      "title",
+      "titleZh",
+      "titleEn",
+      "path",
+      "icon",
+      "sort",
+      "permission",
+      "status",
+    ]);
+    if (!ids.length || !allowed.has(field)) {
+      return json(
+        {
+          removed: 0,
+          failed: ids.map((id) => ({
+            id,
+            error: !ids.length ? "缺少 id" : "unknown field",
+          })),
+        },
+        400,
+      );
+    }
+    const failed: { id: string; error: string }[] = [];
+    let removed = 0;
+    for (const key of ids) {
+      const r = await menus.updateMenu(key, { [field]: body.value });
+      if (r.ok) removed++;
+      else failed.push({ id: key, error: r.message ?? r.error });
+    }
+    return json({ ok: failed.length === 0, removed, failed });
+  }
   return json({ ok: false, error: "not_found" }, 404);
+}
+
+function menuIdsFrom(
+  ctx: RequestContext,
+  body: Record<string, unknown>,
+): string[] {
+  if (Array.isArray(body.ids)) {
+    return body.ids.map(String).filter(Boolean).slice(0, 1000);
+  }
+  const one = String(body.id ?? body.key ?? "").trim();
+  if (one) return [one];
+  return queryOf(ctx).getAll("id").map((id) => id.trim()).filter(Boolean)
+    .slice(0, 1000);
 }

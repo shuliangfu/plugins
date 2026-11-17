@@ -18,6 +18,12 @@ import { getRbacService } from "../../service/runtime.ts";
 import { listQueryFrom, type ListQuerySource } from "../../list-query.ts";
 import { parseMenuListQuery } from "../../menus/service.ts";
 
+/** Route metadata used to generate <title> / <meta>. */
+export const metadata = {
+  title: "菜单管理",
+  description: "Menu management",
+};
+
 export type MenusPageData = {
   parentKey: string;
   parents: { value: string; label: string }[];
@@ -47,24 +53,8 @@ function goMenus(parentKey?: string): void {
   g.location.assign(`${currentPagePath()}${q}`);
 }
 
-const TOP_HINT_STORAGE_KEY = "rbac-menus-top-hint";
+const TOP_HINT_CLOSE_KEY = "rbac-menus-top-hint";
 const TOP_HINT_MESSAGE = "默认只显示顶级菜单，点击标题进入下级。";
-
-function isTopHintDismissed(): boolean {
-  try {
-    return globalThis.localStorage?.getItem(TOP_HINT_STORAGE_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function dismissTopHint(): void {
-  try {
-    globalThis.localStorage?.setItem(TOP_HINT_STORAGE_KEY, "1");
-  } catch {
-    // ignore quota / private-mode failures
-  }
-}
 
 export default function MenusPage(
   props: RbacPanelProps & { data?: MenusPageData } & Partial<MenusPageData> =
@@ -129,7 +119,9 @@ export default function MenusPage(
       label: "排序",
       type: "number",
       sortable: true,
+      edit: true,
       align: "center",
+      inline: "number",
       width: 80,
     },
     {
@@ -184,8 +176,8 @@ export default function MenusPage(
         alert={parentKey ? false : {
           message: TOP_HINT_MESSAGE,
           key: "menus-top-hint",
-          show: () => !isTopHintDismissed(),
-          onClose: dismissTopHint,
+          closeConfirm: "关闭后将不再提示",
+          closeKey: TOP_HINT_CLOSE_KEY,
         }}
         data={d.rows ?? []}
         title="菜单列表"
