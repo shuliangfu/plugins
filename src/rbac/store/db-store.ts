@@ -23,14 +23,16 @@ export async function createDatabaseRbacStore(
 ): Promise<RbacStore> {
   await ensureRbacTables(adapter, type, prefix);
   const models = createRbacModels(adapter, type, prefix);
-  return new ModelRbacStore(models);
+  return new ModelRbacStore(models, type);
 }
 
 export class ModelRbacStore implements RbacStore {
   #models: RbacModels;
+  #mongo: boolean;
 
-  constructor(models: RbacModels) {
+  constructor(models: RbacModels, type: DatabaseType = "sqlite") {
     this.#models = models;
+    this.#mongo = type === "mongodb";
   }
 
   async listRoles(): Promise<Role[]> {
@@ -49,7 +51,7 @@ export class ModelRbacStore implements RbacStore {
   }
 
   async saveRole(role: Role): Promise<Role> {
-    await upsert(this.#models.Role, role.id, fromRole(role));
+    await upsert(this.#models.Role, role.id, fromRole(role, this.#mongo));
     return role;
   }
 
@@ -71,7 +73,7 @@ export class ModelRbacStore implements RbacStore {
     await upsert(
       this.#models.Permission,
       permission.id,
-      fromPermission(permission),
+      fromPermission(permission, this.#mongo),
     );
     return permission;
   }
@@ -81,23 +83,37 @@ export class ModelRbacStore implements RbacStore {
   }
 
   async getAssignment(userId: string): Promise<Assignment> {
-    const row = await this.#models.Assignment.findOne({ user_id: userId });
+    const query = this.#mongo ? { userId } : { user_id: userId };
+    let row = await this.#models.Assignment.findOne(query);
+    if (!row && this.#mongo) {
+      row = await this.#models.Assignment.findOne({ user_id: userId });
+    }
     return row
       ? toAssignment(row as Record<string, unknown>)
       : { userId, roleIds: [], permissionIds: [], routeAllows: [] };
   }
 
   async saveAssignment(assignment: Assignment): Promise<void> {
-    const existing = await this.#models.Assignment.findOne({
-      user_id: assignment.userId,
-    });
+    const query = this.#mongo
+      ? { userId: assignment.userId }
+      : { user_id: assignment.userId };
+    let existing = await this.#models.Assignment.findOne(query);
+    if (!existing && this.#mongo) {
+      existing = await this.#models.Assignment.findOne({
+        user_id: assignment.userId,
+      });
+    }
     const id = existing
       ? String((existing as Record<string, unknown>).id ?? assignment.userId)
       : assignment.userId;
     await upsert(
       this.#models.Assignment,
       id,
-      fromAssignment({ ...assignment, userId: assignment.userId }, id),
+      fromAssignment(
+        { ...assignment, userId: assignment.userId },
+        id,
+        this.#mongo,
+      ),
     );
   }
 
@@ -183,25 +199,54 @@ function packFlag(value: boolean | undefined): number {
   return value ? 1 : 0;
 }
 
+function field(
+  row: Record<string, unknown>,
+  camel: string,
+  snake: string,
+): unknown {
+  return row[camel] !== undefined ? row[camel] : row[snake];
+}
+
 function toRole(row: Record<string, unknown>): Role {
   return {
     id: String(row.id ?? row._id),
     code: String(row.code),
     name: String(row.name),
     description: row.description ? String(row.description) : undefined,
-    isSystem: asFlag(row.is_system),
-    isSuperAdmin: asFlag(row.is_super_admin),
-    isDeveloper: asFlag(row.is_developer),
-    routeAllows: asList(row.route_allows),
-    routeExcludes: asList(row.route_excludes),
-    childRoleIds: asList(row.child_role_ids),
-    childPermissionIds: asList(row.child_permission_ids),
-    roleExcludes: asList(row.role_excludes),
-    permissionExcludes: asList(row.permission_excludes),
+    isSystem: asFlag(field(row, "isSystem", "is_system")),
+    isSuperAdmin: asFlag(field(row, "isSuperAdmin", "is_super_admin")),
+    isDeveloper: asFlag(field(row, "isDeveloper", "is_developer")),
+    routeAllows: asList(field(row, "routeAllows", "route_allows")),
+    routeExcludes: asList(field(row, "routeExcludes", "route_excludes")),
+    childRoleIds: asList(field(row, "childRoleIds", "child_role_ids")),
+    childPermissionIds: asList(
+      field(row, "childPermissionIds", "child_permission_ids"),
+    ),
+    roleExcludes: asList(field(row, "roleExcludes", "role_excludes")),
+    permissionExcludes: asList(
+      field(row, "permissionExcludes", "permission_excludes"),
+    ),
   };
 }
 
-function fromRole(role: Role): Record<string, unknown> {
+function fromRole(role: Role, mongo = false): Record<string, unknown> {
+  if (mongo) {
+    return {
+      id: role.id,
+      code: role.code,
+      name: role.name,
+      description: role.description ?? "",
+      isSystem: packFlag(role.isSystem),
+      isSuperAdmin: packFlag(role.isSuperAdmin),
+      isDeveloper: packFlag(role.isDeveloper),
+      routeAllows: packList(role.routeAllows),
+      routeExcludes: packList(role.routeExcludes),
+      childRoleIds: packList(role.childRoleIds),
+      childPermissionIds: packList(role.childPermissionIds),
+      roleExcludes: packList(role.roleExcludes),
+      permissionExcludes: packList(role.permissionExcludes),
+    };
+  }
   return {
     id: role.id,
     code: role.code,
@@ -224,15 +269,34 @@ function toPermission(row: Record<string, unknown>): Permission {
     id: String(row.id ?? row._id),
     name: String(row.name),
     description: row.description ? String(row.description) : undefined,
-    routeAllows: asList(row.route_allows),
-    routeExcludes: asList(row.route_excludes),
-    childPermissionIds: asList(row.child_permission_ids),
-    permissionExcludes: asList(row.permission_excludes),
+    routeAllows: asList(field(row, "routeAllows", "route_allows")),
+    routeExcludes: asList(field(row, "routeExcludes", "route_excludes")),
+    childPermissionIds: asList(
+      field(row, "childPermissionIds", "child_permission_ids"),
+    ),
+    permissionExcludes: asList(
+      field(row, "permissionExcludes", "permission_excludes"),
+    ),
     source: (row.source as Permission["source"]) ?? "manual",
   };
 }
 
-function fromPermission(permission: Permission): Record<string, unknown> {
+function fromPermission(
+  permission: Permission,
+  mongo = false,
+): Record<string, unknown> {
+  if (mongo) {
+    return {
+      id: permission.id,
+      name: permission.name,
+      description: permission.description ?? "",
+      routeAllows: packList(permission.routeAllows),
+      routeExcludes: packList(permission.routeExcludes),
+      childPermissionIds: packList(permission.childPermissionIds),
+      permissionExcludes: packList(permission.permissionExcludes),
+      source: permission.source ?? "manual",
+    };
+  }
   return {
     id: permission.id,
     name: permission.name,
@@ -247,20 +311,35 @@ function fromPermission(permission: Permission): Record<string, unknown> {
 
 function toAssignment(row: Record<string, unknown>): Assignment {
   return {
-    userId: String(row.user_id),
-    roleIds: asList(row.role_ids),
-    permissionIds: asList(row.permission_ids),
-    routeAllows: asList(row.route_allows),
-    routeExcludes: asList(row.route_excludes),
-    roleExcludes: asList(row.role_excludes),
-    permissionExcludes: asList(row.permission_excludes),
+    userId: String(field(row, "userId", "user_id") ?? ""),
+    roleIds: asList(field(row, "roleIds", "role_ids")),
+    permissionIds: asList(field(row, "permissionIds", "permission_ids")),
+    routeAllows: asList(field(row, "routeAllows", "route_allows")),
+    routeExcludes: asList(field(row, "routeExcludes", "route_excludes")),
+    roleExcludes: asList(field(row, "roleExcludes", "role_excludes")),
+    permissionExcludes: asList(
+      field(row, "permissionExcludes", "permission_excludes"),
+    ),
   };
 }
 
 function fromAssignment(
   assignment: Assignment,
   id: string,
+  mongo = false,
 ): Record<string, unknown> {
+  if (mongo) {
+    return {
+      id,
+      userId: assignment.userId,
+      roleIds: packList(assignment.roleIds),
+      permissionIds: packList(assignment.permissionIds),
+      routeAllows: packList(assignment.routeAllows ?? []),
+      routeExcludes: packList(assignment.routeExcludes ?? []),
+      roleExcludes: packList(assignment.roleExcludes ?? []),
+      permissionExcludes: packList(assignment.permissionExcludes ?? []),
+    };
+  }
   return {
     id,
     user_id: assignment.userId,

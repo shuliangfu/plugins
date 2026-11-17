@@ -55,6 +55,45 @@ export const routeSchema = {
   source: { type: "string" },
 };
 
+/** Mongo documents use camelCase field names. */
+export const mongoRoleSchema = {
+  id: { type: "string", validate: { required: true } },
+  code: { type: "string", validate: { required: true } },
+  name: { type: "string", validate: { required: true } },
+  description: { type: "text" },
+  isSystem: { type: "number", default: 0 },
+  isSuperAdmin: { type: "number", default: 0 },
+  isDeveloper: { type: "number", default: 0 },
+  routeAllows: { type: "text", default: "[]" },
+  routeExcludes: { type: "text", default: "[]" },
+  childRoleIds: { type: "text", default: "[]" },
+  childPermissionIds: { type: "text", default: "[]" },
+  roleExcludes: { type: "text", default: "[]" },
+  permissionExcludes: { type: "text", default: "[]" },
+};
+
+export const mongoPermissionSchema = {
+  id: { type: "string", validate: { required: true } },
+  name: { type: "string", validate: { required: true } },
+  description: { type: "text" },
+  routeAllows: { type: "text", default: "[]" },
+  routeExcludes: { type: "text", default: "[]" },
+  childPermissionIds: { type: "text", default: "[]" },
+  permissionExcludes: { type: "text", default: "[]" },
+  source: { type: "string", default: "manual" },
+};
+
+export const mongoAssignmentSchema = {
+  id: { type: "string", validate: { required: true } },
+  userId: { type: "string", validate: { required: true } },
+  roleIds: { type: "text", default: "[]" },
+  permissionIds: { type: "text", default: "[]" },
+  routeAllows: { type: "text", default: "[]" },
+  routeExcludes: { type: "text", default: "[]" },
+  roleExcludes: { type: "text", default: "[]" },
+  permissionExcludes: { type: "text", default: "[]" },
+};
+
 /** Narrow model API used by the store (SQL and Mongo signatures differ). */
 export interface StoreModel {
   findAll(): Promise<unknown[]>;
@@ -80,17 +119,17 @@ export function createRbacModels(
   if (type === "mongodb") {
     class RbacRole extends MongoModel {
       static override collectionName = `${prefix}roles`;
-      static override schema = roleSchema as (typeof MongoModel)["schema"];
+      static override schema = mongoRoleSchema as (typeof MongoModel)["schema"];
     }
     class RbacPermission extends MongoModel {
       static override collectionName = `${prefix}permissions`;
       static override schema =
-        permissionSchema as (typeof MongoModel)["schema"];
+        mongoPermissionSchema as (typeof MongoModel)["schema"];
     }
     class RbacAssignment extends MongoModel {
       static override collectionName = `${prefix}assignments`;
       static override schema =
-        assignmentSchema as (typeof MongoModel)["schema"];
+        mongoAssignmentSchema as (typeof MongoModel)["schema"];
     }
     class RbacRoute extends MongoModel {
       static override collectionName = `${prefix}routes`;
