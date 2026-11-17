@@ -9,13 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-11-17
+
 ### Added
 
 - **RBAC plugin** (`@dreamer/plugins/rbac`): configurable stores (MongoDB,
   MySQL, PostgreSQL, SQLite, or memory) and a shared `checkRoute` for pages and
-  APIs. Ships four embeddable DataPanel pages (roles, permissions, assignments,
-  routes), plus current-access (`/access`) and menu filtering (`filterMenus` /
-  `/menus`). Host apps still own admin accounts.
+  APIs. Auto-mounts four admin pages (roles, permissions, assignments, routes)
+  and a generic menus page (default `/developer/menus`). Also provides
+  current-access (`/access`) and sidebar filtering (`filterMenus` / `/menus`).
+  Host apps still own admin accounts, and pass menu seed plus optional locale /
+  visibility hooks. Menu seed is applied by `service.menu.seed()`, not on boot.
+- **Services plugin** (`@dreamer/plugins/services`): register host business
+  services as container singletons from an explicit name → factory map (for
+  example `AuthService`). Does not scan directories, and does not take over
+  services another plugin already owns.
 
 ### Fixed
 
@@ -26,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **RBAC**: the routes page is again an add field plus a left/right transfer
   (available / managed), matching the previous senvis page. Scanned backend
   routes stay on the left until moved to the right, which is what gets saved.
+- **Tests**: Bun and Node can resolve `jsr:` / `npm:` specifiers used by JSX
+  and Deno import maps, so RBAC page tests run on all three runtimes.
 
 ## [1.2.2] - 2026-11-16
 

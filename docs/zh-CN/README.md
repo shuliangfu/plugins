@@ -114,7 +114,8 @@ npx jsr add @dreamer/plugins
 - **Scheduled**：计划任务（Cron，`onStart` / `onStop`），独立 `@dreamer/logger`
   输出
 - **Queue**：`@dreamer/queue` 队列服务端（`QueueManager`），可配置日志
-- **RBAC**：角色 / 权限 / 路由管理，统一 `checkRoute`，可嵌入的 DataPanel 列表页
+- **RBAC**：角色 / 权限 / 路由鉴权，管理页和菜单管理由插件自动挂载
+- **Services**：把宿主业务服务按名字注册为容器单例
 
 ---
 
@@ -128,6 +129,8 @@ npx jsr add @dreamer/plugins
 - **用户认证**：JWT、Bearer Token、Basic Auth 认证
 - **计划任务**：按 Cron 表达式定时执行命令或脚本（独立日志文件）
 - **任务队列**：集成 `@dreamer/queue`，后台消费任务（独立日志文件）
+- **权限管理**：角色 / 权限 / 路由鉴权，插件自动挂载管理页和菜单管理
+- **宿主服务**：把业务服务按名字注册为容器单例
 
 ---
 
@@ -622,11 +625,12 @@ queuePlugin(
 
 ### 权限管理插件（RBAC）
 
-注册后即可对页面和 API 做统一鉴权。四个管理页是 DataPanel
-列表块，由宿主后台嵌入布局；管理员账号仍由宿主提供。
+注册后即可对页面和 API 做统一鉴权。插件会自动挂载四个管理页：
+`{basePath}/roles`、`/permissions`、`/assign`、`/routes`（默认前缀 `/rbac`），
+以及菜单页 `menus.pagePath`（默认 `/developer/menus`）。宿主若已有相同路径，则不重复挂载。管理员账号仍由宿主提供。
 
 ```typescript
-import { rbacPlugin, RolesPage } from "@dreamer/plugins/rbac";
+import { rbacPlugin } from "@dreamer/plugins/rbac";
 
 app.registerPlugin(rbacPlugin({
   database: {
@@ -637,16 +641,31 @@ app.registerPlugin(rbacPlugin({
   allowActions: ["/login", "/api/auth/login", "/assets/*"],
   seed: { assignUserId: "admin-id" },
   hooks: { listUsers: () => listAdmins() },
+  menus: {
+    seed: menuSeed,
+    structureSyncKeys: ["dashboard"],
+  },
 }));
-
-// 宿主路由里嵌入列表页，例如 src/backend/routes/rbac/roles/index.tsx
-export default RolesPage;
 ```
 
 侧栏请用宿主自己的菜单数据，交给 `getRbacService(container).filterMenus(access, menus)`
 按当前用户过滤：无权限的叶子会去掉，子项都不可见时父级也不显示。可传入已嵌套的
-`children`，或带 `parentKey` 的扁平列表。权限信息用 `GET /api/rbac/access`，
-也可用 `can(access, path)`。
+`children`，或带 `parentKey` 的扁平列表。菜单种子不会在启动时写入，需要时再调用
+`getRbacService(container).menu.seed()` 插入或同步。权限信息用
+`GET /api/rbac/access`，也可用 `can(access, path)`。
+
+### 宿主服务插件（Services）
+
+把宿主业务服务按名字注册为容器单例，传入明确的 name → factory 映射即可。不会扫描目录，也不会接管其他插件已经注册的服务（例如 `rbacPlugin` 的 `RbacService`）。
+
+```typescript
+import { servicesPlugin } from "@dreamer/plugins/services";
+
+app.registerPlugin(servicesPlugin({
+  AuthService: (c) => new AuthService(c),
+  MenuService: (c) => new MenuService(c),
+}));
+```
 
 ---
 
@@ -687,7 +706,8 @@ console.log(lastResult.filename); // "tailwind.a51ff10f.css"
 | `socialPlugin`      | `@dreamer/plugins/social`      | 社交分享/OAuth          |
 | `scheduledPlugin`   | `@dreamer/plugins/scheduled`   | 计划任务 / Cron         |
 | `queuePlugin`       | `@dreamer/plugins/queue`       | 队列（@dreamer/queue）  |
-| `rbacPlugin`        | `@dreamer/plugins/rbac`        | 权限管理（RBAC）        |
+| `rbacPlugin`        | `@dreamer/plugins/rbac`        | 权限与菜单管理（RBAC）  |
+| `servicesPlugin`    | `@dreamer/plugins/services`    | 宿主服务单例            |
 
 ### 独立客户端包
 

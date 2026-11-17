@@ -9,17 +9,24 @@
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-11-17
+
 ### 新增
 
 - **RBAC 插件**（`@dreamer/plugins/rbac`）：可配置存储（MongoDB、MySQL、
-  PostgreSQL、SQLite 或内存），页面和 API 走统一 `checkRoute`；提供角色、权限、
-  分配、路由四张 DataPanel 列表页，以及当前权限查询（`/access`）和菜单过滤
-  （`filterMenus` / `/menus`）。有页面权限即可调用对应管理 API；删除角色或权限会清掉引用。管理员账号仍由宿主负责。
+  PostgreSQL、SQLite 或内存），页面和 API 走统一 `checkRoute`；自动挂载角色、
+  权限、分配、路由四个管理页，以及通用菜单管理页（默认 `/developer/menus`）。
+  同时提供当前权限查询（`/access`）和侧栏过滤（`filterMenus` / `/menus`）。
+  有页面权限即可调用对应管理 API；删除角色或权限会清掉引用。管理员账号仍由宿主负责，菜单种子和可选的语言／可见性 hook 也由宿主传入。菜单种子不会在启动时写入，需要时再调用 `service.menu.seed()`。
+- **宿主服务插件**（`@dreamer/plugins/services`）：按明确的 name → factory
+  映射，把宿主业务服务注册为容器单例（例如 `AuthService`）。不扫描目录，也不接管其他插件已经注册的服务。
 
 ### 修复
 
 - **RBAC**：角色／权限／分配的 `view` 接口改为返回 `{ ok, data }`，对齐 DataPanel 详情所需格式（此前用 `item`，弹窗会先闪后空）。详情会带上子项目录，穿梭框不再一直停在「加载中」。
 - **RBAC**：路由列表改回「新增 + 左右穿梭框」（待添加／已管理），与原先 senvis 页面一致。扫描到的后台路由只出现在左侧，添加到右侧后才写入数据库。
+- **测试**：Bun 和 Node 可以解析 JSX 与 Deno import map 产生的 `jsr:` /
+  `npm:` 地址，RBAC 页面测试可在三个运行时上运行。
 
 ## [1.2.2] - 2026-11-16
 
