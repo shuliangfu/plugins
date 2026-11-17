@@ -1192,7 +1192,7 @@ describe("RBAC 插件", () => {
       expect(page?.meta?.type).toBe("page");
       expect(page?.meta?.component).toBe(`rbac/${slug}`);
       expect(String(page?.meta?.fullPath ?? "")).toContain(
-        `/pages/entries/${slug}.tsx`,
+        `/pages/${slug}.tsx`,
       );
     }
   });

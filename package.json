@@ -22,8 +22,7 @@
     "./scheduled": "./src/scheduled/mod.ts",
     "./queue": "./src/queue/mod.ts",
     "./rbac": "./src/rbac/mod.ts",
-    "./rbac/access": "./src/rbac/service/access.ts",
-    "./rbac/pages": "./src/rbac/pages/mod.ts"
+    "./rbac/access": "./src/rbac/service/access.ts"
   },
   "scripts": {
     "test": "deno test -A --minimum-dependency-age=0 --no-check tests/",

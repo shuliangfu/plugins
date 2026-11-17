@@ -8,6 +8,9 @@ import { normalizeRoutePattern } from "../service/route-pattern.ts";
 import { resolveRbacApi } from "./api-path.ts";
 import type { RbacPanelProps, RoutesPageData } from "./types.ts";
 import { useCanManage } from "./use-can-manage.ts";
+import type { ServiceContainer } from "@dreamer/service";
+import { getRbacService } from "../service/runtime.ts";
+import { listRouteTransfer } from "../api/mod.ts";
 
 type RouteOption = { key: string; title: string; source?: string };
 
@@ -245,4 +248,10 @@ export default function RoutesPage(
       </div>
     </DataView>
   );
+}
+
+export async function load(
+  ctx: { container: ServiceContainer },
+) {
+  return await listRouteTransfer(getRbacService(ctx.container));
 }

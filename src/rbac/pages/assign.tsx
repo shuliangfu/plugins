@@ -1,6 +1,6 @@
 import type { JSXRenderable } from "@dreamer/view";
 /**
- * 权限分配：列出管理员，在详情里分配角色、权限和路由。宿主负责布局。
+ * 权限分配：列出管理员，在详情里分配角色、权限和路由。插件自动挂载。
  */
 import { type Column, DataPanel, type Row, Tag } from "@dreamer/ui-view";
 import { resolveRbacApi } from "./api-path.ts";
@@ -8,6 +8,14 @@ import { AssignTransfer } from "./children-transfer.tsx";
 import type { RbacPanelProps } from "./types.ts";
 import { listPanelProps, type RbacListPageData } from "./list-props.ts";
 import { useCanManage } from "./use-can-manage.ts";
+import type { ServiceContainer } from "@dreamer/service";
+import { getRbacService } from "../service/runtime.ts";
+import {
+  listQueryFrom,
+  type ListQuerySource,
+  paginateItems,
+} from "../list-query.ts";
+import { listAssignmentRows } from "../api/mod.ts";
 
 type AssignRow = {
   id: string;
@@ -113,5 +121,16 @@ export default function AssignPage(
       class={props.class}
       {...listPanelProps(props.data)}
     />
+  );
+}
+
+export async function load(
+  ctx: ListQuerySource & { container: ServiceContainer },
+) {
+  const rows = await listAssignmentRows(getRbacService(ctx.container));
+  return paginateItems(
+    rows,
+    listQueryFrom(ctx),
+    (item) => [item.name, item.id],
   );
 }

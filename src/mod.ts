@@ -88,22 +88,17 @@ export {
 // 宿主业务服务注册（显式 name → factory，不扫描目录）
 export {
   registerServices,
-  servicesPlugin,
   type ServiceEntry,
   type ServiceFactory,
+  servicesPlugin,
   type ServicesPluginOptions,
 } from "./services/mod.ts";
 
 // 权限管理（RBAC）
 export {
-  AssignPage,
   ensureRbacReady,
   getRbacService,
   RBAC_SERVICE,
-  PermissionsPage,
-  type RbacPanelProps,
   rbacPlugin,
   type RbacPluginOptions,
-  RolesPage,
-  RoutesPage,
 } from "./rbac/mod.ts";

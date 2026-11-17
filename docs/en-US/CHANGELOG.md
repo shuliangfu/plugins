@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **RBAC**: MongoDB documents now use camelCase field names (`userId`,
+  `roleIds`, and so on). SQL tables stay snake_case. Reads still accept leftover
+  snake_case fields.
+- **RBAC**: admin pages now export `load` from the page module itself and are
+  auto-mounted. Removed the `entries` wrappers, `pages/load`, and the
+  `@dreamer/plugins/rbac/pages` export.
+
 ## [1.2.3] - 2026-11-17
 
 ### Added
@@ -34,8 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **RBAC**: the routes page is again an add field plus a left/right transfer
   (available / managed), matching the previous senvis page. Scanned backend
   routes stay on the left until moved to the right, which is what gets saved.
-- **Tests**: Bun and Node can resolve `jsr:` / `npm:` specifiers used by JSX
-  and Deno import maps, so RBAC page tests run on all three runtimes.
+- **Tests**: Bun and Node can resolve `jsr:` / `npm:` specifiers used by JSX and
+  Deno import maps, so RBAC page tests run on all three runtimes.
 
 ## [1.2.2] - 2026-11-16
 

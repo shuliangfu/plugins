@@ -1,6 +1,5 @@
 /**
- * Shared props for RBAC DataPanel pages.
- * These components are only the panel itself; the host app supplies the layout.
+ * Shared props for auto-mounted RBAC DataPanel pages.
  */
 export interface RbacPanelProps {
   /**

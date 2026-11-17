@@ -219,7 +219,7 @@ describe("RBAC menus", () => {
     expect(page?.meta?.type).toBe("page");
     expect(page?.meta?.component).toBe("developer/menus");
     expect(String(page?.meta?.fullPath ?? "")).toContain(
-      "/pages/entries/menus.tsx",
+      "/pages/menus.tsx",
     );
   });
 });

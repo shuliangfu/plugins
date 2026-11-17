@@ -22,9 +22,7 @@
     "./queue": "./src/queue/mod.ts",
     "./services": "./src/services/mod.ts",
     "./rbac": "./src/rbac/mod.ts",
-    "./rbac/access": "./src/rbac/service/access.ts",
-    "./rbac/pages": "./src/rbac/pages/mod.ts",
-    "./rbac/pages/load": "./src/rbac/pages/load.ts"
+    "./rbac/access": "./src/rbac/service/access.ts"
   },
   "publish": {
     "exclude": [

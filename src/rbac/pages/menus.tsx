@@ -13,7 +13,19 @@ import {
 } from "@dreamer/ui-view";
 import { resolveRbacApi } from "./api-path.ts";
 import type { RbacPanelProps } from "./types.ts";
-import type { MenusPageData } from "../menus/page-load.ts";
+import type { ServiceContainer } from "@dreamer/service";
+import { getRbacService } from "../service/runtime.ts";
+import { listQueryFrom, type ListQuerySource } from "../list-query.ts";
+import { parseMenuListQuery } from "../menus/service.ts";
+
+export type MenusPageData = {
+  parentKey: string;
+  parents: { value: string; label: string }[];
+  rows: Record<string, unknown>[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
 
 const STATUS = [
   { value: "active", label: "显示", tone: "success" as const },
@@ -246,4 +258,41 @@ export default function MenusPage(
       />
     </div>
   );
+}
+
+export async function load(
+  ctx: ListQuerySource & { container: ServiceContainer },
+) {
+  const service = getRbacService(ctx.container);
+  const raw = ctx.url;
+  const params = (() => {
+    if (raw instanceof URL) return raw.searchParams;
+    if (typeof raw === "string" && raw) {
+      try {
+        return new URL(raw, "http://local").searchParams;
+      } catch {
+        return new URLSearchParams();
+      }
+    }
+    return new URLSearchParams();
+  })();
+  const parentKey = params.get("parentKey") ?? "";
+  const locale = service.menu.options.getLocale
+    ? await service.menu.options.getLocale(ctx)
+    : "zh-CN";
+  const parents = await service.menu.listParentOptions(locale);
+  const { page, pageSize } = listQueryFrom(ctx);
+  const result = await service.menu.listMenuRows({
+    ...parseMenuListQuery(params),
+    page,
+    pageSize,
+  }, locale);
+  return {
+    parentKey,
+    parents,
+    rows: result.rows,
+    total: result.total,
+    page,
+    pageSize,
+  };
 }

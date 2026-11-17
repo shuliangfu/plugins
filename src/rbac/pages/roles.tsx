@@ -1,6 +1,6 @@
 import type { JSXRenderable } from "@dreamer/view";
 /**
- * 角色列表 DataPanel。宿主负责布局。
+ * 角色列表 DataPanel。插件自动挂载。
  */
 import {
   type Column,
@@ -13,6 +13,13 @@ import { resolveRbacApi } from "./api-path.ts";
 import type { RbacPanelProps } from "./types.ts";
 import { listPanelProps, type RbacListPageData } from "./list-props.ts";
 import { useCanManage } from "./use-can-manage.ts";
+import type { ServiceContainer } from "@dreamer/service";
+import { getRbacService } from "../service/runtime.ts";
+import {
+  listQueryFrom,
+  type ListQuerySource,
+  paginateItems,
+} from "../list-query.ts";
 
 type RoleRow = {
   id: string;
@@ -147,5 +154,15 @@ export default function RolesPage(
       class={props.class}
       {...listPanelProps(props.data)}
     />
+  );
+}
+
+export async function load(
+  ctx: ListQuerySource & { container: ServiceContainer },
+) {
+  return paginateItems(
+    await getRbacService(ctx.container).store.listRoles(),
+    listQueryFrom(ctx),
+    (item) => [item.code, item.name, item.description ?? ""],
   );
 }

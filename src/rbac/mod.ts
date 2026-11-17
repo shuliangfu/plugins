@@ -7,12 +7,6 @@
  * Admin pages at `{basePath}/roles|permissions|assign|routes` are registered
  * automatically (default basePath `/rbac`). Menu management is auto-mounted at
  * `/developer/menus` (configurable) with CRUD under the plugin API base. The host layout still wraps them.
- * Page components remain exportable if a host wants to embed them by hand:
- *
- * ```ts
- * import { RolesPage } from "@dreamer/plugins/rbac";
- * export default RolesPage;
- * ```
  *
  * @example
  * ```ts
@@ -65,23 +59,6 @@ export {
 export { handleRbacApi } from "./api/mod.ts";
 export { resolveApiMode } from "./api-mode.ts";
 export {
-  AssignPage,
-  listPanelProps,
-  MenusPage,
-  PermissionsPage,
-  type RbacListPageData,
-  type RbacPanelProps,
-  RolesPage,
-  RoutesPage,
-} from "./pages/mod.ts";
-export {
-  loadAssign,
-  loadPermissions,
-  loadRoles,
-  loadRoutes,
-} from "./pages/load.ts";
-export type { RbacPageLoadContext } from "./pages/load.ts";
-export {
   assertNotRemovingLastSuperAdmin,
   boundRolesForAdmin,
   countSuperAdminHolders,
@@ -125,7 +102,6 @@ export type {
   ScannedRoute,
 } from "./types.ts";
 
-export { loadMenus } from "./menus/page-load.ts";
 export {
   allMenuRows,
   MenuManager,

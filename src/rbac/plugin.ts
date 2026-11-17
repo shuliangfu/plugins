@@ -63,8 +63,7 @@ function adminPageDefinitions(basePath: string): RouteDefinition[] {
         type: "page",
         component,
         file: `${component}.tsx`,
-        fullPath: resolvePluginModulePath(`./pages/entries/${slug}.tsx`),
-        clientFullPath: resolvePluginModulePath(`./pages/${slug}.tsx`),
+        fullPath: resolvePluginModulePath(`./pages/${slug}.tsx`),
       },
     };
   });
@@ -82,8 +81,7 @@ function menuPageDefinition(options: RbacPluginOptions): RouteDefinition[] {
       type: "page",
       component,
       file: `${component}.tsx`,
-      fullPath: resolvePluginModulePath("./pages/entries/menus.tsx"),
-      clientFullPath: resolvePluginModulePath("./pages/menus.tsx"),
+      fullPath: resolvePluginModulePath("./pages/menus.tsx"),
     },
   }];
 }
