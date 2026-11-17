@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.7] - 2026-11-17
+
+### Fixed
+
+- **RBAC**: `boundRolesForAdmin` / `loadRolesForAdmin` now return empty roles
+  when `rbacPlugin` is not mounted, instead of throwing. Hosts that do not
+  load RBAC, such as an API process doing support-chat WebSocket auth, can
+  complete the handshake.
+
 ## [1.2.6] - 2026-11-17
 
 ### Changed

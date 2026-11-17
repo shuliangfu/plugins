@@ -9,6 +9,14 @@
 
 ## [Unreleased]
 
+## [1.2.7] - 2026-11-17
+
+### 修复
+
+- **RBAC**：未挂载 `rbacPlugin` 时，`boundRolesForAdmin` / `loadRolesForAdmin`
+  返回空角色，不再抛错。API 进程等未挂 RBAC 的场景（例如后台客服 WebSocket
+  鉴权）可以正常完成握手。
+
 ## [1.2.6] - 2026-11-17
 
 ### 变更
