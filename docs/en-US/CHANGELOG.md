@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-11-17
+
 ### Changed
 
 - **RBAC**: MongoDB documents now use camelCase field names (`userId`,

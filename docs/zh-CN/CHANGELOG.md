@@ -9,6 +9,8 @@
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-11-17
+
 ### 变更
 
 - **RBAC**：MongoDB 文档字段改为驼峰命名（`userId`、`roleIds` 等）。SQL
