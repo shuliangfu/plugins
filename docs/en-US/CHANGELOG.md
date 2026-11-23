@@ -9,14 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- **Static file plugin uses a realpath cage**: after the lexical `..` check,
+  resolved paths (including missing trailing segments) are canonicalized and
+  must stay under the configured root, so a symlink cannot escape the directory.
+  Requests with NULs, backslashes, or a Windows absolute path are rejected.
+  Directory listings escape file names and titles in HTML.
+
+### Performance
+
+- The CORS plugin prebuilds a `Set` for origin arrays and precomputes
+  Allow-Methods / Headers strings.
+
+### Changed
+
+- Bumped dependencies with `deno update --min-dep-age 0` (also synced
+  `package.json`): `@dreamer/plugin` ^1.1.0 → ^1.1.1, `@dreamer/runtime-adapter`
+  ^1.2.2 → ^1.2.3, `@dreamer/database` ^1.2.0 → ^1.3.0, `@dreamer/i18n` ^1.1.2 →
+  ^1.1.3, `@dreamer/view` ^3.1.2 → ^3.1.3, `@dreamer/ui-view` ^1.3.18 → ^1.4.1,
+  `@dreamer/test` ^1.2.4 → ^1.2.5. `@dreamer/auth`, `@dreamer/service`,
+  `@dreamer/theme`, `@dreamer/queue`, `@dreamer/logger`, and `tsx` were already
+  at the latest compatible versions.
+
+### Fixed
+
+- RBAC SQL models now use `satisfies ModelSchema` and `override schema`, so they
+  type-check against `@dreamer/database`.
+- RBAC role and permission detail views pass `rows` to `Descriptions` (the
+  `items` prop was removed in `@dreamer/ui-view`).
+
+### Tests
+
+- Static plugin cases cover HTML escaping in directory listings and a symlink
+  that points outside the root returning 403.
+
 ## [1.2.7] - 2026-11-17
 
 ### Fixed
 
 - **RBAC**: `boundRolesForAdmin` / `loadRolesForAdmin` now return empty roles
-  when `rbacPlugin` is not mounted, instead of throwing. Hosts that do not
-  load RBAC, such as an API process doing support-chat WebSocket auth, can
-  complete the handshake.
+  when `rbacPlugin` is not mounted, instead of throwing. Hosts that do not load
+  RBAC, such as an API process doing support-chat WebSocket auth, can complete
+  the handshake.
 
 ## [1.2.6] - 2026-11-17
 

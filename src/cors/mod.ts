@@ -59,6 +59,7 @@ const DEFAULT_ALLOWED_HEADERS = ["Content-Type", "Authorization"];
 function isOriginAllowed(
   requestOrigin: string,
   allowedOrigin: string | string[] | ((origin: string) => boolean),
+  originSet?: Set<string> | null,
 ): boolean {
   if (allowedOrigin === "*") {
     return true;
@@ -66,6 +67,10 @@ function isOriginAllowed(
 
   if (typeof allowedOrigin === "function") {
     return allowedOrigin(requestOrigin);
+  }
+
+  if (originSet) {
+    return originSet.has(requestOrigin);
   }
 
   if (Array.isArray(allowedOrigin)) {
@@ -86,6 +91,7 @@ function getAllowedOrigin(
   requestOrigin: string | null,
   allowedOrigin: string | string[] | ((origin: string) => boolean),
   credentials: boolean,
+  originSet?: Set<string> | null,
 ): string | null {
   // 如果没有请求源，不添加 CORS 头
   if (!requestOrigin) {
@@ -93,7 +99,7 @@ function getAllowedOrigin(
   }
 
   // 检查源是否被允许
-  if (!isOriginAllowed(requestOrigin, allowedOrigin)) {
+  if (!isOriginAllowed(requestOrigin, allowedOrigin, originSet)) {
     return null;
   }
 
@@ -150,6 +156,15 @@ export function corsPlugin(options: CorsPluginOptions = {}): Plugin {
     optionsSuccessStatus = 204,
     debug = false,
   } = options;
+
+  // 启动时预计算：白名单 O(1) 查找，响应头字符串避免每个请求 join
+  const originSet = Array.isArray(origin) ? new Set(origin) : null;
+  const methodsHeader = methods.join(", ");
+  const allowedHeadersHeader = allowedHeaders.join(", ");
+  const exposedHeadersHeader = exposedHeaders.length > 0
+    ? exposedHeaders.join(", ")
+    : "";
+  const maxAgeHeader = maxAge.toString();
 
   return {
     name: "@dreamer/plugins-cors",
@@ -238,6 +253,7 @@ export function corsPlugin(options: CorsPluginOptions = {}): Plugin {
         requestOrigin,
         origin,
         credentials,
+        originSet,
       );
 
       // 如果是预检请求（OPTIONS）
@@ -250,7 +266,7 @@ export function corsPlugin(options: CorsPluginOptions = {}): Plugin {
         }
 
         // 允许的方法
-        headers.set("Access-Control-Allow-Methods", methods.join(", "));
+        headers.set("Access-Control-Allow-Methods", methodsHeader);
 
         // 允许的头部
         const requestedHeaders = ctx.headers?.get(
@@ -262,7 +278,7 @@ export function corsPlugin(options: CorsPluginOptions = {}): Plugin {
         } else {
           headers.set(
             "Access-Control-Allow-Headers",
-            allowedHeaders.join(", "),
+            allowedHeadersHeader,
           );
         }
 
@@ -272,7 +288,7 @@ export function corsPlugin(options: CorsPluginOptions = {}): Plugin {
         }
 
         // 缓存时间
-        headers.set("Access-Control-Max-Age", maxAge.toString());
+        headers.set("Access-Control-Max-Age", maxAgeHeader);
 
         // 设置预检响应
         ctx.response = new Response(null, {
@@ -314,6 +330,7 @@ export function corsPlugin(options: CorsPluginOptions = {}): Plugin {
         requestOrigin,
         origin,
         credentials,
+        originSet,
       );
 
       // 如果源不被允许，不添加 CORS 头
@@ -332,7 +349,7 @@ export function corsPlugin(options: CorsPluginOptions = {}): Plugin {
 
       // 暴露的头部
       if (exposedHeaders.length > 0) {
-        headers.set("Access-Control-Expose-Headers", exposedHeaders.join(", "));
+        headers.set("Access-Control-Expose-Headers", exposedHeadersHeader);
       }
 
       // 添加 Vary 头

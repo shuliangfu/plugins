@@ -6,7 +6,18 @@
 
 import { ServiceContainer } from "@dreamer/service";
 import { beforeEach, describe, expect, it } from "@dreamer/test";
-import { staticPlugin, type StaticPluginOptions } from "../src/static/mod.ts";
+import {
+  escapeHtml,
+  staticPlugin,
+  type StaticPluginOptions,
+} from "../src/static/mod.ts";
+import {
+  join,
+  makeTempDir,
+  remove,
+  symlink,
+  writeTextFile,
+} from "@dreamer/runtime-adapter";
 
 describe("静态文件插件", () => {
   let container: ServiceContainer;
@@ -300,6 +311,67 @@ describe("静态文件插件", () => {
       const etag2 = service?.computeEtag(content2, mtime);
 
       expect(etag1).not.toBe(etag2);
+    });
+  });
+
+  describe("安全", () => {
+    it("escapeHtml 转义目录列表中的特殊字符", () => {
+      expect(escapeHtml(`<img src=x onerror=alert(1)>`)).toBe(
+        "&lt;img src=x onerror=alert(1)&gt;",
+      );
+      expect(escapeHtml(`a&b"c'd`)).toBe("a&amp;b&quot;c&#39;d");
+    });
+
+    it("目录列表应对文件名和标题做 HTML 转义", async () => {
+      const dir = await makeTempDir({ prefix: "plugins-static-list-" });
+      await writeTextFile(join(dir, "a&b.txt"), "ok");
+      const plugin = staticPlugin({
+        root: dir,
+        prefix: "/",
+        directoryListing: true,
+      });
+      plugin.onInit?.(container);
+      const ctx = {
+        request: new Request("http://localhost/"),
+        path: "/",
+        method: "GET",
+        url: new URL("http://localhost/"),
+        headers: new Headers(),
+        response: undefined as Response | undefined,
+      };
+      await plugin.onRequest?.(ctx, container);
+      expect(ctx.response?.status).toBe(200);
+      const html = await ctx.response!.text();
+      expect(html).toContain("a&amp;b.txt");
+      expect(html).not.toContain("a&b.txt");
+      await remove(dir, { recursive: true });
+    });
+
+    it("符号链接指向根外时应返回 403", async () => {
+      const root = await makeTempDir({ prefix: "plugins-static-root-" });
+      const outside = await makeTempDir({ prefix: "plugins-static-out-" });
+      await writeTextFile(join(outside, "secret.txt"), "nope");
+      try {
+        await symlink(outside, join(root, "escape"));
+      } catch {
+        await remove(root, { recursive: true });
+        await remove(outside, { recursive: true });
+        return;
+      }
+      const plugin = staticPlugin({ root, prefix: "/" });
+      plugin.onInit?.(container);
+      const ctx = {
+        request: new Request("http://localhost/escape/secret.txt"),
+        path: "/escape/secret.txt",
+        method: "GET",
+        url: new URL("http://localhost/escape/secret.txt"),
+        headers: new Headers(),
+        response: undefined as Response | undefined,
+      };
+      await plugin.onRequest?.(ctx, container);
+      expect(ctx.response?.status).toBe(403);
+      await remove(root, { recursive: true });
+      await remove(outside, { recursive: true });
     });
   });
 });

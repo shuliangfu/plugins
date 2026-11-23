@@ -9,6 +9,39 @@
 
 ## [Unreleased]
 
+### 安全
+
+- **静态文件插件使用 realpath 笼子**：在词法 `..` 检查之后，会对解析后的路径
+  （含尚未存在的末段）做规范化，必须落在配置的根目录内，符号链接无法逃出目录。
+  含 NUL、反斜杠或 Windows 绝对路径的请求会被拒绝。目录列表会对文件名和标题做
+  HTML 转义。
+
+### 性能
+
+- CORS 插件对 origin 数组预建 `Set`，并预计算 Allow-Methods / Headers
+  等响应头字符串。
+
+### 变更
+
+- 使用 `deno update --min-dep-age 0` 升级依赖（同步更新 `package.json`）：
+  `@dreamer/plugin` ^1.1.0 → ^1.1.1， `@dreamer/runtime-adapter` ^1.2.2 →
+  ^1.2.3， `@dreamer/database` ^1.2.0 → ^1.3.0， `@dreamer/i18n` ^1.1.2 →
+  ^1.1.3， `@dreamer/view` ^3.1.2 → ^3.1.3， `@dreamer/ui-view` ^1.3.18 →
+  ^1.4.1， `@dreamer/test` ^1.2.4 → ^1.2.5。
+  `@dreamer/auth`、`@dreamer/service`、`@dreamer/theme`、`@dreamer/queue`、
+  `@dreamer/logger` 和 `tsx` 已是范围内最新，未再升。
+
+### 修复
+
+- RBAC 的 SQL 模型为 schema 补上 `satisfies ModelSchema` 和 `override schema`，
+  以通过 `@dreamer/database` 的类型检查。
+- RBAC 角色／权限详情里的 `Descriptions` 改为传入 `rows`（`@dreamer/ui-view`
+  已去掉 `items`）。
+
+### 测试
+
+- 静态插件用例覆盖目录列表 HTML 转义，以及指向根外的符号链接返回 403。
+
 ## [1.2.7] - 2026-11-17
 
 ### 修复

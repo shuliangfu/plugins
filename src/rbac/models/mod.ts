@@ -5,6 +5,7 @@
 import {
   type DatabaseAdapter,
   type DatabaseType,
+  type ModelSchema,
   MongoModel,
   SQLModel,
 } from "@dreamer/database";
@@ -25,7 +26,7 @@ export const roleSchema = {
   child_permission_ids: { type: "text", default: "[]" },
   role_excludes: { type: "text", default: "[]" },
   permission_excludes: { type: "text", default: "[]" },
-};
+} satisfies ModelSchema;
 
 export const permissionSchema = {
   id: { type: "string", validate: { required: true } },
@@ -36,7 +37,7 @@ export const permissionSchema = {
   child_permission_ids: { type: "text", default: "[]" },
   permission_excludes: { type: "text", default: "[]" },
   source: { type: "string", default: "manual" },
-};
+} satisfies ModelSchema;
 
 export const assignmentSchema = {
   id: { type: "string", validate: { required: true } },
@@ -47,13 +48,13 @@ export const assignmentSchema = {
   route_excludes: { type: "text", default: "[]" },
   role_excludes: { type: "text", default: "[]" },
   permission_excludes: { type: "text", default: "[]" },
-};
+} satisfies ModelSchema;
 
 export const routeSchema = {
   id: { type: "string", validate: { required: true } },
   path: { type: "string", validate: { required: true } },
   source: { type: "string" },
-};
+} satisfies ModelSchema;
 
 /** Mongo documents use camelCase field names. */
 export const mongoRoleSchema = {
@@ -70,7 +71,7 @@ export const mongoRoleSchema = {
   childPermissionIds: { type: "text", default: "[]" },
   roleExcludes: { type: "text", default: "[]" },
   permissionExcludes: { type: "text", default: "[]" },
-};
+} satisfies ModelSchema;
 
 export const mongoPermissionSchema = {
   id: { type: "string", validate: { required: true } },
@@ -81,7 +82,7 @@ export const mongoPermissionSchema = {
   childPermissionIds: { type: "text", default: "[]" },
   permissionExcludes: { type: "text", default: "[]" },
   source: { type: "string", default: "manual" },
-};
+} satisfies ModelSchema;
 
 export const mongoAssignmentSchema = {
   id: { type: "string", validate: { required: true } },
@@ -92,7 +93,7 @@ export const mongoAssignmentSchema = {
   routeExcludes: { type: "text", default: "[]" },
   roleExcludes: { type: "text", default: "[]" },
   permissionExcludes: { type: "text", default: "[]" },
-};
+} satisfies ModelSchema;
 
 /** Narrow model API used by the store (SQL and Mongo signatures differ). */
 export interface StoreModel {
@@ -150,22 +151,22 @@ export function createRbacModels(
   class RbacRole extends SQLModel {
     static override tableName = `${prefix}roles`;
     static override primaryKey = "id";
-    static schema = roleSchema;
+    static override schema = roleSchema;
   }
   class RbacPermission extends SQLModel {
     static override tableName = `${prefix}permissions`;
     static override primaryKey = "id";
-    static schema = permissionSchema;
+    static override schema = permissionSchema;
   }
   class RbacAssignment extends SQLModel {
     static override tableName = `${prefix}assignments`;
     static override primaryKey = "id";
-    static schema = assignmentSchema;
+    static override schema = assignmentSchema;
   }
   class RbacRoute extends SQLModel {
     static override tableName = `${prefix}routes`;
     static override primaryKey = "id";
-    static schema = routeSchema;
+    static override schema = routeSchema;
   }
   RbacRole.setAdapter(adapter);
   RbacPermission.setAdapter(adapter);

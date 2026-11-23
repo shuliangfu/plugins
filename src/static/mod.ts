@@ -18,12 +18,16 @@
 
 import type { Plugin, RequestContext } from "@dreamer/plugin";
 import {
+  basename,
   cwd,
   type DirEntry,
+  dirname,
   type FileInfo,
   join,
   readdir,
   readFile,
+  realPathSync,
+  resolve,
   stat,
 } from "@dreamer/runtime-adapter";
 import type { ServiceContainer } from "@dreamer/service";
@@ -202,6 +206,79 @@ function normalizePath(path: string): string {
   }
 
   return "/" + result.join("/");
+}
+
+function normalizePathSep(path: string): string {
+  return path.replace(/\\/g, "/");
+}
+
+function isWindowsAbs(path: string): boolean {
+  return /^[A-Za-z]:[\\/]/.test(path);
+}
+
+function realPathWithMissingSegments(absolute: string): string {
+  const resolved = resolve(absolute);
+  try {
+    return realPathSync(resolved);
+  } catch {
+    // 末级或中间目录尚不存在
+  }
+  const tail: string[] = [];
+  let current = resolved;
+  for (let i = 0; i < 1024; i++) {
+    try {
+      let out = realPathSync(current);
+      for (const seg of tail) {
+        out = join(out, seg);
+      }
+      return out;
+    } catch {
+      const parent = dirname(current);
+      const base = basename(current);
+      if (parent === current || !base) {
+        return resolved;
+      }
+      tail.unshift(base);
+      current = parent;
+    }
+  }
+  return resolved;
+}
+
+function isCanonicalWithinRoot(
+  candidateReal: string,
+  rootReal: string,
+): boolean {
+  const a = normalizePathSep(candidateReal);
+  const b = normalizePathSep(rootReal).replace(/\/+$/, "");
+  if (isWindowsAbs(candidateReal) || isWindowsAbs(rootReal)) {
+    const al = a.toLowerCase();
+    const bl = b.toLowerCase();
+    return al === bl || al.startsWith(bl + "/");
+  }
+  return a === b || a.startsWith(b + "/");
+}
+
+/** Escape names used in directory listing HTML. */
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function resolveUnderRoot(
+  dirRoot: string,
+  relativePath: string,
+): string | null {
+  const rootReal = realPathWithMissingSegments(resolve(cwd(), dirRoot));
+  const candidate = realPathWithMissingSegments(
+    join(rootReal, relativePath.replace(/^\//, "")),
+  );
+  if (!isCanonicalWithinRoot(candidate, rootReal)) return null;
+  return candidate;
 }
 
 /**
@@ -387,7 +464,12 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
         // 检查目录遍历攻击（路径中包含 .. 应该已被规范化移除，
         // 但如果原始路径试图逃逸根目录，返回 403）
         const originalPath = path.slice(effectivePrefix.length);
-        if (originalPath.includes("..")) {
+        if (
+          originalPath.includes("..") ||
+          originalPath.includes("\0") ||
+          originalPath.includes("\\") ||
+          isWindowsAbs(originalPath.replace(/^\/+/, ""))
+        ) {
           ctx.response = new Response($tr("plugins.static.forbidden"), {
             status: 403,
             headers: { "Content-Type": "text/plain" },
@@ -410,7 +492,10 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
         // prefix 为 "/*" 且当前路径无后缀：视为纯路由，直接返回 index.html，由前端路由接管
         if (dirPrefix === "/*" && getExtension(path) === "") {
           for (const indexFile of index) {
-            const indexPath = join(cwd(), dirRoot, indexFile);
+            const indexPath = resolveUnderRoot(dirRoot, indexFile);
+            if (!indexPath) {
+              continue;
+            }
             try {
               const indexInfo: FileInfo = await stat(indexPath);
               if (indexInfo.isFile) {
@@ -443,8 +528,15 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
           continue;
         }
 
-        // 构建文件路径（使用 join 确保 Windows 兼容）
-        let filePath = join(cwd(), dirRoot, relativePath);
+        // 构建文件路径并用 realpath 限制在根目录内
+        let filePath = resolveUnderRoot(dirRoot, relativePath);
+        if (!filePath) {
+          ctx.response = new Response($tr("plugins.static.forbidden"), {
+            status: 403,
+            headers: { "Content-Type": "text/plain" },
+          });
+          return;
+        }
 
         try {
           // 获取文件信息（使用 runtime-adapter）
@@ -475,7 +567,21 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
               try {
                 const indexInfo: FileInfo = await stat(indexPath);
                 if (indexInfo.isFile) {
-                  filePath = indexPath;
+                  const indexReal = realPathWithMissingSegments(indexPath);
+                  const rootReal = realPathWithMissingSegments(
+                    resolve(cwd(), dirRoot),
+                  );
+                  if (!isCanonicalWithinRoot(indexReal, rootReal)) {
+                    ctx.response = new Response(
+                      $tr("plugins.static.forbidden"),
+                      {
+                        status: 403,
+                        headers: { "Content-Type": "text/plain" },
+                      },
+                    );
+                    return;
+                  }
+                  filePath = indexReal;
                   fileStat = {
                     isFile: true,
                     isDirectory: false,
@@ -495,13 +601,18 @@ export function staticPlugin(options: StaticPluginOptions = {}): Plugin {
                 const dirEntries: DirEntry[] = await readdir(filePath);
                 const entries: string[] = dirEntries.map((e) => e.name);
 
+                const title = escapeHtml(relativePath);
                 const html = `<!DOCTYPE html>
 <html>
-<head><title>Index of ${relativePath}</title></head>
+<head><title>Index of ${title}</title></head>
 <body>
-<h1>Index of ${relativePath}</h1>
+<h1>Index of ${title}</h1>
 <ul>
-${entries.map((e) => `<li><a href="${e}">${e}</a></li>`).join("\n")}
+${
+                  entries.map((e) =>
+                    `<li><a href="${escapeHtml(e)}">${escapeHtml(e)}</a></li>`
+                  ).join("\n")
+                }
 </ul>
 </body>
 </html>`;

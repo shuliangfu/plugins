@@ -112,7 +112,7 @@ export default function RolesPage(
                 bordered
                 column={1}
                 size="sm"
-                items={[
+                rows={[
                   { label: "名称", children: row.name },
                   { label: "标识", children: row.code },
                   { label: "说明", children: row.description || "—" },

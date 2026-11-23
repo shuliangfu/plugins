@@ -100,7 +100,7 @@ export default function PermissionsPage(
                 bordered
                 column={1}
                 size="sm"
-                items={[
+                rows={[
                   { label: "名称", children: row.name },
                   { label: "说明", children: row.description || "—" },
                 ]}

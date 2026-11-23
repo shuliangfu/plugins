@@ -4,6 +4,7 @@
 import {
   type DatabaseAdapter,
   type DatabaseType,
+  type ModelSchema,
   MongoModel,
   SQLModel,
 } from "@dreamer/database";
@@ -112,7 +113,7 @@ const menuSchema = {
   icon: { type: "string", default: "star" },
   sort: { type: "number", default: 0 },
   status: { type: "string", default: "active" },
-};
+} satisfies ModelSchema;
 
 export async function createDatabaseMenuStore(
   adapter: DatabaseAdapter,
@@ -131,10 +132,10 @@ export async function createDatabaseMenuStore(
     : class RbacMenu extends SQLModel {
       static override tableName = collection;
       static override primaryKey = "id";
-      static schema = {
+      static override schema = {
         id: { type: "string", validate: { required: true } },
         ...menuSchema,
-      };
+      } satisfies ModelSchema;
     };
   Model.setAdapter(adapter);
   const model = Model as unknown as {
