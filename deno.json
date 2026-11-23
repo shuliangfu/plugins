@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/plugins",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "description": "dweb 框架的官方插件集合",
   "exports": {
     ".": "./src/mod.ts",

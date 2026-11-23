@@ -1018,7 +1018,7 @@ describe("RBAC 插件", () => {
     expect(put!.status).toBe(404);
   });
 
-  it("目录不再隐藏开发路径；isDeveloper 来自用户标记并授予 /*", async () => {
+  it("目录不再隐藏开发路径；isDeveloper 来自用户标记，只放开开发者路径", async () => {
     const flagged = await store.saveRole({
       id: "r-flagged",
       code: "flagged",
@@ -1087,7 +1087,10 @@ describe("RBAC 插件", () => {
     });
     const access = await service.getAccess(dev);
     expect(access.isDeveloper).toBe(true);
-    expect(access.routeAllows.includes("/*")).toBe(true);
+    expect(access.routeAllows.includes("/*")).toBe(false);
+    expect((await service.checkRoute("/developer/menus", dev)).ok).toBe(true);
+    expect((await service.checkRoute("/rbac/roles", dev)).ok).toBe(false);
+    expect((await service.checkRoute("/", dev)).ok).toBe(false);
   });
 
   it("非开发者即使有 /* 也看不到开发管理菜单", async () => {
@@ -1135,9 +1138,10 @@ describe("RBAC 插件", () => {
     const access = await service.getAccess(user);
     expect(access.isDeveloper).toBe(true);
     expect(access.routeAllows.includes("/*")).toBe(true);
-    expect(access.routeExcludes).toEqual([]);
+    expect(access.routeExcludes).toEqual(["/developer/*", "/api/developer/*"]);
     expect(service.can(access, "/developer/menus")).toBe(true);
     expect((await service.checkRoute("/developer/menus", user)).ok).toBe(true);
+    expect((await service.checkRoute("/rbac/roles", user)).ok).toBe(true);
     const menus = await service.menusFor(user, [
       { key: "developer", title: "开发管理", path: "/developer/menus" },
       { key: "rbac-roles", title: "角色列表", path: "/rbac/roles" },

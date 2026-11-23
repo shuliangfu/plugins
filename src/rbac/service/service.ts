@@ -226,9 +226,10 @@ export class RbacService {
     if (matchAnyRoutePattern(pathname, this.sessionAllowActions)) {
       return { ok: true };
     }
-    if (this.#isDeveloper(user)) return { ok: true };
     if (matchAnyRoutePattern(pathname, this.developerPrefix)) {
-      return { ok: false, status: 403, reason: "developer" };
+      return this.#isDeveloper(user)
+        ? { ok: true }
+        : { ok: false, status: 403, reason: "developer" };
     }
     if (this.isSelfAccessPath(pathname)) return { ok: true };
     const access = await this.getAccess(user);
@@ -289,8 +290,13 @@ export class RbacService {
   }
 
   can(access: RbacAccess, path: string): boolean {
-    if (access.isDeveloper) return true;
     const pathname = normalizePath(path);
+    if (
+      access.isDeveloper &&
+      matchAnyRoutePattern(pathname, this.developerPrefix)
+    ) {
+      return true;
+    }
     if (allowRouteByPatterns(pathname, access.routeExcludes, []) === "allow") {
       return false;
     }
@@ -667,12 +673,11 @@ export class RbacService {
     addExcludes(assignment.routeExcludes ?? []);
     addExcludes(user.routeExcludes ?? []);
     const isDeveloper = this.#isDeveloper(user);
-    if (isDeveloper) addAllows(["/*"]);
     return {
       userId: user.id,
       roleIds: [...expandedRoles],
       routeAllows,
-      routeExcludes: isDeveloper ? [] : routeExcludes,
+      routeExcludes,
       isDeveloper,
     };
   }
