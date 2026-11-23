@@ -11,6 +11,14 @@ import {
 import { RbacFieldError, type RbacService } from "../service/service.ts";
 import { collectScannedRoutes } from "../service/route-scan.ts";
 import type { Permission, Role } from "../types.ts";
+import {
+  listPermissionRows,
+  listRoleRows,
+  permissionListRow,
+  roleListRow,
+  visibleCatalog,
+  withOwnRoutes,
+} from "../catalog-rows.ts";
 import { handleMenuApi } from "../menus/api.ts";
 
 export async function handleRbacApi(
@@ -25,7 +33,7 @@ export async function handleRbacApi(
   try {
     if (method === "GET" && rel === "/roles") {
       return json(paginate(
-        (await visibleCatalog(service)).roles,
+        await listRoleRows(service),
         ctx,
         (item) => [item.code, item.name, item.description ?? ""],
       ));
@@ -115,7 +123,7 @@ export async function handleRbacApi(
 
     if (method === "GET" && rel === "/permissions") {
       return json(paginate(
-        (await visibleCatalog(service)).permissions,
+        await listPermissionRows(service),
         ctx,
         (item) => [item.name, item.description ?? ""],
       ));
@@ -504,68 +512,18 @@ function paginate<T>(
   return { ok: true, items: result.rows, total: result.total };
 }
 
-async function visibleCatalog(service: RbacService) {
-  return {
-    roles: await service.store.listRoles(),
-    permissions: await service.store.listPermissions(),
-    routes: await service.store.listRoutes(),
-  };
-}
-
 async function roleViewData(
   service: RbacService,
   item: Role,
 ) {
-  const catalog = await visibleCatalog(service);
-  return {
-    ...item,
-    roleIds: item.childRoleIds,
-    permissionIds: item.childPermissionIds,
-    routes: item.routeAllows,
-    roleExcludeIds: item.roleExcludes ?? [],
-    permissionExcludeIds: item.permissionExcludes ?? [],
-    routeExcludes: item.routeExcludes ?? [],
-    roles: catalog.roles,
-    permissions: catalog.permissions,
-    managedRoutes: withOwnRoutes(
-      catalog.routes,
-      item.routeAllows,
-      item.routeExcludes ?? [],
-    ),
-  };
-}
-
-function withOwnRoutes(
-  catalog: Array<{ path: string; source?: string }>,
-  ...lists: Array<string[] | undefined>
-): Array<{ path: string; source?: string }> {
-  const have = new Map(catalog.map((row) => [row.path, row]));
-  for (const list of lists) {
-    for (const path of list ?? []) {
-      if (path && !have.has(path)) have.set(path, { path });
-    }
-  }
-  return [...have.values()];
+  return roleListRow(item, await visibleCatalog(service));
 }
 
 async function permissionViewData(
   service: RbacService,
   item: Permission,
 ) {
-  const catalog = await visibleCatalog(service);
-  return {
-    ...item,
-    permissionIds: item.childPermissionIds,
-    routes: item.routeAllows,
-    permissionExcludeIds: item.permissionExcludes ?? [],
-    routeExcludes: item.routeExcludes ?? [],
-    permissions: catalog.permissions,
-    managedRoutes: withOwnRoutes(
-      catalog.routes,
-      item.routeAllows,
-      item.routeExcludes ?? [],
-    ),
-  };
+  return permissionListRow(item, await visibleCatalog(service));
 }
 
 export async function listRouteTransfer(service: RbacService) {

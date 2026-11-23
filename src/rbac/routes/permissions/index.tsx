@@ -15,6 +15,7 @@ import { listPanelProps, type RbacListPageData } from "../list-props.ts";
 import { useCanManage } from "../use-can-manage.ts";
 import type { ServiceContainer } from "@dreamer/service";
 import { getRbacService } from "../../service/runtime.ts";
+import { listPermissionRows } from "../../catalog-rows.ts";
 import {
   listQueryFrom,
   type ListQuerySource,
@@ -157,7 +158,7 @@ export async function load(
   ctx: ListQuerySource & { container: ServiceContainer },
 ) {
   return paginateItems(
-    await getRbacService(ctx.container).store.listPermissions(),
+    await listPermissionRows(getRbacService(ctx.container)),
     listQueryFrom(ctx),
     (item) => [item.name, item.description ?? ""],
   );

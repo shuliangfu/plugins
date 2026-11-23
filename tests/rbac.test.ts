@@ -345,6 +345,57 @@ describe("RBAC 插件", () => {
     expect(Array.isArray(payload.data.managedRoutes)).toBe(true);
   });
 
+  it("角色和权限列表行带上目录，打开详情可直接做种子", async () => {
+    const plugin = rbacPlugin({
+      store,
+      getUser: () => admin,
+      seed: { assignUserId: "u-admin" },
+    });
+    const container = new ServiceContainer();
+    await plugin.onInit?.(container);
+    const created = await plugin.onRequest?.(
+      ctx("/api/rbac/roles/create", "POST", { code: "ops", name: "运维" }),
+      container,
+    );
+    const roleId = (await created!.json()).item.id as string;
+    const permCreated = await plugin.onRequest?.(
+      ctx("/api/rbac/permissions/create", "POST", { name: "列表目录权限" }),
+      container,
+    );
+    const permissionId = (await permCreated!.json()).item.id as string;
+    const roles = await plugin.onRequest?.(ctx("/api/rbac/roles"), container);
+    const roleList = await roles!.json();
+    expect(roleList.ok).toBe(true);
+    const roleRow = roleList.items.find((item: { id: string }) =>
+      item.id === roleId
+    );
+    expect(Array.isArray(roleRow.roles)).toBe(true);
+    expect(roleRow.roles.some((item: { id: string }) => item.id === roleId))
+      .toBe(true);
+    expect(Array.isArray(roleRow.permissions)).toBe(true);
+    expect(
+      roleRow.permissions.some((item: { id: string }) =>
+        item.id === permissionId
+      ),
+    ).toBe(true);
+    expect(Array.isArray(roleRow.managedRoutes)).toBe(true);
+    const perms = await plugin.onRequest?.(
+      ctx("/api/rbac/permissions"),
+      container,
+    );
+    const permList = await perms!.json();
+    const permRow = permList.items.find((item: { id: string }) =>
+      item.id === permissionId
+    );
+    expect(Array.isArray(permRow.permissions)).toBe(true);
+    expect(
+      permRow.permissions.some((item: { id: string }) =>
+        item.id === permissionId
+      ),
+    ).toBe(true);
+    expect(Array.isArray(permRow.managedRoutes)).toBe(true);
+  });
+
   it("角色和权限详情可以列出并同步子项", async () => {
     const plugin = rbacPlugin({
       store,

@@ -99,6 +99,7 @@ export default function AssignPage(
             api={`${resolveRbacApi(props.baseRoute)}/assign`}
             id={asRow(ctx.row).id}
             canManage={canManage}
+            catalog={ctx.row}
           />
         ),
       }}
