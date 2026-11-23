@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.8] - 2026-11-23
+
 ### Security
 
 - **Static file plugin uses a realpath cage**: after the lexical `..` check,
