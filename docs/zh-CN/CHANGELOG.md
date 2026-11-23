@@ -35,8 +35,8 @@
 
 ### 修复
 
-- RBAC 的 SQL 模型为 schema 补上 `satisfies ModelSchema` 和 `override schema`，
-  以通过 `@dreamer/database` 的类型检查。
+- RBAC 的 SQL 模型为 schema 补上显式 `ModelSchema` 类型和 `override schema`，
+  以通过 `@dreamer/database` 的类型检查，并满足 JSR 慢类型要求。
 - RBAC 角色／权限详情里的 `Descriptions` 改为传入 `rows`（`@dreamer/ui-view`
   已去掉 `items`）。
 

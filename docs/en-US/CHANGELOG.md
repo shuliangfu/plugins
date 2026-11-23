@@ -36,8 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- RBAC SQL models now use `satisfies ModelSchema` and `override schema`, so they
-  type-check against `@dreamer/database`.
+- RBAC SQL models now use an explicit `ModelSchema` type and `override schema`,
+  so they type-check against `@dreamer/database` and pass JSR slow-type checks.
 - RBAC role and permission detail views pass `rows` to `Descriptions` (the
   `items` prop was removed in `@dreamer/ui-view`).
 

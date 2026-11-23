@@ -12,7 +12,7 @@ import {
 
 export const DEFAULT_TABLE_PREFIX = "rbac_";
 
-export const roleSchema = {
+export const roleSchema: ModelSchema = {
   id: { type: "string", validate: { required: true } },
   code: { type: "string", validate: { required: true } },
   name: { type: "string", validate: { required: true } },
@@ -26,9 +26,9 @@ export const roleSchema = {
   child_permission_ids: { type: "text", default: "[]" },
   role_excludes: { type: "text", default: "[]" },
   permission_excludes: { type: "text", default: "[]" },
-} satisfies ModelSchema;
+};
 
-export const permissionSchema = {
+export const permissionSchema: ModelSchema = {
   id: { type: "string", validate: { required: true } },
   name: { type: "string", validate: { required: true } },
   description: { type: "text" },
@@ -37,9 +37,9 @@ export const permissionSchema = {
   child_permission_ids: { type: "text", default: "[]" },
   permission_excludes: { type: "text", default: "[]" },
   source: { type: "string", default: "manual" },
-} satisfies ModelSchema;
+};
 
-export const assignmentSchema = {
+export const assignmentSchema: ModelSchema = {
   id: { type: "string", validate: { required: true } },
   user_id: { type: "string", validate: { required: true } },
   role_ids: { type: "text", default: "[]" },
@@ -48,16 +48,16 @@ export const assignmentSchema = {
   route_excludes: { type: "text", default: "[]" },
   role_excludes: { type: "text", default: "[]" },
   permission_excludes: { type: "text", default: "[]" },
-} satisfies ModelSchema;
+};
 
-export const routeSchema = {
+export const routeSchema: ModelSchema = {
   id: { type: "string", validate: { required: true } },
   path: { type: "string", validate: { required: true } },
   source: { type: "string" },
-} satisfies ModelSchema;
+};
 
 /** Mongo documents use camelCase field names. */
-export const mongoRoleSchema = {
+export const mongoRoleSchema: ModelSchema = {
   id: { type: "string", validate: { required: true } },
   code: { type: "string", validate: { required: true } },
   name: { type: "string", validate: { required: true } },
@@ -71,9 +71,9 @@ export const mongoRoleSchema = {
   childPermissionIds: { type: "text", default: "[]" },
   roleExcludes: { type: "text", default: "[]" },
   permissionExcludes: { type: "text", default: "[]" },
-} satisfies ModelSchema;
+};
 
-export const mongoPermissionSchema = {
+export const mongoPermissionSchema: ModelSchema = {
   id: { type: "string", validate: { required: true } },
   name: { type: "string", validate: { required: true } },
   description: { type: "text" },
@@ -82,9 +82,9 @@ export const mongoPermissionSchema = {
   childPermissionIds: { type: "text", default: "[]" },
   permissionExcludes: { type: "text", default: "[]" },
   source: { type: "string", default: "manual" },
-} satisfies ModelSchema;
+};
 
-export const mongoAssignmentSchema = {
+export const mongoAssignmentSchema: ModelSchema = {
   id: { type: "string", validate: { required: true } },
   userId: { type: "string", validate: { required: true } },
   roleIds: { type: "text", default: "[]" },
@@ -93,7 +93,7 @@ export const mongoAssignmentSchema = {
   routeExcludes: { type: "text", default: "[]" },
   roleExcludes: { type: "text", default: "[]" },
   permissionExcludes: { type: "text", default: "[]" },
-} satisfies ModelSchema;
+};
 
 /** Narrow model API used by the store (SQL and Mongo signatures differ). */
 export interface StoreModel {
